@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Herculean
+
+Font name:               EMS Herculean
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Poiret One
+Designer:                Denis Masharov
+Link:                    https://www.myfonts.com/foundry/Denis_Masharov/
+Google font page:        https://fonts.google.com/specimen/Poiret+One
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSHerculean.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 61f138ab57323291e5414a92d8804ae5842b990563ff915253144cd35fd0bbbf
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

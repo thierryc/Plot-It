@@ -1,0 +1,12 @@
+PlotFont conversion of PF CAD iso3098
+
+# Author:            AZO <typesylph@gmail.com> (convert)
+# Author:            User:K7 (ISO3098.svg, Wikimedia Commons)
+# License:           GPL v2 or later
+
+Original source: https://raw.githubusercontent.com/LibreCAD/LibreCAD/9f3f2d8fc04ca820da83305ba8d4e7baea484899/librecad/support/fonts/iso3098.lff
+Source revision: 9f3f2d8fc04ca820da83305ba8d4e7baea484899
+Source SHA-256: 78c104164a0037edcaab9f767685745f870a6868c3e22252fef2b8e49385eaa7
+
+License: GPL v2 or later
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

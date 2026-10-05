@@ -1,0 +1,27 @@
+PlotFont conversion of PF DearPlotter
+
+Font name: DearPlotter
+Format: SVG 1.1 single-line font
+Converted to SVG 1.1 Font format from the p5.js DearPlotter font archive.
+
+Source: licia_he_font/sketch.js and licia_he_font/fontData.js
+Original font: DearPlotter Font Generator, created by Licia He in 2026.
+DearPlotter was commissioned by The Processing Foundation and the Tezos Foundation.
+The p5.js and SVG adaptation is by Golan Levin, 2026.
+
+Licensing notes from the repository README:
+The DearPlotter Font Generator is licensed under Creative Commons Attribution-ShareAlike 4.0 International.
+Fonts created with it are licensed under the SIL Open Font License.
+
+Reference:
+https://www.eyesofpanda.com/project/dearplotter_font/
+
+This conversion preserves DearPlotter's cubic Bezier stroke geometry using SVG C commands.
+It includes printable ASCII glyphs present in the source data, plus a space glyph.
+
+Original source: https://raw.githubusercontent.com/golanlevin/p5-single-line-font-resources/bd08c4fe4f38a7aabc7b0b48c1f7a81c06a985fa/licia_he_font/licia_he_dearplotter.svg
+Source revision: bd08c4fe4f38a7aabc7b0b48c1f7a81c06a985fa
+Source SHA-256: b6a99f1c48752fda695776fe3050cd7124e8c93860876de46e456438e745c17c
+
+License: SIL OFL 1.1 (font); CC BY-SA 4.0 generator/adaptation credits retained
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

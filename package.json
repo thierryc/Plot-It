@@ -1,0 +1,60 @@
+{
+  "name": "plot-it",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:lib && tsc -b && vite build && npm run build:server",
+    "preview": "vite preview",
+    "test": "npm run build:lib && vitest run",
+    "test:ebb": "node scripts/test-ebb.mjs",
+    "prebuild": "node scripts/check-runtime.mjs && node scripts/source-archive.mjs",
+    "predev": "node scripts/check-runtime.mjs && npm run build:lib && node scripts/source-archive.mjs",
+    "build:lib": "npm run build --workspace=@thierryc/plotfont",
+    "dev:lib": "npm run dev --workspace=@thierryc/plotfont",
+    "build:server": "node scripts/check-runtime.mjs && tsc -p tsconfig.server.json && node scripts/build-server.mjs",
+    "pretest": "node scripts/check-runtime.mjs",
+    "server:api": "node dist-server/main.js api",
+    "server:runner": "node dist-server/main.js runner",
+    "prebuild:browser": "node scripts/check-runtime.mjs && node scripts/source-archive.mjs",
+    "build:browser": "npm run build:lib && tsc -b && vite build --mode browser --outDir dist-browser && node scripts/package-browser.mjs",
+    "test:browser-build": "PLOT_BROWSER_BUILD_DIR=dist-browser vitest run server/browser-build.test.ts",
+    "pretest:browser-build": "node scripts/check-runtime.mjs",
+    "prebuild:site": "node scripts/check-runtime.mjs && node scripts/source-archive.mjs",
+    "build:site": "npm run build:lib && tsc -b && vite build --mode site --outDir ../dist-site --emptyOutDir && node scripts/package-site.mjs",
+    "preview:site": "node scripts/check-runtime.mjs && vite preview --mode site --outDir ../dist-site --host 127.0.0.1 --port 8789 --strictPort",
+    "test:site-build": "node scripts/check-runtime.mjs && PLOT_SITE_BUILD_DIR=dist-site vitest run server/site-build.test.ts",
+    "publish:site": "node scripts/publish-site.mjs"
+  },
+  "devDependencies": {
+    "@types/clipper-lib": "^6.4.0",
+    "@types/node": "^24.5.2",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@thierryc/plotfont": "0.1.0",
+    "clipper-lib": "^6.4.2",
+    "harfbuzzjs": "^1.6.2",
+    "lucide": "^1.49.0",
+    "serialport": "^13.0.0",
+    "ws": "^8.22.0"
+  },
+  "license": "AGPL-3.0-only",
+  "workspaces": [
+    "packages/plotfont"
+  ],
+  "engines": {
+    "node": "^24.21.0"
+  },
+  "allowScripts": {
+    "@serialport/bindings-cpp@13.0.0": true,
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true
+  }
+}

@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Society
+
+Font name:               EMS Society
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Mrs Saint Delafield
+Designer:                Alejandro Paul, Sudtipos
+Link:                    http://www.sudtipos.com
+Google font page:        https://fonts.google.com/specimen/Mrs+Saint+Delafield
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSSociety.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 191f6a4f7aedfd02d98e2dadcad1518bb2fefb2b91e658b596230c8bdf35568c
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

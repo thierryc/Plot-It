@@ -1,0 +1,10 @@
+PlotFont conversion of Hershey Timesg
+
+Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
+
+Original source: https://raw.githubusercontent.com/kamalmostafa/hershey-fonts/1356bf2f83d380fcef68c887e88675eb9d445d86/hershey-fonts/timesg.jhf
+Source revision: 1356bf2f83d380fcef68c887e88675eb9d445d86
+Source SHA-256: 5127ff8a73d0f8bc8e5fd287a862705f306446c7163be9088293e733661bc160
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

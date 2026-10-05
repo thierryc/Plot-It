@@ -1,0 +1,10 @@
+PlotFont conversion of Hershey Mathupp
+
+Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
+
+Original source: https://raw.githubusercontent.com/kamalmostafa/hershey-fonts/1356bf2f83d380fcef68c887e88675eb9d445d86/hershey-fonts/mathupp.jhf
+Source revision: 1356bf2f83d380fcef68c887e88675eb9d445d86
+Source SHA-256: 2b73f9c3ef94194597186a23a588e5a9d1ddbd9bf3961a5f2b49f95a721e617e
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

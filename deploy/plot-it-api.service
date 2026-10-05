@@ -1,0 +1,21 @@
+[Unit]
+Description=Plot-it LAN API and WebSocket
+After=network.target
+
+[Service]
+Type=simple
+User=plot-it
+Group=plot-it
+WorkingDirectory=/opt/plot-it
+EnvironmentFile=/etc/plot-it/environment
+ExecStart=@NODE@ main.js api
+Restart=on-failure
+RestartSec=2
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/plot-it /run/plot-it
+
+[Install]
+WantedBy=multi-user.target

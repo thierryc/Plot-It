@@ -1,0 +1,10 @@
+PlotFont conversion of Hershey Futuram
+
+Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
+
+Original source: https://raw.githubusercontent.com/kamalmostafa/hershey-fonts/1356bf2f83d380fcef68c887e88675eb9d445d86/hershey-fonts/futuram.jhf
+Source revision: 1356bf2f83d380fcef68c887e88675eb9d445d86
+Source SHA-256: 621893f5e1aff698e387978ed5f3d372063683b0234b3ba3f38a92e5502a6975
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

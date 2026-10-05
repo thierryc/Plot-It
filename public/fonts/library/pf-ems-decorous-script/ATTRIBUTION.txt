@@ -1,0 +1,16 @@
+PlotFont conversion of PF EMS Decorous Script
+
+Font name:               EMS Decorous Script
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Petit Formal Script
+Designer:                Impallari Type
+Google font page:        https://fonts.google.com/specimen/Petit+Formal+Script
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSDecorousScript.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 131fc9b7cead71f7a907aa793b7a862be2acef041209e7a2dedc233a2d53ebfc
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

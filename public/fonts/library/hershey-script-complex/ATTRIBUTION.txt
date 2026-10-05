@@ -1,0 +1,10 @@
+PlotFont conversion of Hershey Script Complex
+
+Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
+
+Original source: https://raw.githubusercontent.com/kamalmostafa/hershey-fonts/1356bf2f83d380fcef68c887e88675eb9d445d86/hershey-fonts/scriptc.jhf
+Source revision: 1356bf2f83d380fcef68c887e88675eb9d445d86
+Source SHA-256: 747f9384b0adbec3f6826cc374727adb262c6a96e2a758a2472d11291b7104c7
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

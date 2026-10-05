@@ -1,0 +1,15 @@
+PlotFont conversion of PF EMS SpaceRocks
+
+Font name:               EMS SpaceRocks
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Trammell Hudson
+SVG font conversion by:  Trammell Hudson
+A derivative of:         Atari Asteroids font
+Designer:                Ed Logg
+Link:                    https://trmm.net/Asteroids_font
+
+License: SIL Open Font License 1.1, as declared in the original SVG.
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSSpaceRocks.svg
+Revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+SHA-256: 7a7143730b8eab830e676ea48473733711cbf2a1588bd2cc15cf9cedb8e892a2
+Conversion retains centerline strokes, order and pen lifts. Retain SOURCE.svg and OFL.txt with redistribution.

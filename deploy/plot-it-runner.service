@@ -1,0 +1,23 @@
+[Unit]
+Description=Plot-it exclusive EBB runner
+After=local-fs.target
+
+[Service]
+Type=simple
+User=plot-it
+Group=plot-it
+SupplementaryGroups=dialout
+WorkingDirectory=/opt/plot-it
+EnvironmentFile=/etc/plot-it/environment
+ExecStart=@NODE@ main.js runner
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/plot-it /run/plot-it
+
+[Install]
+WantedBy=multi-user.target

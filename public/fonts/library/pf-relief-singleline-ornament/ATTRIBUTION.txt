@@ -1,0 +1,12 @@
+PlotFont conversion of PF Relief SingleLine Ornament
+
+Created by FontForge 20201107 at Thu May 26 19:50:12 2022
+ By Tanguy Vanlaeys
+Copyright 2021 The Relief SingleLine Project Authors (https://github.com/isdat-type/Relief-SingleLine)
+
+Original source: https://raw.githubusercontent.com/isdat-type/Relief-SingleLine/01dfc5779ec1e9e4b288d96c6c96c23bfccbaf9d/fonts/open_svg/ReliefSingleLineOrnament-Regular.svg
+Source revision: 01dfc5779ec1e9e4b288d96c6c96c23bfccbaf9d
+Source SHA-256: e4085d92525b057edf3db0800a5701645621f0e544c94dbc483773f832f1f48f
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

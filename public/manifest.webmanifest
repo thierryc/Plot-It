@@ -1,0 +1,12 @@
+{
+  "name": "Plot-it — SVG Pen Plotter",
+  "short_name": "Plot-it",
+  "description": "Edit SVG artwork and send it directly to an EBB pen plotter over USB.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f3f3",
+  "theme_color": "#f3f3f3",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

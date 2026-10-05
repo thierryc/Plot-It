@@ -1,0 +1,10 @@
+PlotFont conversion of Hershey Futural
+
+Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
+
+Original source: https://raw.githubusercontent.com/kamalmostafa/hershey-fonts/1356bf2f83d380fcef68c887e88675eb9d445d86/hershey-fonts/futural.jhf
+Source revision: 1356bf2f83d380fcef68c887e88675eb9d445d86
+Source SHA-256: 4958a1d06ea04709feb530deaab53d1efa1285d0d3e92a4a3edd74d279871ced
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

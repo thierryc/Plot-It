@@ -1,0 +1,40 @@
+name: Hardware report
+description: Share a tested configuration or a hardware problem. This is not a request to try unsupported servo configurations.
+title: "[Hardware] "
+body:
+  - type: markdown
+    attributes:
+      value: "AxiDraw is untested by the author. NextDraw compatibility is not established, including its brushless pen lift and homing. Describe tests actually performed; an EBB handshake alone does not validate a machine. Do not include passwords, private keys, or personal network addresses."
+  - type: input
+    id: model
+    attributes:
+      label: Plotter model and modifications
+      description: Include pen-lift servo type if known.
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: EBB hardware revision and firmware version
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Browser, operating system, and Plot-it version or source commit
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: Direct USB or Network, machine profile/orientation, pen settings, and test drawing dimensions.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Test steps and observed results
+      description: Describe expected vs actual behavior, tests not performed, and whether a physical drawing completed.
+    validations:
+      required: true

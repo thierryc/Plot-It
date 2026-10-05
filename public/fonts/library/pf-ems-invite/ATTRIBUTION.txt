@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Invite
+
+Font name:               EMS Invite
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Tangerine
+Designer:                Toshi Omagari
+Link:                    http://tosche.net/about
+Google font page:        https://fonts.google.com/specimen/Tangerine
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSInvite.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: e99ca4e993eec003df11a67423b379376ef16372fb3fa2c74c8c737d5eba5f6d
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

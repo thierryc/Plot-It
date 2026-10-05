@@ -1,0 +1,55 @@
+{
+  "format": "PlotFont",
+  "version": "0.3",
+  "id": "plotfont-mixed-demo-regular",
+  "familyName": "PlotFont Mixed Demo",
+  "styleName": "Regular",
+  "unitsPerEm": 1000,
+  "metrics": {
+    "ascender": 800,
+    "descender": -200,
+    "capHeight": 700,
+    "xHeight": 500,
+    "lineGap": 200
+  },
+  "missingGlyph": ".notdef",
+  "glyphs": [
+    {
+      "name": ".notdef",
+      "unicodes": [],
+      "advanceWidth": 500,
+      "strokes": [
+        {"kind": "stroke", "closed": true, "commands": [["M", 50, 0], ["L", 50, 500], ["L", 450, 500], ["L", 450, 0]]}
+      ]
+    },
+    {
+      "name": "space",
+      "unicodes": ["0020"],
+      "advanceWidth": 250,
+      "strokes": []
+    },
+    {
+      "name": "i",
+      "unicodes": ["0069"],
+      "advanceWidth": 400,
+      "strokes": [
+        {"kind": "stroke", "closed": false, "commands": [["M", 200, 0], ["L", 200, 450]]},
+        {
+          "kind": "fill",
+          "fillRule": "evenodd",
+          "contours": [
+            {"closed": true, "commands": [["M", 100, 550], ["L", 300, 550], ["L", 300, 750], ["L", 100, 750]]},
+            {"closed": true, "commands": [["M", 160, 610], ["L", 240, 610], ["L", 240, 690], ["L", 160, 690]]}
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.authoring": {"note": "Illustrative open stem followed by a filled square dot with a square hole; no tool-specific fill paths stored."}
+      }
+    }
+  ],
+  "kerning": [],
+  "metadata": {
+    "description": "Mixed drawing intent in draft 0.2; fill generation is a destination-software responsibility and is not implemented here."
+  }
+}

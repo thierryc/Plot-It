@@ -1,0 +1,4637 @@
+{
+  "format": "PlotFont",
+  "version": "0.3",
+  "id": "pf-ems-spacerocks",
+  "familyName": "PF EMS SpaceRocks",
+  "styleName": "Regular",
+  "unitsPerEm": 1000,
+  "metrics": {
+    "ascender": 800.0,
+    "descender": -200.0,
+    "capHeight": 500.0,
+    "xHeight": 300.0,
+    "lineGap": 0
+  },
+  "missingGlyph": ".notdef",
+  "glyphs": [
+    {
+      "name": ".notdef",
+      "unicodes": [],
+      "advanceWidth": 600.0,
+      "strokes": [
+        {
+          "closed": true,
+          "commands": [
+            [
+              "M",
+              100.0,
+              0
+            ],
+            [
+              "L",
+              100.0,
+              700.0
+            ],
+            [
+              "L",
+              500.0,
+              700.0
+            ],
+            [
+              "L",
+              500.0,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "source.notdef",
+      "unicodes": [],
+      "advanceWidth": 512.0,
+      "strokes": [],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 0,
+          "unicodeText": "",
+          "glyphName": ""
+        }
+      }
+    },
+    {
+      "name": "zero",
+      "unicodes": [
+        "0030"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 1,
+          "unicodeText": "0",
+          "glyphName": "zero"
+        }
+      }
+    },
+    {
+      "name": "one",
+      "unicodes": [
+        "0031"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              139.64,
+              465.45
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 2,
+          "unicodeText": "1",
+          "glyphName": "one"
+        }
+      }
+    },
+    {
+      "name": "two",
+      "unicodes": [
+        "0032"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              325.82
+            ],
+            [
+              "L",
+              0.0,
+              232.73
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 3,
+          "unicodeText": "2",
+          "glyphName": "two"
+        }
+      }
+    },
+    {
+      "name": "three",
+      "unicodes": [
+        "0033"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 4,
+          "unicodeText": "3",
+          "glyphName": "three"
+        }
+      }
+    },
+    {
+      "name": "four",
+      "unicodes": [
+        "0034"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 5,
+          "unicodeText": "4",
+          "glyphName": "four"
+        }
+      }
+    },
+    {
+      "name": "five",
+      "unicodes": [
+        "0035"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              0.0,
+              325.82
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 6,
+          "unicodeText": "5",
+          "glyphName": "five"
+        }
+      }
+    },
+    {
+      "name": "six",
+      "unicodes": [
+        "0036"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              232.73
+            ],
+            [
+              "L",
+              0.0,
+              325.82
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 7,
+          "unicodeText": "6",
+          "glyphName": "six"
+        }
+      }
+    },
+    {
+      "name": "seven",
+      "unicodes": [
+        "0037"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 8,
+          "unicodeText": "7",
+          "glyphName": "seven"
+        }
+      }
+    },
+    {
+      "name": "eight",
+      "unicodes": [
+        "0038"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 9,
+          "unicodeText": "8",
+          "glyphName": "eight"
+        }
+      }
+    },
+    {
+      "name": "nine",
+      "unicodes": [
+        "0039"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              325.82
+            ],
+            [
+              "L",
+              372.36,
+              232.73
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 10,
+          "unicodeText": "9",
+          "glyphName": "nine"
+        }
+      }
+    },
+    {
+      "name": "space",
+      "unicodes": [
+        "0020"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 11,
+          "unicodeText": " ",
+          "glyphName": "space"
+        }
+      }
+    },
+    {
+      "name": "period",
+      "unicodes": [
+        "002E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              139.64,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 12,
+          "unicodeText": ".",
+          "glyphName": "period"
+        }
+      }
+    },
+    {
+      "name": "comma",
+      "unicodes": [
+        "002C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              93.09
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 13,
+          "unicodeText": ",",
+          "glyphName": "comma"
+        }
+      }
+    },
+    {
+      "name": "hyphen",
+      "unicodes": [
+        "002D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 14,
+          "unicodeText": "-",
+          "glyphName": "hyphen"
+        }
+      }
+    },
+    {
+      "name": "plus",
+      "unicodes": [
+        "002B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              46.55,
+              279.27
+            ],
+            [
+              "L",
+              325.82,
+              279.27
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              418.91
+            ],
+            [
+              "L",
+              186.18,
+              139.64
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 15,
+          "unicodeText": "+",
+          "glyphName": "plus"
+        }
+      }
+    },
+    {
+      "name": "exclam",
+      "unicodes": [
+        "0021"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              139.64,
+              93.09
+            ],
+            [
+              "L",
+              232.73,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 16,
+          "unicodeText": "!",
+          "glyphName": "exclam"
+        }
+      }
+    },
+    {
+      "name": "numbersign",
+      "unicodes": [
+        "0023"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              279.27,
+              93.09
+            ],
+            [
+              "L",
+              279.27,
+              465.45
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              93.09,
+              465.45
+            ],
+            [
+              "L",
+              93.09,
+              93.09
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 17,
+          "unicodeText": "#",
+          "glyphName": "numbersign"
+        }
+      }
+    },
+    {
+      "name": "asciicircum",
+      "unicodes": [
+        "005E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 18,
+          "unicodeText": "^",
+          "glyphName": "asciicircum"
+        }
+      }
+    },
+    {
+      "name": "equal",
+      "unicodes": [
+        "003D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              46.55,
+              186.18
+            ],
+            [
+              "L",
+              325.82,
+              186.18
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              46.55,
+              372.36
+            ],
+            [
+              "L",
+              325.82,
+              372.36
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 19,
+          "unicodeText": "=",
+          "glyphName": "equal"
+        }
+      }
+    },
+    {
+      "name": "asterisk",
+      "unicodes": [
+        "002A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 20,
+          "unicodeText": "*",
+          "glyphName": "asterisk"
+        }
+      }
+    },
+    {
+      "name": "underscore",
+      "unicodes": [
+        "005F"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 21,
+          "unicodeText": "_",
+          "glyphName": "underscore"
+        }
+      }
+    },
+    {
+      "name": "slash",
+      "unicodes": [
+        "002F"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 22,
+          "unicodeText": "/",
+          "glyphName": "slash"
+        }
+      }
+    },
+    {
+      "name": "backslash",
+      "unicodes": [
+        "005C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 23,
+          "unicodeText": "\\",
+          "glyphName": "backslash"
+        }
+      }
+    },
+    {
+      "name": "at",
+      "unicodes": [
+        "0040"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              139.64,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 24,
+          "unicodeText": "@",
+          "glyphName": "at"
+        }
+      }
+    },
+    {
+      "name": "dollar",
+      "unicodes": [
+        "0024"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              93.09
+            ],
+            [
+              "L",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              465.45
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 25,
+          "unicodeText": "$",
+          "glyphName": "dollar"
+        }
+      }
+    },
+    {
+      "name": "ampersand",
+      "unicodes": [
+        "0026"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 26,
+          "unicodeText": "&",
+          "glyphName": "ampersand"
+        }
+      }
+    },
+    {
+      "name": "bracketleft",
+      "unicodes": [
+        "005B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              93.09,
+              558.55
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 27,
+          "unicodeText": "[",
+          "glyphName": "bracketleft"
+        }
+      }
+    },
+    {
+      "name": "bracketright",
+      "unicodes": [
+        "005D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ],
+            [
+              "L",
+              93.09,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 28,
+          "unicodeText": "]",
+          "glyphName": "bracketright"
+        }
+      }
+    },
+    {
+      "name": "parenleft",
+      "unicodes": [
+        "0028"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              93.09,
+              186.18
+            ],
+            [
+              "L",
+              93.09,
+              372.36
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 29,
+          "unicodeText": "(",
+          "glyphName": "parenleft"
+        }
+      }
+    },
+    {
+      "name": "parenright",
+      "unicodes": [
+        "0029"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              279.27,
+              186.18
+            ],
+            [
+              "L",
+              279.27,
+              372.36
+            ],
+            [
+              "L",
+              93.09,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 30,
+          "unicodeText": ")",
+          "glyphName": "parenright"
+        }
+      }
+    },
+    {
+      "name": "braceleft",
+      "unicodes": [
+        "007B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              465.45
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 31,
+          "unicodeText": "{",
+          "glyphName": "braceleft"
+        }
+      }
+    },
+    {
+      "name": "braceright",
+      "unicodes": [
+        "007D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              279.27,
+              93.09
+            ],
+            [
+              "L",
+              279.27,
+              465.45
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 32,
+          "unicodeText": "}",
+          "glyphName": "braceright"
+        }
+      }
+    },
+    {
+      "name": "percent",
+      "unicodes": [
+        "0025"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              465.45
+            ],
+            [
+              "L",
+              93.09,
+              372.36
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              186.18
+            ],
+            [
+              "L",
+              279.27,
+              93.09
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 33,
+          "unicodeText": "%",
+          "glyphName": "percent"
+        }
+      }
+    },
+    {
+      "name": "less",
+      "unicodes": [
+        "003C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 34,
+          "unicodeText": "<",
+          "glyphName": "less"
+        }
+      }
+    },
+    {
+      "name": "greater",
+      "unicodes": [
+        "003E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ],
+            [
+              "L",
+              93.09,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 35,
+          "unicodeText": ">",
+          "glyphName": "greater"
+        }
+      }
+    },
+    {
+      "name": "bar",
+      "unicodes": [
+        "007C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              232.73
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 36,
+          "unicodeText": "|",
+          "glyphName": "bar"
+        }
+      }
+    },
+    {
+      "name": "colon",
+      "unicodes": [
+        "003A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              418.91
+            ],
+            [
+              "L",
+              186.18,
+              325.82
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              232.73
+            ],
+            [
+              "L",
+              186.18,
+              139.64
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 37,
+          "unicodeText": ":",
+          "glyphName": "colon"
+        }
+      }
+    },
+    {
+      "name": "semicolon",
+      "unicodes": [
+        "003B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              418.91
+            ],
+            [
+              "L",
+              186.18,
+              325.82
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              232.73
+            ],
+            [
+              "L",
+              46.55,
+              93.09
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 38,
+          "unicodeText": ";",
+          "glyphName": "semicolon"
+        }
+      }
+    },
+    {
+      "name": "quotedbl",
+      "unicodes": [
+        "0022"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              465.45
+            ],
+            [
+              "L",
+              93.09,
+              279.27
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              465.45
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 39,
+          "unicodeText": "\"",
+          "glyphName": "quotedbl"
+        }
+      }
+    },
+    {
+      "name": "quotesingle",
+      "unicodes": [
+        "0027"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              465.45
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 40,
+          "unicodeText": "'",
+          "glyphName": "quotesingle"
+        }
+      }
+    },
+    {
+      "name": "grave",
+      "unicodes": [
+        "0060"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              465.45
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 41,
+          "unicodeText": "`",
+          "glyphName": "grave"
+        }
+      }
+    },
+    {
+      "name": "asciitilde",
+      "unicodes": [
+        "007E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              93.09,
+              372.36
+            ],
+            [
+              "L",
+              279.27,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 42,
+          "unicodeText": "~",
+          "glyphName": "asciitilde"
+        }
+      }
+    },
+    {
+      "name": "question",
+      "unicodes": [
+        "003F"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              186.18
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              46.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 43,
+          "unicodeText": "?",
+          "glyphName": "question"
+        }
+      }
+    },
+    {
+      "name": "A",
+      "unicodes": [
+        "0041"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 44,
+          "unicodeText": "A",
+          "glyphName": "A"
+        }
+      }
+    },
+    {
+      "name": "A.source45",
+      "unicodes": [
+        "0061"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              372.36
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 45,
+          "unicodeText": "a",
+          "glyphName": "A"
+        }
+      }
+    },
+    {
+      "name": "B",
+      "unicodes": [
+        "0042"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              465.45
+            ],
+            [
+              "L",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 46,
+          "unicodeText": "B",
+          "glyphName": "B"
+        }
+      }
+    },
+    {
+      "name": "B.source47",
+      "unicodes": [
+        "0062"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              465.45
+            ],
+            [
+              "L",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 47,
+          "unicodeText": "b",
+          "glyphName": "B"
+        }
+      }
+    },
+    {
+      "name": "C",
+      "unicodes": [
+        "0043"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 48,
+          "unicodeText": "C",
+          "glyphName": "C"
+        }
+      }
+    },
+    {
+      "name": "C.source49",
+      "unicodes": [
+        "0063"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 49,
+          "unicodeText": "c",
+          "glyphName": "C"
+        }
+      }
+    },
+    {
+      "name": "D",
+      "unicodes": [
+        "0044"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 50,
+          "unicodeText": "D",
+          "glyphName": "D"
+        }
+      }
+    },
+    {
+      "name": "D.source51",
+      "unicodes": [
+        "0064"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 51,
+          "unicodeText": "d",
+          "glyphName": "D"
+        }
+      }
+    },
+    {
+      "name": "E",
+      "unicodes": [
+        "0045"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 52,
+          "unicodeText": "E",
+          "glyphName": "E"
+        }
+      }
+    },
+    {
+      "name": "E.source53",
+      "unicodes": [
+        "0065"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 53,
+          "unicodeText": "e",
+          "glyphName": "E"
+        }
+      }
+    },
+    {
+      "name": "F",
+      "unicodes": [
+        "0046"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 54,
+          "unicodeText": "F",
+          "glyphName": "F"
+        }
+      }
+    },
+    {
+      "name": "F.source55",
+      "unicodes": [
+        "0066"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 55,
+          "unicodeText": "f",
+          "glyphName": "F"
+        }
+      }
+    },
+    {
+      "name": "G",
+      "unicodes": [
+        "0047"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 56,
+          "unicodeText": "G",
+          "glyphName": "G"
+        }
+      }
+    },
+    {
+      "name": "G.source57",
+      "unicodes": [
+        "0067"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              279.27,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 57,
+          "unicodeText": "g",
+          "glyphName": "G"
+        }
+      }
+    },
+    {
+      "name": "H",
+      "unicodes": [
+        "0048"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 58,
+          "unicodeText": "H",
+          "glyphName": "H"
+        }
+      }
+    },
+    {
+      "name": "H.source59",
+      "unicodes": [
+        "0068"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 59,
+          "unicodeText": "h",
+          "glyphName": "H"
+        }
+      }
+    },
+    {
+      "name": "I",
+      "unicodes": [
+        "0049"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 60,
+          "unicodeText": "I",
+          "glyphName": "I"
+        }
+      }
+    },
+    {
+      "name": "I.source61",
+      "unicodes": [
+        "0069"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 61,
+          "unicodeText": "i",
+          "glyphName": "I"
+        }
+      }
+    },
+    {
+      "name": "J",
+      "unicodes": [
+        "004A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 62,
+          "unicodeText": "J",
+          "glyphName": "J"
+        }
+      }
+    },
+    {
+      "name": "J.source63",
+      "unicodes": [
+        "006A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              186.18
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 63,
+          "unicodeText": "j",
+          "glyphName": "J"
+        }
+      }
+    },
+    {
+      "name": "K",
+      "unicodes": [
+        "004B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 64,
+          "unicodeText": "K",
+          "glyphName": "K"
+        }
+      }
+    },
+    {
+      "name": "K.source65",
+      "unicodes": [
+        "006B"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 65,
+          "unicodeText": "k",
+          "glyphName": "K"
+        }
+      }
+    },
+    {
+      "name": "L",
+      "unicodes": [
+        "004C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 66,
+          "unicodeText": "L",
+          "glyphName": "L"
+        }
+      }
+    },
+    {
+      "name": "L.source67",
+      "unicodes": [
+        "006C"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 67,
+          "unicodeText": "l",
+          "glyphName": "L"
+        }
+      }
+    },
+    {
+      "name": "M",
+      "unicodes": [
+        "004D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 68,
+          "unicodeText": "M",
+          "glyphName": "M"
+        }
+      }
+    },
+    {
+      "name": "M.source69",
+      "unicodes": [
+        "006D"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              372.36
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 69,
+          "unicodeText": "m",
+          "glyphName": "M"
+        }
+      }
+    },
+    {
+      "name": "N",
+      "unicodes": [
+        "004E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 70,
+          "unicodeText": "N",
+          "glyphName": "N"
+        }
+      }
+    },
+    {
+      "name": "N.source71",
+      "unicodes": [
+        "006E"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 71,
+          "unicodeText": "n",
+          "glyphName": "N"
+        }
+      }
+    },
+    {
+      "name": "O",
+      "unicodes": [
+        "004F"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 72,
+          "unicodeText": "O",
+          "glyphName": "O"
+        }
+      }
+    },
+    {
+      "name": "O.source73",
+      "unicodes": [
+        "006F"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 73,
+          "unicodeText": "o",
+          "glyphName": "O"
+        }
+      }
+    },
+    {
+      "name": "P",
+      "unicodes": [
+        "0050"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              0.0,
+              232.73
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 74,
+          "unicodeText": "P",
+          "glyphName": "P"
+        }
+      }
+    },
+    {
+      "name": "P.source75",
+      "unicodes": [
+        "0070"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              0.0,
+              232.73
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 75,
+          "unicodeText": "p",
+          "glyphName": "P"
+        }
+      }
+    },
+    {
+      "name": "Q",
+      "unicodes": [
+        "0051"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 76,
+          "unicodeText": "Q",
+          "glyphName": "Q"
+        }
+      }
+    },
+    {
+      "name": "Q.source77",
+      "unicodes": [
+        "0071"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              186.18
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 77,
+          "unicodeText": "q",
+          "glyphName": "Q"
+        }
+      }
+    },
+    {
+      "name": "R",
+      "unicodes": [
+        "0052"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              0.0,
+              232.73
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              232.73
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 78,
+          "unicodeText": "R",
+          "glyphName": "R"
+        }
+      }
+    },
+    {
+      "name": "R.source79",
+      "unicodes": [
+        "0072"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              279.27
+            ],
+            [
+              "L",
+              0.0,
+              232.73
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              232.73
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 79,
+          "unicodeText": "r",
+          "glyphName": "R"
+        }
+      }
+    },
+    {
+      "name": "S",
+      "unicodes": [
+        "0053"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              93.09
+            ],
+            [
+              "L",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              232.73
+            ],
+            [
+              "L",
+              0.0,
+              325.82
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              465.45
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 80,
+          "unicodeText": "S",
+          "glyphName": "S"
+        }
+      }
+    },
+    {
+      "name": "S.source81",
+      "unicodes": [
+        "0073"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              93.09
+            ],
+            [
+              "L",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              232.73
+            ],
+            [
+              "L",
+              0.0,
+              325.82
+            ],
+            [
+              "L",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              279.27,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              465.45
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 81,
+          "unicodeText": "s",
+          "glyphName": "S"
+        }
+      }
+    },
+    {
+      "name": "T",
+      "unicodes": [
+        "0054"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 82,
+          "unicodeText": "T",
+          "glyphName": "T"
+        }
+      }
+    },
+    {
+      "name": "T.source83",
+      "unicodes": [
+        "0074"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 83,
+          "unicodeText": "t",
+          "glyphName": "T"
+        }
+      }
+    },
+    {
+      "name": "U",
+      "unicodes": [
+        "0055"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              93.09
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 84,
+          "unicodeText": "U",
+          "glyphName": "U"
+        }
+      }
+    },
+    {
+      "name": "U.source85",
+      "unicodes": [
+        "0075"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              93.09
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              93.09
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 85,
+          "unicodeText": "u",
+          "glyphName": "U"
+        }
+      }
+    },
+    {
+      "name": "V",
+      "unicodes": [
+        "0056"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 86,
+          "unicodeText": "V",
+          "glyphName": "V"
+        }
+      }
+    },
+    {
+      "name": "V.source87",
+      "unicodes": [
+        "0076"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 87,
+          "unicodeText": "v",
+          "glyphName": "V"
+        }
+      }
+    },
+    {
+      "name": "W",
+      "unicodes": [
+        "0057"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 88,
+          "unicodeText": "W",
+          "glyphName": "W"
+        }
+      }
+    },
+    {
+      "name": "W.source89",
+      "unicodes": [
+        "0077"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              93.09,
+              0.0
+            ],
+            [
+              "L",
+              186.18,
+              186.18
+            ],
+            [
+              "L",
+              279.27,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 89,
+          "unicodeText": "w",
+          "glyphName": "W"
+        }
+      }
+    },
+    {
+      "name": "X",
+      "unicodes": [
+        "0058"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 90,
+          "unicodeText": "X",
+          "glyphName": "X"
+        }
+      }
+    },
+    {
+      "name": "X.source91",
+      "unicodes": [
+        "0078"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 91,
+          "unicodeText": "x",
+          "glyphName": "X"
+        }
+      }
+    },
+    {
+      "name": "Y",
+      "unicodes": [
+        "0059"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 92,
+          "unicodeText": "Y",
+          "glyphName": "Y"
+        }
+      }
+    },
+    {
+      "name": "Y.source93",
+      "unicodes": [
+        "0079"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              186.18,
+              279.27
+            ],
+            [
+              "L",
+              186.18,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 93,
+          "unicodeText": "y",
+          "glyphName": "Y"
+        }
+      }
+    },
+    {
+      "name": "Z",
+      "unicodes": [
+        "005A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 94,
+          "unicodeText": "Z",
+          "glyphName": "Z"
+        }
+      }
+    },
+    {
+      "name": "Z.source95",
+      "unicodes": [
+        "007A"
+      ],
+      "advanceWidth": 512.0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0.0,
+              558.55
+            ],
+            [
+              "L",
+              372.36,
+              558.55
+            ],
+            [
+              "L",
+              0.0,
+              0.0
+            ],
+            [
+              "L",
+              372.36,
+              0.0
+            ]
+          ]
+        },
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              93.09,
+              279.27
+            ],
+            [
+              "L",
+              279.27,
+              279.27
+            ]
+          ]
+        }
+      ],
+      "userData": {
+        "org.plotfont.source": {
+          "record": 95,
+          "unicodeText": "z",
+          "glyphName": "Z"
+        }
+      }
+    }
+  ],
+  "kerning": [],
+  "metadata": {
+    "source": "https://gitlab.com/oskay/svg-fonts",
+    "sourceFile": "oskay/fonts/EMS/EMSSpaceRocks.svg",
+    "sourceUrl": "https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSSpaceRocks.svg",
+    "sourceRevision": "8c71f2d9e1a5292047bb88e5595a766241b82cc6",
+    "sourceSha256": "7a7143730b8eab830e676ea48473733711cbf2a1588bd2cc15cf9cedb8e892a2",
+    "license": "SIL OFL 1.1",
+    "attribution": "Font name:               EMS SpaceRocks\nLicense:                 SIL Open Font License http://scripts.sil.org/OFL\nCreated by:              Trammell Hudson\nSVG font conversion by:  Trammell Hudson\nA derivative of:         Atari Asteroids font\nDesigner:                Ed Logg\nLink:                    https://trmm.net/Asteroids_font",
+    "authorLinks": [
+      "https://gitlab.com/oskay/svg-fonts",
+      "https://www.evilmadscientist.com/"
+    ],
+    "licenseFiles": [
+      "OFL.txt"
+    ],
+    "licenseNotices": [
+      {
+        "filename": "OFL.txt",
+        "text": "Copyright (c) <dates>, <Copyright Holder> (<URL|email>),\nwith Reserved Font Name <Reserved Font Name>.\nCopyright (c) <dates>, <additional Copyright Holder> (<URL|email>),\nwith Reserved Font Name <additional Reserved Font Name>.\nCopyright (c) <dates>, <additional Copyright Holder> (<URL|email>).\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.\nThis license is copied below, and is also available with a FAQ at:\nhttp://scripts.sil.org/OFL\n\n\n-----------------------------------------------------------\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n-----------------------------------------------------------\n\nPREAMBLE\nThe goals of the Open Font License (OFL) are to stimulate worldwide\ndevelopment of collaborative font projects, to support the font creation\nefforts of academic and linguistic communities, and to provide a free and\nopen framework in which fonts may be shared and improved in partnership\nwith others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves. The\nfonts, including any derivative works, can be bundled, embedded, \nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works. The fonts and derivatives,\nhowever, cannot be released under any other type of license. The\nrequirement for fonts to remain under this license does not apply\nto any document created using the fonts or their derivatives.\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such. This may\ninclude source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components as\ndistributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting -- in part or in whole -- any of the components of the\nOriginal Version, by changing formats or by porting the Font Software to a\nnew environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical\nwriter or other person who contributed to the Font Software.\n\nPERMISSION & CONDITIONS\nPermission is hereby granted, free of charge, to any person obtaining\na copy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,\nin Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\nredistributed and/or sold with any software, provided that each copy\ncontains the above copyright notice and this license. These can be\nincluded either as stand-alone text files, human-readable headers or\nin the appropriate machine-readable metadata fields within text or\nbinary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\nName(s) unless explicit written permission is granted by the corresponding\nCopyright Holder. This restriction only applies to the primary font name as\npresented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\nSoftware shall not be used to promote, endorse or advertise any\nModified Version, except to acknowledge the contribution(s) of the\nCopyright Holder(s) and the Author(s) or with their explicit written\npermission.\n\n5) The Font Software, modified or unmodified, in part or in whole,\nmust be distributed entirely under this license, and must not be\ndistributed under any other license. The requirement for fonts to\nremain under this license does not apply to any document created\nusing the Font Software.\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are\nnot met.\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\nOTHER DEALINGS IN THE FONT SOFTWARE.\n"
+      }
+    ],
+    "conversion": "PlotFont format conversion; source drawing order and pen lifts retained",
+    "sourceIntentReview": "Upstream identifies this SVG as stroke geometry; centerlines imported without outline recovery",
+    "licenseBasis": "The source SVG explicitly declares SIL Open Font License; retained as declared.",
+    "sourceCoordinateSystem": "font units, Y up",
+    "sourceMetrics": {
+      "font-family": "EMS SpaceRocks",
+      "units-per-em": "1000",
+      "ascent": "800",
+      "descent": "-200",
+      "cap-height": "500",
+      "x-height": "300"
+    },
+    "importWarnings": [
+      "Empty source missing-glyph retained as source.notdef; original PlotFont fallback added"
+    ],
+    "arcConversion": "Circular/elliptical arcs: cubic segments <=5 degrees; conservative error <=1e-7*max(radius) source units; no flattening",
+    "drawingIntent": "Reviewed upstream stroke-font data; explicit centerline import"
+  }
+}

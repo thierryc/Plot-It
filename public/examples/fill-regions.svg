@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="80mm" viewBox="0 0 100 80">
+  <rect id="solid-block" x="2" y="2" width="25" height="18" fill="#202020"/>
+  <path id="counter" fill="#205a8b" fill-rule="evenodd" d="M35 2H65V32H35Z M42 9H58V25H42Z"/>
+  <g transform="translate(8 38) rotate(12)"><path id="concave" fill="#6b4a23" d="M0 0H28V8H8V28H0Z"/></g>
+  <circle id="round" cx="75" cy="52" r="14" fill="none" stroke="#171714"/>
+  <path id="open-line" fill="none" stroke="#8b2020" d="M38 45L55 58L38 70"/>
+</svg>

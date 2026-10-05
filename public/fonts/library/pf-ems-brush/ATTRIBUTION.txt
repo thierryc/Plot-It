@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Brush
+
+Font name:               EMS Brush
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Alex Brush
+Designer:                Rob Leuschke, TypeSETit
+Link:                    http://www.typesetit.com
+Google font page:        https://fonts.google.com/specimen/Alex+Brush
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSBrush.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 77738f622b5c448a47a4b61ccb4c7680a65cfc77667fa8bc360e389211a9fa59
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

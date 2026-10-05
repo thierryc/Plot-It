@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f5f5" />
+    <style>html{background:#e9e9e9;color-scheme:light}html[data-theme="dark"]{background:#1c1c1c;color-scheme:dark}</style>
+    <script>
+      // Resolve the saved interface preference before loading the editor.
+      (() => {
+        let preference = "system";
+        try {
+          const saved = localStorage.getItem("plot-it-theme");
+          if (saved === "light" || saved === "dark") preference = saved;
+        } catch {}
+        const theme = preference === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : preference;
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.themePreference = preference;
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", theme === "dark" ? "#242424" : "#f5f5f5");
+      })();
+    </script>
+    <meta name="description" content="A simple, local-first SVG editor and pen plotter for Chrome." />
+    <link rel="manifest" href="/app/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <title>Plot-it · Beta editor</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="../../src/main.ts"></script>
+  </body>
+</html>

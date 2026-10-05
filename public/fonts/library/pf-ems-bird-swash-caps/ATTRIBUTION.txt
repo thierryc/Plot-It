@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Bird Swash Caps
+
+Font name:               EMS Bird Swash Caps
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Bilbo Swash Caps
+Designer:                Rob Leuschke, TypeSETit
+Link:                    http://www.typesetit.com
+Google font page:        https://fonts.google.com/specimen/Bilbo+Swash+Caps
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSBirdSwashCaps.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 24bde6f838d7303c0209b3f6a60a208a2fe81a62baf4fd4032cd9121f72bebd4
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.
