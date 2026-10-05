@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160mm" height="100mm" viewBox="0 0 160 100">
+  <g fill="none" stroke="#171714" stroke-width="0.8">
+    <g transform="translate(10 10) rotate(-8 55 20)">
+      <path id="bezier" d="M0 20 C20 -10 40 50 60 20 S100 -10 120 20"/>
+    </g>
+    <rect id="rectangle" x="10" y="55" width="30" height="25" rx="3"/>
+    <circle id="circle" cx="65" cy="68" r="13"/>
+    <ellipse id="ellipse" cx="108" cy="68" rx="18" ry="10"/>
+    <line id="line" x1="10" y1="92" x2="70" y2="92"/>
+    <polyline id="polyline" points="85,90 100,82 115,95 130,85"/>
+    <polygon id="triangle" points="135,55 153,80 130,80"/>
+  </g>
+</svg>

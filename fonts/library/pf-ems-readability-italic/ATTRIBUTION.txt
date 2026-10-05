@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Readability Italic
+
+Font name:               EMS Readability Italic
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Source Sans Pro-Light
+Designer:                Paul D. Hunt, Adobe
+Link:                    http://www.adobe.com
+Google font page:        https://fonts.google.com/specimen/Source+Sans+Pro
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSReadabilityItalic.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 359ba4fbc35a6ea709b2e4b46f2060bd4a024227d9988dfc3dc180178d582028
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

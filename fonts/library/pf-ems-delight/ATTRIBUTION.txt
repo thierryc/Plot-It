@@ -1,0 +1,16 @@
+PlotFont conversion of PF EMS Delight
+
+Font name:               EMS Delight
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Delius
+Designer:                Natalia Raices
+Google font page:        https://fonts.google.com/specimen/Delius
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSDelight.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: c872917c15d9ac4a54a13eba4ce30cc134f50f4a11fbff1945a7de755b39b488
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

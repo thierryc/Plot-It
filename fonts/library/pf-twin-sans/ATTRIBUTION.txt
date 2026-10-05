@@ -1,0 +1,16 @@
+PlotFont conversion of PF Twin Sans
+
+Font name:       Twin Sans
+License:         SIL Open Font License http://scripts.sil.org/OFL
+Created by:      Keith Packard
+A derivative of: Hershey Sans
+
+Prepared in 2023 and converted to SVG fonts
+in 2023 by Keith Packard, www.keithp.com
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/Hershey/TwinSans.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 38374ea44743db322e67e4afda8bc7d6417e567d5737b7d8260531f7d62609c5
+
+License: SIL OFL 1.1; Hershey ancestor notice retained
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

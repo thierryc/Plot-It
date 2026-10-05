@@ -1,0 +1,14 @@
+PlotFont conversion of PF CutlingsPluralis
+
+Font name:               Cutlings Pluralis
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Designed by:             Ellen Wasbo
+Link:                    http://cutlings.wasbo.net/
+Cutlings Singularis, Dualis and Pluralis by Ellen Wasbø; author credits and font license in readme.txt.
+
+Original source: https://www.dropbox.com/s/xx5muh6bcid93v5/CutlingsSingularisDualisPluralis.zip?dl=1
+Source revision: author-download
+Source SHA-256: 8d3deaba26a27ee5ef4618be779640d584753e2827e5f625e8b33bd417859f47
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Swiss
+
+Font name:               EMS Swiss
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Italianno
+Designer:                Rob Leuschke, TypeSETit
+Link:                    http://www.typesetit.com
+Google font page:        https://fonts.google.com/specimen/Italianno
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSSwiss.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: e899a4b7bca4c9321d0b3da76e5e399ae9c404a16024f671d65d13d6bf1eb417
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

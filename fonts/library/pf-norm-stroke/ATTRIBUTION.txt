@@ -1,0 +1,14 @@
+PlotFont conversion of PF Norm Stroke
+
+Font name:               Norm Stroke
+License:                 This work is marked with CC0 1.0. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/
+A derivative of:         https://commons.wikimedia.org/wiki/File:ISO3098.svg
+Version:                 1.0
+NormStroke by octycs; based on Wikimedia ISO3098 Type B lettering. CC0 declaration retained.
+
+Original source: https://raw.githubusercontent.com/octycs/norm-stroke/e4f7be3ee482d3026f19b7afae88c1e0c193316a/font/NormStroke.svg
+Source revision: e4f7be3ee482d3026f19b7afae88c1e0c193316a
+Source SHA-256: acc05c1a18fa3528ca4c70c0847d65b9a319dbafa38fa7f1a60436cd3d243fbc
+
+License: CC0 1.0
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

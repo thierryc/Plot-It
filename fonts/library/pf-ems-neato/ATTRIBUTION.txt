@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Neato
+
+Font name:               EMS Neato
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Bad Script
+Designer:                Roman Shchyukin, Gaslight
+Link:                    https://www.myfonts.com/foundry/Gaslight/
+Google font page:        https://fonts.google.com/specimen/Bad+Script
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSNeato.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 5a92022a654b5795cc884b803d167dc30af18f2ec83a5cb4839fd93e30b268a9
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

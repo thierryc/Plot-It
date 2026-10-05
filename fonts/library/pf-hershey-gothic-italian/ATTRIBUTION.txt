@@ -1,0 +1,41 @@
+PlotFont conversion of PF Hershey Gothic Italian
+
+Font name: Hershey Gothic Italian
+
+Originally prepared in 2011 and converted to SVG fonts
+in 2019 by Windell H. Oskay, www.evilmadscientist.com
+
+Contents adapted from emergent.unpythonic.net/software/hershey
+ by way of "Hershey Fonts in SVG" by Marty McGuire
+ http://www.thingiverse.com/thing:6168
+ 
+-------------------------------------------------------------------
+The Hershey Fonts are a set of vector fonts with a liberal license.
+
+USE RESTRICTION:
+    This distribution of the Hershey Fonts may be used by anyone for
+    any purpose, commercial or otherwise, providing that:
+        1. The following acknowledgements must be distributed with
+            the font data:
+            - The Hershey Fonts were originally created by Dr.
+                A. V. Hershey while working at the U. S.
+                National Bureau of Standards.
+            - The format of the Font data in this distribution
+                was originally created by
+                    James Hurt
+                    Cognition, Inc.
+                    900 Technology Park Drive
+                    Billerica, MA 01821
+                    (mit-eddie!ci-dandelion!hurt)
+        2. The font data in this distribution may be converted into
+            any other format *EXCEPT* the format distributed by
+            the U.S. NTIS where each point is described
+            in eight bytes as "xxx yyy:", where xxx and yyy are
+            the coordinate values as ASCII numbers.
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/Hershey/HersheyGothItalian.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 8467b56da845cd3a618559622c160a07280955879233a4d31b6b827f29bb22fa
+
+License: Hershey permissive terms; not MIT
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

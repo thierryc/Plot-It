@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS League
+
+Font name:               EMS League
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         League Script
+Designer:                Haley Fiege, the League of Moveable Type
+Link:                    https://www.theleagueofmoveabletype.com
+Google font page:        https://fonts.google.com/specimen/League+Script
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSLeague.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: e7f473eeea1a6cea5b760d22ac87db49f4ebe13914c4214f7f0b23a57bcf2e01
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

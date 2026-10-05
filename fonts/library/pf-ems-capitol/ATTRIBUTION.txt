@@ -1,0 +1,17 @@
+PlotFont conversion of PF EMS Capitol
+
+Font name:               EMS Capitol
+License:                 SIL Open Font License http://scripts.sil.org/OFL
+Created by:              Sheldon B. Michaels
+SVG font conversion by:  Windell H. Oskay
+A derivative of:         Sacramento
+Designer:                Brian J. Bonislawsky, Astigmatic One Eye Typographic Institute
+Link:                    http://www.astigmatic.com
+Google font page:        https://fonts.google.com/specimen/Sacramento
+
+Original source: https://gitlab.com/oskay/svg-fonts/-/raw/8c71f2d9e1a5292047bb88e5595a766241b82cc6/fonts/EMS/EMSCapitol.svg
+Source revision: 8c71f2d9e1a5292047bb88e5595a766241b82cc6
+Source SHA-256: 3ba810c9fe9263db03c9552269042a8e7ee265db3266432f1de23d02d51bcfc5
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.

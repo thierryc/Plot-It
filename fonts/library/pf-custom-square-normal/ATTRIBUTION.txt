@@ -1,0 +1,11 @@
+PlotFont conversion of PF Custom-Square Normal
+
+Open Font License
+Custom stroke fonts by Shriinivas; derived from Square Grotesk and Pinyon Script as credited upstream. Font notice template has unfilled copyright fields; original declarations retained.
+
+Original source: https://raw.githubusercontent.com/Shriinivas/inkscapestrokefont/4f2e9c92e7532a6ab6d95acd8e84e29a99ed7f1c/strokefontdata/Custom-Square%20Normal.svg
+Source revision: 4f2e9c92e7532a6ab6d95acd8e84e29a99ed7f1c
+Source SHA-256: a9315608e0f49705434ead9a1d6f58b7d16e253815e831f6277d532969f9c9aa
+
+License: SIL OFL 1.1
+Retain SOURCE and all license/notice files. Conversion does not relicense the font as project MIT.
