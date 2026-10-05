@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
+import { JSDOM } from 'jsdom';
 
 const read = (path: string) => readFileSync(path, 'utf8');
 describe('hosted site contract', () => {
@@ -12,6 +13,7 @@ describe('hosted site contract', () => {
       expect(html).toContain('An Another Planet Experience project');
       expect(html).toContain('https://ap.cx/');
       expect(html).toContain('Beta · Active development');
+      expect(new JSDOM(html).window.document.querySelector('#main')?.getAttribute('tabindex')).toBe('-1');
     }
     expect(read('site/app/index.html')).toContain('../../src/main.ts');
     expect(read('index.html')).not.toContain('site/site');
