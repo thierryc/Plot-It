@@ -20,6 +20,18 @@ function run(overrides: Record<string, unknown> = {}) {
   return worker.postMessage.mock.calls.at(-1)![0] as { plan?: MotionPlan; error?: string };
 }
 describe('actual planner worker entry', () => {
+  it('applies optimization before reload splitting and repeats seeded plans in the real worker',()=>{
+    const configured={...initialState.settings,pathJoinToleranceMm:.2,pathSimplifyToleranceMm:.01,closedPathStart:'random',pathRandomSeed:98,maxPenDownMm:6};
+    const source=[{tool:'#000000',points:[{x:10,y:10},{x:20,y:10}]},{tool:'#000000',points:[{x:20.1,y:10},{x:30,y:10}]},{tool:'#000000',points:[{x:50,y:50},{x:60,y:50},{x:60,y:60},{x:50,y:50}]}];
+    const first=run({paths:source,settings:configured}); expect(first.error).toBeUndefined();
+    expect(run({paths:source,settings:configured}).plan).toEqual(first.plan);
+    expect(first.plan!.events.filter(event=>event.kind==='pen'&&event.penDown).length).toBeGreaterThan(4);
+    let drawn=0;
+    for (const event of first.plan!.events) {
+      if (event.kind==='xy'&&event.penDown) drawn+=Math.hypot(event.to.x-event.from.x,event.to.y-event.from.y);
+      if (event.kind==='pen'&&!event.penDown) { expect(drawn).toBeLessThanOrEqual(6.05); drawn=0; }
+    }
+  });
   it('starts without browser DOM globals and returns pen metadata, motion and settled pen boundaries', () => {
     expect(typeof document).toBe('undefined'); const result = run();
     expect(result.error).toBeUndefined(); const plan = result.plan!;

@@ -1,0 +1,4 @@
+.textarea { min-width:0; width:100%; border:1px solid var(--control-border); border-radius:var(--radius-control); background:var(--control); color:var(--ink); padding:6px 8px; font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); resize:vertical; }
+.textarea:focus-visible { outline:2px solid var(--focus); outline-offset:1px; }
+.textarea[aria-invalid=true] { border-color:var(--danger); }
+.textarea:disabled { opacity:.6; }

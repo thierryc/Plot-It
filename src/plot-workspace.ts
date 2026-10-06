@@ -1,3 +1,6 @@
+import { penTimingSettings } from './pen-control';
+import { plotWorkspaceMarkup } from './ui/app/plot-views';
+import { bindPlotEvents } from './ui/app/events';
 import type { AppState, PenPreferences, PlotSettings } from './model';
 import { canonicalColor, restorePens, type PlotPen } from './pens';
 import { prepareJob } from './plot-job';
@@ -11,19 +14,23 @@ import { LivePlot, livePlotView } from './live-plot';
 import { Simulation, type SimulationView } from './simulation';
 import type { TaskProgress } from './task-progress';
 import { icon } from './icons';
-import { DEFAULT_MACHINE_ROTATION } from './model';
-import { MACHINE_ORIENTATIONS } from './motion';
-import { PLOTTER_POSITIONS, setupModel } from './plotter-setup';
+import { setupModel } from './plotter-setup';
+import { PlotPenCounter } from './plot-pen-counter';
+import type { PlotSignal } from './plot-signals';
+import { pathOptimizationSettings } from './path-optimization';
+import { plotStatistics, type PlotStatistics } from './plot-statistics';
+import { buildBoundsPreview } from './bounds-preview';
+import { powerStatusLabel } from './ebb-power';
 
-const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const clock = (time: number) => `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
-const countLabel = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`;
 export type PlotSessionState = 'choosing' | 'planning' | 'ready' | 'running' | 'pausing' | 'paused' | 'tool-change' | 'stopping' | 'returning' | 'finished' | 'stopped' | 'error';
 
 /** One owner for preparation, preview, connection, simulation and physical playback. */
 export class PlotWorkspace {
   private panel: HTMLElement;
+  private releaseEvents: () => void;
   private paper: SVGSVGElement;
+  private penCounter: PlotPenCounter;
   private savedEditor = document.createDocumentFragment();
   private editorScroll: number;
   private savedInert = new Map<HTMLElement, boolean>();
@@ -33,6 +40,10 @@ export class PlotWorkspace {
   private network: NetworkPlotter | null = null;
   private attaching = false;
   private plan: MotionPlan | null = null;
+  private playbackPlan: MotionPlan | null = null;
+  private previewingBounds = false;
+  private statistics: PlotStatistics | null = null;
+  private elapsedTimer: ReturnType<typeof setInterval> | null = null;
   private job: ReturnType<typeof prepareJob> | null = null;
   private revision = 0;
   private visual: PlotOverlay | null = null;
@@ -56,25 +67,25 @@ export class PlotWorkspace {
   constructor(private root: HTMLElement, private plotter: PlotDestination, private documentState: AppState, private save: () => void, private onExit: () => void) {
     this.localPlotter = plotter;
     this.settings = documentState.settings;
+    Object.assign(this.settings,pathOptimizationSettings(this.settings),penTimingSettings(this.settings));
     this.plotter.configurePen(this.settings);
     this.preferences = restorePens(documentState.pens);
     this.destination = plotter.connected ? 'machine' : null;
-    this.panel = root.querySelector<HTMLElement>('.inspector')!;
+    this.panel = root.querySelector<HTMLElement>('[data-ui="inspector"]')!;
     this.paper = root.querySelector<SVGSVGElement>('#paper')!;
+    this.penCounter = new PlotPenCounter(this.paper);
     this.editorScroll = this.panel.scrollTop;
     while (this.panel.firstChild) this.savedEditor.append(this.panel.firstChild);
-    root.querySelector<HTMLElement>('#settings-popover')?.hidePopover();
-    root.querySelector<HTMLElement>('#more-elements')?.hidePopover();
-    root.querySelectorAll<HTMLElement>('.tool-rail,.top-actions [data-action="undo"],.top-actions [data-action="redo"],.canvas-size-button,.empty-state').forEach(node => { this.savedInert.set(node, node.inert); node.inert = true; });
+    root.querySelector<HTMLElement>('#main-menu')?.hidePopover();
+    root.querySelectorAll<HTMLElement>(':popover-open').forEach(node => node.hidePopover());
+    root.querySelectorAll<HTMLElement>('[data-edit-control],.empty-state').forEach(node => { this.savedInert.set(node, node.inert); node.inert = true; });
     this.paper.querySelectorAll('.selection-ui,.editor-hit-layer').forEach(node => node.remove());
-    this.panel.classList.add('plot-sidebar'); this.root.classList.add('plot-mode');
-    root.querySelector('[data-action="edit-mode"]')!.setAttribute('aria-pressed', 'false');
-    root.querySelector('[data-action="open-plot"]')!.setAttribute('aria-pressed', 'true');
-    this.panel.addEventListener('click', this.onClick);
-    this.panel.addEventListener('change', this.onChange);
-    this.panel.addEventListener('input', this.onInput);
-    this.panel.addEventListener('focusout', this.onFocusOut);
-    this.panel.addEventListener('keydown', this.onKeyDown);
+    this.panel.classList.add('plot-sidebar'); this.panel.toggleAttribute('data-plot-sidebar', true); this.root.classList.add('plot-mode'); this.root.toggleAttribute('data-plot-mode', true);
+    root.querySelector('[data-action="edit-mode"]')!.setAttribute('aria-checked', 'false');
+    root.querySelector('[data-action="edit-mode"]')!.setAttribute('tabindex', '-1');
+    root.querySelector('[data-action="open-plot"]')!.setAttribute('aria-checked', 'true');
+    root.querySelector('[data-action="open-plot"]')!.setAttribute('tabindex', '0');
+    this.releaseEvents = bindPlotEvents(this.panel, { click:this.onClick, change:this.onChange, input:this.onInput, focusout:this.onFocusOut, keydown:this.onKeyDown });
     this.render(); this.panel.querySelector<HTMLElement>('h2')?.focus();
     void this.prepare();
     void this.discoverNetwork();
@@ -97,7 +108,7 @@ export class PlotWorkspace {
     try {
       const plan = await this.network.activePlan();
       if (this.closed || this.destination !== 'network' || !plan) return;
-      this.plan = plan; this.session = 'ready'; this.render();
+      this.plan = plan; this.statistics = plotStatistics(plan); this.session = 'ready'; this.render();
       await this.startHardware(true);
     } catch (error) { this.error = (error as Error).message; this.render(); }
     finally { this.attaching = false; }
@@ -112,7 +123,7 @@ export class PlotWorkspace {
   connectionChanged(): void {
     if (this.closed) return;
     if (this.destination === 'network') this.deviceLabel = this.network?.connected ? `Network plotter · EBB ${this.network.firmwareLabel ?? ''}` : 'Network plotter · EBB disconnected';
-    const status = this.root.querySelector<HTMLElement>('.statusbar > span');
+    const status = this.root.querySelector<HTMLElement>('[data-connection-status]');
     if (status) status.textContent = this.plotter.connected ? `EBB connected · Firmware ${this.plotter.firmwareLabel}` : 'Plotter not connected';
     if (!this.plotter.connected && this.executing) {
       if (this.destination === 'network') this.notice = this.network?.networkConnected ? 'Server connected, but the EBB is unavailable. Check the interrupted job before restarting.' : 'Network feedback unavailable. Reconnect to check the current job state.';
@@ -122,25 +133,29 @@ export class PlotWorkspace {
     this.render();
   }
 
-  private async prepare(autoPlay = false): Promise<void> {
+  private async prepare(autoPlay = false, preserveControls = false): Promise<void> {
     if (this.executing || this.closed) return;
     const revision = ++this.revision;
     this.job?.cancel(); this.job = null;
     this.simulation?.destroy(); this.simulation = null; this.simulationView = null;
     this.live?.destroy(); this.live = null; this.hardwareView = null;
     this.visual?.destroy(); this.visual = null;
-    this.plan = null;
+    this.plan = null; this.playbackPlan = null; this.statistics = null; this.previewingBounds = false;
     this.error = ''; this.notice = ''; this.task = { label: 'Preparing preview' };
-    this.session = 'planning'; this.root.classList.remove('plot-running'); this.render();
+    this.session = 'planning'; this.root.classList.remove('plot-running');
+    // Numeric commits keep the current controls and scroll geometry while planning.
+    // The previous executable plan is still discarded immediately.
+    if (!preserveControls) this.render();
     const job = prepareJob(this.paper, this.documentState.paper, this.settings, task => {
       if (revision !== this.revision || this.closed) return;
       this.task = task; this.syncPlayer();
     }, this.preferences);
     this.job = job;
+    if (preserveControls) this.syncPlayer();
     try {
       const plan = await job.promise;
       if (revision !== this.revision || this.closed) return;
-      this.plan = plan;
+      this.plan = plan; this.statistics = plotStatistics(plan);
       const colors = plan.pens!.map(pen => pen.color);
       this.preferences.order = [...this.preferences.order.filter(color => colors.includes(color)), ...colors.filter(color => !this.preferences.order.includes(color))];
       this.persist();
@@ -158,7 +173,7 @@ export class PlotWorkspace {
 
   private cancelPlanning(): void {
     ++this.revision; this.job?.cancel(); this.job = null; this.task = undefined;
-    this.plan = null; this.session = this.destination ? 'ready' : 'choosing'; this.notice = 'Preview preparation cancelled.'; this.render();
+    this.plan = null; this.playbackPlan = null; this.statistics = null; this.session = this.destination ? 'ready' : 'choosing'; this.notice = 'Preview preparation cancelled.'; this.render();
   }
 
   private async connect(): Promise<void> {
@@ -173,22 +188,26 @@ export class PlotWorkspace {
     this.render();
   }
 
-  private startSimulation(): void {
+  private startSimulation(bounds = false): void {
     if (!this.plan?.passes.length || this.inputError || this.job || this.locked) return;
-    this.destination = 'simulation'; this.visual?.destroy(); this.visual = new PlotOverlay(this.plan, this.paper);
+    const plan = bounds ? buildBoundsPreview(this.plan) : this.plan;
+    this.playbackPlan = plan; this.previewingBounds = bounds; this.statistics = plotStatistics(plan); this.notice = '';
+    this.destination = 'simulation'; this.visual?.destroy(); this.visual = new PlotOverlay(plan, this.paper);
     this.simulation?.destroy(); this.simulation = null;
     this.session = 'running'; this.root.classList.add('plot-running'); this.render();
-    this.simulation = new Simulation(this.plan, view => {
+    this.simulation = new Simulation(plan, view => {
       this.simulationView = view; this.session = view.state;
+      if (bounds && view.state==='finished') this.notice='Bounding-box simulation complete · pen raised, returned to origin.';
       this.visual?.update(view.time, { position: view.state === 'stopped' || view.state === 'tool-change' ? { x: 0, y: 0 } : undefined, penDown: view.state !== 'running' ? false : undefined });
       this.syncPlayer(); this.syncPasses();
-    });
+    }, signal => this.dispatchSignal(signal));
     this.simulation.setRate(this.rate);
   }
 
-  private async startHardware(resumeNetworkJob = false): Promise<void> {
+  private async startHardware(resumeNetworkJob = false, bounds = false): Promise<void> {
     if (!this.plan?.passes.length || this.inputError || this.job || this.locked || !this.plotter.connected) return;
-    const plan = this.plan;
+    const plan = bounds ? buildBoundsPreview(this.plan) : this.plan;
+    this.playbackPlan = plan; this.previewingBounds = bounds; this.statistics = plotStatistics(plan); this.notice = '';
     this.visual?.destroy(); this.visual = null; this.live?.destroy();
     this.executing = true; this.error = ''; this.session = 'running'; this.progress = { completed: 0, total: plan.events.length, state: 'plotting' };
     this.root.classList.add('plot-running'); this.render();
@@ -198,17 +217,20 @@ export class PlotWorkspace {
       this.syncPlayer(); this.syncPasses();
     });
     this.plotter.onPosition = position => this.live?.observePosition(position);
+    this.plotter.onSignal = signal => { this.live?.observeSignal(signal); this.dispatchSignal(signal); };
     this.plotter.onProgress = progress => this.live?.update(progress);
+    this.elapsedTimer = setInterval(()=>this.syncPlayer(),250);
     try {
       if (resumeNetworkJob && this.network) { this.live.update(this.network.progress); await this.network.waitForJob(); }
       else await this.plotter.plot(plan);
     }
     catch (error) { this.error = (error as Error).message; }
     finally {
-      this.plotter.onPosition = null; this.plotter.onProgress = () => undefined;
+      this.plotter.onPosition = null; this.plotter.onProgress = () => undefined; this.plotter.onSignal = () => undefined;
+      if (this.elapsedTimer) clearInterval(this.elapsedTimer); this.elapsedTimer = null;
       this.executing = false; this.live?.finish();
       if (this.error || this.progress.state === 'cancelled') { this.session = 'error'; this.error ||= 'Plot cancelled. Prepare a new job before starting again.'; }
-      else this.notice = 'Motors released. The next start will use the current position as origin.';
+      else this.notice = bounds ? 'Bounding-box preview complete · pen raised, returned to origin. Motors released.' : 'Motors released. The next start will use the current position as origin.';
       this.render();
     }
   }
@@ -223,20 +245,25 @@ export class PlotWorkspace {
         if (!this.executing) this.plotter.configurePen(settings);
         await this.plotter.setPen(action === 'pen-up' ? settings.penUp : settings.penDown); this.live?.update(this.progress, action === 'pen-down');
       }
+      if (action === 'check-power') { const power = await this.plotter.checkPowerSupply(); this.notice = powerStatusLabel(power); }
       if (action === 'set-origin') await this.plotter.setOrigin(this.settings.profile);
       if (action === 'return-origin') await this.plotter.returnToOrigin(this.settings);
       if (action === 'engage') await this.plotter.engageMotors();
       if (action === 'release') await this.plotter.disengageMotors(this.settings.penUp);
-      this.notice = action === 'set-origin' ? 'Origin saved at the current carriage position.' : action === 'release' ? 'Motors released. The next start will use the current position as origin.' : 'Machine command complete.';
+      if (action !== 'check-power') this.notice = action === 'set-origin' ? 'Origin saved at the current carriage position.' : action === 'release' ? 'Motors released. The next start will use the current position as origin.' : 'Machine command complete.';
     } catch (error) { this.error = (error as Error).message; }
     finally { this.manualBusy = false; this.render(); }
   }
 
   private downloadMachineLog(): void {
-      const blob = new Blob([JSON.stringify({format:'plot-it-machine-log',version:3,createdAt:new Date().toISOString(),firmware:this.plotter.firmwareLabel,penHeights:{up:this.settings.penUp,down:this.settings.penDown},entries:this.plotter.diagnosticTrace,penTransitions:this.plotter.diagnosticPenTrace,job:this.plotter.diagnosticJobTrace},null,2)],{type:'application/json'});
+      const blob = new Blob([JSON.stringify({format:'plot-it-machine-log',version:4,createdAt:new Date().toISOString(),firmware:this.plotter.firmwareLabel,power:this.plotter.powerStatus,elapsedMs:this.plotter.elapsedMs,penHeights:{up:this.settings.penUp,down:this.settings.penDown},entries:this.plotter.diagnosticTrace,penTransitions:this.plotter.diagnosticPenTrace,job:this.plotter.diagnosticJobTrace},null,2)],{type:'application/json'});
       const url = URL.createObjectURL(blob), link = document.createElement('a');
       link.href = url; link.download = 'plot-it-machine-log.json'; link.click();
       setTimeout(() => URL.revokeObjectURL(url),1000);
+  }
+
+  private dispatchSignal(signal: PlotSignal): void {
+    this.paper.dispatchEvent(new CustomEvent('plot-execution-signal', { detail: signal }));
   }
 
   private onClick = (event: Event): void => {
@@ -249,7 +276,6 @@ export class PlotWorkspace {
     if (action === 'machine-log') {
       this.downloadMachineLog(); return;
     }
-    if (action === 'mark-pen-movement') { this.plotter.markPenMovement(); this.notice = 'Pen movement marked in the machine log.'; this.syncPlayer(); return; }
     if (action === 'back') { if (!this.busy) this.destroy(); return; }
     if (action === 'cancel-plan') { this.cancelPlanning(); return; }
     if (action === 'connect') { void this.connect(); return; }
@@ -264,8 +290,14 @@ export class PlotWorkspace {
       return;
     }
     if (action === 'stop') { if (this.destination === 'simulation') this.simulation?.stop(); else this.plotter.stop(); return; }
-    if (['pen-up', 'pen-down', 'set-origin', 'return-origin', 'engage', 'release'].includes(action)) { void this.manual(action); return; }
+    if (['pen-up', 'pen-down', 'set-origin', 'return-origin', 'engage', 'release', 'check-power'].includes(action)) { void this.manual(action); return; }
     if (this.locked) return;
+    if (action === 'bounds-preview') {
+      if (!this.plan?.passes.length || this.job || this.inputError) return;
+      try { if (this.destination === 'machine' || this.destination === 'network') void this.startHardware(false,true).catch(error=>{this.error=(error as Error).message; this.render();}); else this.startSimulation(true); }
+      catch (error) { this.error=(error as Error).message; this.render(); }
+      return;
+    }
     if (action === 'choose-simulation') { this.destination = 'simulation'; this.session = this.job ? 'planning' : 'ready'; this.render(); if (this.job) void this.prepare(true); else if (this.plan) this.startSimulation(); else void this.prepare(true); return; }
     if (action === 'start') { this.destination === 'simulation' ? this.startSimulation() : void this.startHardware(); return; }
     if (action === 'all') this.preferences.excluded = [];
@@ -367,19 +399,20 @@ export class PlotWorkspace {
       const key = input.dataset.plotSetting as keyof PlotSettings;
       if (input instanceof HTMLInputElement && !input.checkValidity()) { this.inputError = 'Enter a valid value within the displayed range.'; this.syncPlayer(); return; }
       this.inputError = '';
-      const next = key === 'profile' || key === 'reorderMode' || key === 'axidrawModel' ? input.value : key === 'returnToOrigin' ? (input as HTMLInputElement).checked : Number(input.value);
+      const next = key === 'profile' || key === 'reorderMode' || key === 'axidrawModel' || key === 'closedPathStart' ? input.value : key === 'returnToOrigin' ? (input as HTMLInputElement).checked : Number(input.value);
       if (this.settings[key] === next) { this.syncPlayer(); return; }
       if (key === 'profile') {
         if (input.value !== this.settings.profile && this.plotter.connected) this.plotter.invalidateOrigin();
         this.settings.profile = input.value as PlotSettings['profile'];
       } else if (key === 'reorderMode') this.settings.reorderMode = input.value as PlotSettings['reorderMode'];
+      else if (key === 'closedPathStart') this.settings.closedPathStart = input.value as PlotSettings['closedPathStart'];
       else if (key === 'axidrawModel') this.settings.axidrawModel = setupModel(input.value);
       else if (key === 'returnToOrigin') this.settings.returnToOrigin = (input as HTMLInputElement).checked;
       else (this.settings as unknown as Record<string, number>)[key] = Number(input.value);
-      if (key === 'penUp' || key === 'penDown') this.plotter.configurePen(this.settings);
+      if (['penUp','penDown','penRateRaise','penRateLower','penDelayUpMs','penDelayDownMs','penReloadWaitMs'].includes(key)) this.plotter.configurePen(this.settings);
     } else if (input.matches('[data-color-mode]')) this.preferences.mode = input.value as PenPreferences['mode'];
     else return;
-    this.persist(); void this.prepare();
+    this.persist(); void this.prepare(false, input.matches('[data-plot-setting][type=number]'));
   };
 
   private render(): void {
@@ -392,80 +425,27 @@ export class PlotWorkspace {
     const focusPen = active?.getAttribute('data-pen');
     const focusSetting = active?.getAttribute('data-plot-setting');
     const focusDestination = active?.hasAttribute('data-plot-destination');
-    const locked = this.locked;
-    const disabled = locked ? 'disabled' : '';
-    this.panel.innerHTML = `<div class="plot-sidebar-head"><button class="button ghost" data-plot-action="back" ${this.busy ? 'disabled' : ''}>${icon('back')} Back to editing</button><h2 tabindex="-1">Plot</h2></div>
-      <div class="plot-scroll">
-        <section class="plot-section"><label>Destination<select data-plot-destination ${disabled}><option value="" ${this.destination === null ? 'selected' : ''} disabled>Choose a destination</option><option value="machine" ${this.destination === 'machine' ? 'selected' : ''}>Direct USB · this computer</option>${this.network ? `<option value="network" ${this.destination === 'network' ? 'selected' : ''}>Network plotter (Node server)</option>` : ''}<option value="simulation" ${this.destination === 'simulation' ? 'selected' : ''}>Simulation</option></select></label>
-          ${this.destination === null ? `<div class="plot-choices"><button class="button primary" data-plot-action="choose-simulation">${icon('play')} Simulate</button><button class="button" data-plot-action="connect" ${!this.plotter.supported ? 'disabled' : ''}>${icon('usb')} Connect plotter</button></div>` : this.destination === 'network' ? `<div class="plot-connection"><span>${this.network?.networkConnected ? this.plotter.connected ? `Server connected · EBB ${escape(this.plotter.firmwareLabel ?? '')}` : this.plotter.connecting ? 'Server connected · Connecting EBB…' : 'Server connected · EBB disconnected' : 'Connecting to server…'}</span><button class="button ghost" data-plot-action="${this.network?.hasControl ? 'release-control' : 'connect'}" ${this.plotter.connecting || this.manualBusy ? 'disabled' : ''}>${this.network?.hasControl ? 'Release control' : 'Take control'}</button></div><div class="plot-connection"><button class="button" data-plot-action="${this.network?.connected ? 'disconnect-ebb' : 'connect-ebb'}" ${locked || this.manualBusy || this.plotter.connecting || !this.network?.hasControl ? 'disabled' : ''}>${this.network?.connected ? 'Disconnect EBB · release USB' : 'Connect EBB'}</button></div>${this.localPlotter.connected ? `<button class="button ghost" data-plot-action="disconnect-local-usb" ${locked || this.manualBusy ? 'disabled' : ''}>Disconnect Direct USB</button>` : ''}<p class="field-help">${this.network?.hasControl ? 'You control the server. ' : 'Viewing only. Take control to operate it. '}Disconnect EBB lifts the pen, releases motors and frees server USB while idle. The server executes the full job locally. Position updates show EBB counters; interpolation is estimated.</p>` : this.destination === 'machine' ? `<div class="plot-connection"><span>${this.plotter.connecting ? 'Connecting…' : this.plotter.connected ? `Connected · EBB ${escape(this.plotter.firmwareLabel ?? '')}` : 'Plotter not connected'}</span><button class="button ghost" data-plot-action="${this.plotter.connected ? 'disconnect' : 'connect'}" ${locked || this.manualBusy || !this.plotter.supported || !this.plotter.connected && this.serverOwnsLocalUsb ? 'disabled' : ''}>${this.plotter.connected ? 'Disconnect' : this.error ? 'Retry connection' : 'Connect'}</button></div>${this.serverOwnsLocalUsb ? `<p class="field-help">The local Node server owns the EBB. Release its USB connection before connecting directly.</p><button class="button" data-plot-action="release-server-usb" ${locked || this.manualBusy || this.network?.active ? 'disabled' : ''}>Release server USB</button>` : '<p class="field-help">USB connects to this computer. A remote server uses its own USB device.</p>'}` : '<p class="field-help">Simulation uses no hardware.</p>'}
-          ${!this.plotter.supported ? '<p class="field-help">Connect using desktop Chrome or Edge. Simulation is available here.</p>' : ''}
-        </section>
-        <section class="plot-section plot-pens-section"><div class="plot-section-title"><h3>Pens & passes</h3><button class="button ghost" data-plot-action="all" ${disabled}>All pens</button></div>
-          <p class="field-help plot-assignment-help">Assign your pens here. Artwork colors stay unchanged.</p>
-          ${this.pens.length ? `<div class="plot-pens">${this.pens.map((pen, index) => this.penMarkup(pen, index, disabled)).join('')}</div>` : `<p class="field-help">${this.session === 'planning' ? 'Reading artwork colors…' : this.session === 'error' ? 'Pen preview is unavailable until preparation succeeds.' : 'Add artwork to plot, or check that paths are inside the safe margin.'}</p>`}
-          <details data-section="passes"><summary data-pass-summary>${countLabel(this.pens.filter(pen => pen.included).length, 'pen')} · ${countLabel(this.plan?.passes.length ?? 0, 'pass', 'passes')}</summary><ol class="plot-pass-list">${this.plan?.passes.map((pass, index) => `<li data-pass-index="${index}"><span class="pen-swatch" style="background:${pass.tool}" aria-hidden="true"></span><span>${escape(this.penLabel(pass.tool))}</span><small data-pass-state>Upcoming</small></li>`).join('') ?? ''}</ol></details>
-          ${(this.plan?.passes.length ?? 0) > this.pens.filter(pen => pen.included).length ? '<p class="field-help">Some pens repeat to preserve ordered text or fill operations.</p>' : ''}
-          ${this.preferences.mode === 'source' ? '<p class="field-help">Pen order follows the artwork. Switch to Group by pen in Advanced to reorder.</p>' : ''}
-        </section>
-        <section class="plot-section plot-settings-section"><h3>Plot settings</h3><label>Machine profile<select data-plot-setting="profile" ${disabled}><option value="axidraw" ${this.settings.profile === 'axidraw' ? 'selected' : ''}>AxiDraw / EBB</option><option value="xylodraw" ${this.settings.profile === 'xylodraw' ? 'selected' : ''}>Xylodraw</option></select></label>
-          ${this.settings.profile === 'axidraw' ? `<label>AxiDraw model<select data-plot-setting="axidrawModel" ${disabled}><option value="v3-a4" ${setupModel(this.settings.axidrawModel) === 'v3-a4' ? 'selected' : ''}>V3 · A4</option><option value="v3-a3" ${this.settings.axidrawModel === 'v3-a3' ? 'selected' : ''}>V3/A3 · A3</option></select></label>` : ''}
-          <label>Plotter position<select data-plot-setting="machineRotation" data-focus-key="setup-position" ${disabled}>${PLOTTER_POSITIONS.map(({rotation,label}) => `<option value="${rotation}" ${(this.settings.machineRotation ?? DEFAULT_MACHINE_ROTATION) === rotation ? 'selected' : ''}>${label}</option>`).join('')}</select></label>
-          <p class="field-help">Position sets the machine orientation. The background follows the pen; Fit frames the paper.</p>
-          ${this.numberSetting('speed', 'Drawing speed', 'mm/s', 1, 100, disabled)}
-          <details data-section="advanced"><summary>Advanced</summary><div class="plot-detail-content">
-            <label>Machine orientation<select data-plot-setting="machineRotation" ${disabled}>${MACHINE_ORIENTATIONS.map(({rotation, label}) => `<option value="${rotation}" ${(this.settings.machineRotation ?? DEFAULT_MACHINE_ROTATION) === rotation ? 'selected' : ''}>${label}</option>`).join('')}</select></label>
-            <p class="field-help">Standard uses the AxiDraw orientation. Other rotations are relative to Standard and use the pen origin.</p>
-            <label>Color order<select data-color-mode ${disabled}><option value="group" ${this.preferences.mode === 'group' ? 'selected' : ''}>Group by pen</option><option value="source" ${this.preferences.mode === 'source' ? 'selected' : ''}>Follow artwork order</option></select></label>
-            <label>Path order<select data-plot-setting="reorderMode" ${disabled || this.preferences.mode === 'source' ? 'disabled' : ''}><option value="preserve" ${this.settings.reorderMode === 'preserve' ? 'selected' : ''}>Preserve order within pen</option><option value="nearest" ${this.settings.reorderMode === 'nearest' ? 'selected' : ''}>Nearest path</option><option value="reversible" ${this.settings.reorderMode === 'reversible' ? 'selected' : ''}>Nearest + reverse</option></select></label>
-            ${this.numberSetting('travelSpeed', 'Travel speed', 'mm/s', 1, 200, disabled)}${this.numberSetting('drawAcceleration', 'Draw acceleration', 'mm/s²', 1, undefined, disabled)}${this.numberSetting('travelAcceleration', 'Travel acceleration', 'mm/s²', 1, undefined, disabled)}${this.numberSetting('cornering', 'Cornering', 'mm', 0, undefined, disabled, '.001')}${this.numberSetting('maxPenDownMm', 'Maximum continuous line', 'mm', 0, undefined, disabled)}
-            <p class="field-help">0 keeps lines continuous. Pen changes always pause at origin.</p><label class="check"><input type="checkbox" data-plot-setting="returnToOrigin" ${this.settings.returnToOrigin ? 'checked' : ''} ${disabled}><span>Return to origin when complete</span></label>
-            <button class="button" data-plot-action="reset-pens" ${disabled}>Reset pen assignments</button>
-          </div></details>
-        </section>
-        ${this.destination === 'machine' || this.destination === 'network' ? this.machineMarkup() : ''}
-        <p class="field-help">${escape(this.documentState.paper.name)} · ${this.documentState.paper.width} × ${this.documentState.paper.height} mm</p>
-        <p class="field-help" ${this.deviceLabel ? '' : 'hidden'}>${escape(this.deviceLabel)}</p>
-      </div>
-      <section class="plot-player" aria-label="Plot playback">
-        <div class="plot-player-status" role="status" aria-live="polite" data-player-status></div>
-        <p class="plot-current-pen" data-player-pen></p>
-        <p class="plot-time" data-player-time></p>
-        <progress max="100" value="0" aria-label="Plot progress" data-player-progress></progress>
-        <div class="plot-sim-controls" ${this.destination === 'simulation' ? '' : 'hidden'}><input type="range" min="0" max="${this.plan?.duration ?? 0}" step=".01" value="0" aria-label="Simulation timeline" data-sim-timeline><label>Speed<select data-sim-rate aria-label="Playback speed">${[1, 2, 5, 10].map(rate => `<option value="${rate}" ${rate === this.rate ? 'selected' : ''}>${rate}×</option>`).join('')}</select></label></div>
-        <p class="plot-error" role="alert" data-player-error hidden></p><p class="field-help" data-player-notice hidden></p>
-        <div class="plot-playback-actions"><button class="button primary" data-plot-action="start">${icon('play')} <span>Start with this pen</span></button><button class="button primary" data-plot-action="pause" hidden>${icon('pause')} <span>Pause</span></button><button class="button" data-plot-action="stop" hidden>${icon('stop')} Stop</button><button class="button" data-plot-action="cancel-plan" hidden>Cancel</button><button class="button" data-plot-action="retry" hidden>Prepare again</button></div>
-      </section>`;
+    this.panel.innerHTML = plotWorkspaceMarkup({ busy:this.busy, destination:this.destination, deviceLabel:this.deviceLabel, documentState:this.documentState, error:this.error, inputError:this.inputError, job:!!this.job, localPlotter:this.localPlotter, locked:this.locked, manualBusy:this.manualBusy, network:this.network, pens:this.pens, plan:this.plan, plotter:this.plotter, preferences:this.preferences, rate:this.rate, serverOwnsLocalUsb:this.serverOwnsLocalUsb, session:this.session, settings:this.settings, penLabel:color=>this.penLabel(color) });
     this.panel.querySelectorAll<HTMLDetailsElement>('details').forEach(node => { node.open = openDetails.has(node.dataset.section); });
-    this.panel.querySelector<HTMLElement>('.plot-scroll')!.scrollTop = scroll;
     this.syncPlayer(); this.syncPasses();
     if (active) {
-      const target = focusKey ? this.panel.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(focusKey)}"]`) : focusAction ? this.panel.querySelector<HTMLElement>(`[data-plot-action="${CSS.escape(focusAction)}"]${focusPen ? `[data-pen="${CSS.escape(focusPen)}"]` : ''}`) : focusSetting ? this.panel.querySelector<HTMLElement>(`[data-plot-setting="${CSS.escape(focusSetting)}"]`) : focusDestination ? this.panel.querySelector<HTMLElement>('[data-plot-destination]') : null;
-      if (target && !target.hidden && !(target as HTMLButtonElement).disabled) target.focus();
-      else (this.panel.querySelector<HTMLElement>('[data-plot-action="pause"]:not([hidden]):not(:disabled)') ?? this.panel.querySelector<HTMLElement>('h2'))?.focus();
+      let target = focusKey ? this.panel.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(focusKey)}"]`) : focusAction ? this.panel.querySelector<HTMLElement>(`[data-plot-action="${CSS.escape(focusAction)}"]${focusPen ? `[data-pen="${CSS.escape(focusPen)}"]` : ''}`) : focusSetting ? this.panel.querySelector<HTMLElement>(`[data-plot-setting="${CSS.escape(focusSetting)}"]`) : focusDestination ? this.panel.querySelector<HTMLElement>('[data-plot-destination]') : null;
+      if (target instanceof HTMLInputElement && active instanceof HTMLInputElement && active.type === 'number' && active.hasAttribute('data-plot-setting')) {
+        // Keep the editing field itself, including any newer uncommitted value.
+        active.disabled = target.disabled; target.replaceWith(active); target = active;
+      }
+      if (target && !target.hidden && !(target as HTMLButtonElement).disabled) target.focus({ preventScroll: true });
+      else (this.panel.querySelector<HTMLElement>('[data-plot-action="pause"]:not([hidden]):not(:disabled)') ?? this.panel.querySelector<HTMLElement>('h2'))?.focus({ preventScroll: true });
     }
-  }
-
-  private penMarkup(pen: PlotPen, index: number, disabled: string): string {
-    const reorderDisabled = disabled || this.preferences.mode === 'source' ? 'disabled' : '';
-    return `<div class="plot-pen-row"><div class="plot-pen-main"><input type="checkbox" aria-label="Include pen ${escape(this.penLabel(pen.color))}" data-pen-include="${pen.color}" ${pen.included ? 'checked' : ''} ${disabled}><input type="color" value="${pen.color}" aria-label="Choose pen color for ${pen.color}" data-pen-picker="${pen.color}" ${disabled}><input class="pen-hex" value="${pen.color}" aria-label="Pen hex color for ${pen.color}" data-pen-hex="${pen.color}" data-focus-key="hex-${pen.color}" maxlength="7" spellcheck="false" ${disabled}><div class="pen-order"><button class="button ghost" data-plot-action="up" data-pen="${pen.color}" aria-label="Move ${escape(this.penLabel(pen.color))} up" ${reorderDisabled || index === 0 ? 'disabled' : ''}>${icon('up')}</button><button class="button ghost" data-plot-action="down" data-pen="${pen.color}" aria-label="Move ${escape(this.penLabel(pen.color))} down" ${reorderDisabled || index === this.pens.length - 1 ? 'disabled' : ''}>${icon('down')}</button></div></div><div class="plot-pen-name"><input value="${escape(pen.name)}" placeholder="Pen name (optional)" aria-label="Pen name for ${pen.color}" data-pen-name="${pen.color}" data-focus-key="name-${pen.color}" maxlength="80" ${disabled}><button class="button ghost" data-plot-action="only" data-pen="${pen.color}" aria-label="Plot only pen ${escape(this.penLabel(pen.color))}" ${disabled}>Only</button></div>${pen.sources.length > 1 || pen.sources[0] !== pen.color ? `<small class="field-help">Source: ${pen.sources.map(escape).join(', ')}</small>` : ''}</div>`;
-  }
-  private numberSetting(key: keyof PlotSettings, label: string, unit: string, min: number, max: number | undefined, disabled: string, step = '1'): string {
-    return `<label>${label}<div class="unit-input"><input type="number" data-plot-setting="${key}" data-focus-key="setting-${key}" aria-label="${label} ${unit}" value="${this.settings[key]}" min="${min}" ${max === undefined ? '' : `max="${max}"`} step="${step}" required ${disabled}><span>${unit}</span></div></label>`;
-  }
-  private machineMarkup(): string {
-    const idle = this.plotter.connected && !this.locked && (this.destination !== 'network' || !!this.network?.hasControl);
-    const canPen = this.plotter.connected && !this.manualBusy && this.plotter.canAdjustPen;
-    const hasOrigin = this.plotter.hasOrigin(this.settings.profile);
-    return `<section class="plot-section plot-machine-section"><h3>Machine controls</h3><p class="plot-origin-state">${hasOrigin ? this.plotter.originStatus === 'automatic' ? 'Origin set automatically' : 'Origin saved' : 'Origin: current pen position'}</p>
-      ${!hasOrigin ? '<p class="field-help origin-reminder">Your current pen position will be used as origin. If it isn’t your intended starting point, position the carriage and choose Set origin.</p>' : ''}
-      <div class="machine-actions">${[['set-origin', 'Set origin'], ['return-origin', 'Return to origin'], ['engage', 'Engage motors'], ['release', 'Release motors']].map(([action, label]) => `<button class="button" data-plot-action="${action}" ${!idle || action === 'return-origin' && !hasOrigin || action === 'engage' && this.plotter.motorsOn ? 'disabled' : ''}>${label}</button>`).join('')}</div>
-      <div class="two-col"><button class="button" data-plot-action="pen-up" ${canPen ? '' : 'disabled'}>Pen up</button><button class="button" data-plot-action="pen-down" ${canPen ? '' : 'disabled'}>Pen down</button></div>
-      <details data-section="heights"><summary>Pen heights & tests</summary><div class="plot-detail-content">${this.numberSetting('penUp', 'Pen up height', '%', 0, 100, idle ? '' : 'disabled')}${this.numberSetting('penDown', 'Pen down height', '%', 0, 100, idle ? '' : 'disabled')}<p class="field-help">Use Pen up and Pen down above to test the heights.</p><button class="button" data-plot-action="mark-pen-movement">Mark unexpected pen movement</button><button class="button" data-plot-action="machine-log">Download machine log</button><p class="field-help">Commands, board replies and observed movement times for troubleshooting.</p></div></details>
-    </section>`;
+    this.panel.querySelector<HTMLElement>('.plot-scroll')!.scrollTop = scroll;
   }
 
   private syncPlayer(): void {
     if (this.closed) return;
+    const displayPlan = this.playbackPlan ?? this.plan;
+    const view = this.simulationView;
+    const signal = view?.signal && view.state !== 'running' ? { ...view.signal, penDown: false, penHeight: this.settings.penUp } : view?.signal ?? null;
+    this.penCounter.update(signal, this.destination === 'simulation' && !!displayPlan);
     const player = this.panel.querySelector<HTMLElement>('.plot-player'); if (!player) return;
     const setText = (selector: string, text: string) => { const node = player.querySelector<HTMLElement>(selector)!; if (node.textContent !== text) node.textContent = text; };
     const simulationActive = !!this.simulationView && !['finished', 'stopped'].includes(this.session);
@@ -477,23 +457,30 @@ export class PlotWorkspace {
     const terminal = ['finished', 'stopped'].includes(this.session);
     const waiting = this.session === 'tool-change';
     const pass = this.currentPass();
-    const color = this.plan?.passes[pass]?.tool ?? '';
-    const status = this.job ? this.task?.label ?? 'Preparing preview' : this.error ? 'Plot needs attention' : waiting ? `Load ${this.penLabel(color)} — pass ${pass + 1} of ${this.plan?.passes.length}` : ({ choosing: 'Choose how to plot', ready: 'Ready to plot', running: this.destination === 'simulation' ? 'Simulating' : 'Plotting', pausing: 'Pausing…', paused: 'Paused · pen lifted', stopping: 'Stopping…', returning: 'Returning to origin', finished: 'Complete', stopped: this.destination === 'simulation' ? 'Stopped · simulation reset' : 'Stopped · returned to origin', error: 'Prepare a new job', planning: 'Preparing preview', 'tool-change': '' } satisfies Record<PlotSessionState, string>)[this.session];
-    setText('[data-player-status]', status);
-    setText('[data-player-pen]', color ? active || terminal ? `Pass ${pass + 1} of ${this.plan?.passes.length} · ${this.penLabel(color)}` : `Load ${this.penLabel(this.plan!.passes[0]!.tool)}` : '');
+    const color = displayPlan?.passes[pass]?.tool ?? '';
+    const status = this.job ? this.task?.label ?? 'Preparing preview' : this.error ? 'Plot needs attention' : waiting ? `Load ${this.penLabel(color)} — pass ${pass + 1} of ${displayPlan?.passes.length}` : ({ choosing: 'Choose how to plot', ready: 'Ready to plot', running: this.destination === 'simulation' ? 'Simulating' : 'Plotting', pausing: 'Pausing…', paused: 'Paused · pen lifted', stopping: 'Stopping…', returning: 'Returning to origin', finished: 'Complete', stopped: this.destination === 'simulation' ? 'Stopped · simulation reset' : 'Stopped · returned to origin', error: 'Prepare a new job', planning: 'Preparing preview', 'tool-change': '' } satisfies Record<PlotSessionState, string>)[this.session];
+    setText('[data-player-status]', this.previewingBounds && (active || terminal) ? `Bounding box · ${status}` : status);
+    setText('[data-player-pen]', color ? active || terminal ? `Pass ${pass + 1} of ${displayPlan?.passes.length} · ${this.penLabel(color)}` : `Load ${this.penLabel(displayPlan!.passes[0]!.tool)}` : '');
     const time = this.destination === 'simulation' ? this.simulationView?.time ?? 0 : this.hardwareView?.time ?? 0;
-    const percent = this.job ? Math.round((this.task?.fraction ?? 0) * 100) : this.destination === 'simulation' ? this.plan?.duration ? Math.round(time / this.plan.duration * 100) : 0 : this.hardwareView?.percent ?? 0;
-    setText('[data-player-time]', this.plan?.passes.length ? `${active || terminal ? `${clock(time)} / ` : ''}${clock(this.plan.duration)} estimated motion${active || terminal ? ` · ${percent}%` : ''}` : '');
+    const percent = this.job ? Math.round((this.task?.fraction ?? 0) * 100) : this.destination === 'simulation' ? displayPlan?.duration ? Math.round(time / displayPlan.duration * 100) : 0 : this.hardwareView?.percent ?? 0;
+    setText('[data-player-time]', displayPlan?.passes.length ? `${active || terminal ? `${clock(time)} / ` : ''}${clock(displayPlan.duration)} estimated motion${active || terminal ? ` · ${percent}%` : ''}` : '');
+    setText('[data-plot-distances]', this.statistics ? `Drawing ${this.statistics.drawingMm.toFixed(1)} mm · Travel ${this.statistics.travelMm.toFixed(1)} mm` : '');
+    setText('[data-plot-elapsed]', active || terminal || !!this.live ? this.destination==='simulation' ? `Simulation time ${clock(time)}` : `Elapsed ${clock(this.plotter.elapsedMs/1000)} (includes pauses)` : '');
+    const supply = player.querySelector<HTMLElement>('[data-power-status]')!;
+    supply.hidden = this.destination!=='machine' && this.destination!=='network';
+    if (!supply.hidden) { supply.textContent=powerStatusLabel(this.plotter.powerStatus); supply.dataset.state=this.plotter.powerStatus.state; }
+    const boundsButton=this.panel.querySelector<HTMLButtonElement>('[data-plot-action="bounds-preview"]');
+    if (boundsButton) boundsButton.disabled=active||this.manualBusy||!!this.job||!!this.inputError||!this.plan?.passes.length||(this.destination==='machine'||this.destination==='network')&&(!this.plotter.connected||this.destination==='network'&&!this.network?.hasControl);
     const bar = player.querySelector<HTMLProgressElement>('[data-player-progress]')!; bar.value = percent;
     if (this.job && this.task?.fraction === undefined) bar.removeAttribute('value');
     bar.hidden = !this.job && !active && !terminal;
     const error = player.querySelector<HTMLElement>('[data-player-error]')!; error.hidden = !(this.error || this.inputError); setText('[data-player-error]', this.inputError || this.error);
     const notice = player.querySelector<HTMLElement>('[data-player-notice]')!;
-    const empty = !this.job && this.plan && !this.plan.passes.length ? this.pens.some(pen => pen.included) ? 'No drawing paths remain at the machine’s resolution.' : this.pens.length ? 'Select at least one pen to plot.' : 'Add artwork to plot.' : '';
+    const empty = !this.job && displayPlan && !displayPlan.passes.length ? this.pens.some(pen => pen.included) ? 'No drawing paths remain at the machine’s resolution.' : this.pens.length ? 'Select at least one pen to plot.' : 'Add artwork to plot.' : '';
     notice.hidden = !(empty || this.notice); setText('[data-player-notice]', empty || this.notice);
     const button = (action: string) => player.querySelector<HTMLButtonElement>(`[data-plot-action="${action}"]`)!;
     button('start').hidden = active || !!this.job || this.session === 'error';
-    button('start').disabled = !this.destination || !this.plan?.passes.length || !!this.inputError || this.locked || (this.destination === 'machine' || this.destination === 'network') && !this.plotter.connected || this.destination === 'network' && !this.network?.hasControl;
+    button('start').disabled = !this.destination || !displayPlan?.passes.length || !!this.inputError || this.locked || (this.destination === 'machine' || this.destination === 'network') && !this.plotter.connected || this.destination === 'network' && !this.network?.hasControl;
     button('start').querySelector('span')!.textContent = terminal ? this.destination === 'simulation' ? 'Replay' : 'Plot again' : this.destination === 'simulation' ? 'Play simulation' : 'Start with this pen';
     button('pause').hidden = !active;
     button('pause').disabled = this.destination === 'network' && (!this.network?.hasControl || !this.network.networkConnected) || this.manualBusy || ['pausing', 'stopping', 'returning', 'finished', 'stopped', 'error'].includes(this.session) || !!this.error;
@@ -510,12 +497,13 @@ export class PlotWorkspace {
     // Playback updates preserve focus and never rebuild the sidebar each frame.
     this.panel.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-pen-include],[data-pen-picker],[data-pen-hex],[data-pen-name],[data-plot-setting],[data-color-mode],[data-plot-destination]').forEach(input => {
       const penHeight = input.getAttribute('data-plot-setting') === 'penUp' || input.getAttribute('data-plot-setting') === 'penDown';
-      input.disabled = active || this.manualBusy || this.plotter.connecting || (penHeight && !this.plotter.connected) || input.getAttribute('data-plot-setting') === 'reorderMode' && this.preferences.mode === 'source';
+      const preparingPens = !!this.job && input.matches('[data-pen-include],[data-pen-picker],[data-pen-hex],[data-pen-name]');
+      input.disabled = active || this.manualBusy || this.plotter.connecting || preparingPens || (penHeight && !this.plotter.connected) || input.getAttribute('data-plot-setting') === 'reorderMode' && this.preferences.mode === 'source' || input.getAttribute('data-plot-setting') === 'pathRandomSeed' && this.settings.closedPathStart !== 'random';
     });
     this.panel.querySelectorAll<HTMLButtonElement>('[data-plot-action="all"],[data-plot-action="only"],[data-plot-action="up"],[data-plot-action="down"],[data-plot-action="reset-pens"]').forEach(node => {
       const action = node.dataset.plotAction;
       const index = this.pens.findIndex(pen => pen.color === node.dataset.pen);
-      node.disabled = active || this.manualBusy || this.plotter.connecting || (action === 'up' || action === 'down') && (this.preferences.mode === 'source' || action === 'up' && index === 0 || action === 'down' && index === this.pens.length - 1);
+      node.disabled = active || !!this.job || this.manualBusy || this.plotter.connecting || (action === 'up' || action === 'down') && (this.preferences.mode === 'source' || action === 'up' && index === 0 || action === 'down' && index === this.pens.length - 1);
     });
     this.panel.querySelectorAll<HTMLButtonElement>('[data-plot-action="pen-up"],[data-plot-action="pen-down"]').forEach(node => { node.disabled = this.manualBusy || !this.plotter.canAdjustPen; });
     const originState = this.panel.querySelector<HTMLElement>('.plot-origin-state');
@@ -526,10 +514,11 @@ export class PlotWorkspace {
     }
   }
   private currentPass(): number {
-    if (!this.plan) return 0;
+    const displayPlan = this.playbackPlan ?? this.plan;
+    if (!displayPlan) return 0;
     if (this.destination === 'simulation') return this.simulationView?.pass ?? 0;
     let index = 0;
-    this.plan.passes.forEach((pass, i) => { if (pass.startEvent < this.progress.completed || this.progress.state === 'tool-change' && pass.startEvent === this.progress.completed) index = i; });
+    displayPlan.passes.forEach((pass, i) => { if (pass.startEvent < this.progress.completed || this.progress.state === 'tool-change' && pass.startEvent === this.progress.completed) index = i; });
     return index;
   }
   private syncPasses(): void {
@@ -542,12 +531,12 @@ export class PlotWorkspace {
     });
   }
   destroy(): void {
+    this.penCounter.destroy();
     if (this.busy || this.closed) return;
-    this.closed = true; void this.network?.disconnect(); ++this.revision; this.job?.cancel(); this.simulation?.destroy(); this.live?.destroy(); this.visual?.destroy();
-    this.panel.removeEventListener('click', this.onClick); this.panel.removeEventListener('change', this.onChange); this.panel.removeEventListener('input', this.onInput);
-    this.panel.removeEventListener('focusout', this.onFocusOut); this.panel.removeEventListener('keydown', this.onKeyDown);
-    this.panel.replaceChildren(this.savedEditor); this.panel.classList.remove('plot-sidebar'); this.panel.scrollTop = this.editorScroll;
-    this.root.classList.remove('plot-mode', 'plot-running', 'plot-playing', 'plot-paused'); this.savedInert.forEach((inert, node) => { node.inert = inert; });
+    this.closed = true; if (this.elapsedTimer) clearInterval(this.elapsedTimer); void this.network?.disconnect(); ++this.revision; this.job?.cancel(); this.simulation?.destroy(); this.live?.destroy(); this.visual?.destroy();
+    this.releaseEvents();
+    this.panel.replaceChildren(this.savedEditor); this.panel.classList.remove('plot-sidebar'); this.panel.removeAttribute('data-plot-sidebar'); this.panel.scrollTop = this.editorScroll;
+    this.root.classList.remove('plot-mode', 'plot-running', 'plot-playing', 'plot-paused'); this.root.removeAttribute('data-plot-mode'); this.savedInert.forEach((inert, node) => { node.inert = inert; });
     this.onExit();
   }
 }

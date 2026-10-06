@@ -6,6 +6,7 @@ const { awaitFills, fillPlotPaths, exportFilledSvg } = await import('/src/fill-d
 const { flattenPlotPaths } = await import('/src/svg.ts');
 const { serializePlotIt } = await import('/src/document-file.ts');
 const { prepareJob } = await import('/src/plot-job.ts');
+const { roundStepPath } = await import('/src/motion.ts');
 const fixture = structuredClone(initialState);
 fixture.documentName = 'Isolated gesture fixture';
 fixture.items = [{id:'fixture',name:'Inherited shapes',x:30,y:30,width:50,height:30,rotation:0,stroke:'#171714',viewBox:[0,0,50,30],markup:'<g transform="translate(3 2) rotate(12)" stroke="#171714"><rect id="sample" x="0" y="0" width="18" height="12" data-plot-it-name="Rectangle"/><path id="curve" d="M25 0C20 10 40 5 40 20" data-plot-it-name="Curve"/></g>',fillSettings:{...defaultFillSettings,mode:'none',outline:true,width:.3,overlap:0,connect:false}},textToItem('Hello',10)];
@@ -157,11 +158,11 @@ async function run(){
   const input=document.querySelector<HTMLInputElement>('[data-item-prop="name"]')!;input.focus();const count=read().items.length;assert(!key('keydown','d',{metaKey:true}).defaultPrevented,'Text duplicate swallowed');assert(!key('keydown',' ').defaultPrevented,'Text Space swallowed');assert(read().items.length===count,'Text shortcut duplicated');focus();assert(!key('keydown','d',{metaKey:true,isComposing:true}).defaultPrevented,'IME swallowed');
  });
  await test('Nudge fields validate and preserve last valid preference',()=>{
-  click('.settings-trigger');const normal=document.querySelector<HTMLInputElement>('[data-nudge-preference="nudgeMm"]')!,shift=document.querySelector<HTMLInputElement>('[data-nudge-preference="shiftNudgeMm"]')!;
-  normal.value='.25';normal.dispatchEvent(new Event('input'));normal.value='-1';normal.dispatchEvent(new Event('input'));assert(!document.querySelector<HTMLElement>('[data-nudge-error="nudgeMm"]')!.hidden,'Validation hidden');assert(JSON.parse(localStorage.getItem('plot-it-editor-preferences')!).nudgeMm===.25,'Invalid input replaced valid');normal.value='.25';normal.dispatchEvent(new Event('input'));shift.value='2';shift.dispatchEvent(new Event('input'));click('[aria-label="Close settings"]');
+  click('[data-menu-trigger]');const normal=document.querySelector<HTMLInputElement>('[data-nudge-preference="nudgeMm"]')!,shift=document.querySelector<HTMLInputElement>('[data-nudge-preference="shiftNudgeMm"]')!;
+  normal.value='.25';normal.dispatchEvent(new Event('input'));normal.value='-1';normal.dispatchEvent(new Event('input'));assert(!document.querySelector<HTMLElement>('[data-nudge-error="nudgeMm"]')!.hidden,'Validation hidden');assert(JSON.parse(localStorage.getItem('plot-it-editor-preferences')!).nudgeMm===.25,'Invalid input replaced valid');normal.value='.25';normal.dispatchEvent(new Event('input'));shift.value='2';shift.dispatchEvent(new Event('input'));click('[data-menu-trigger]');
   focus();const before=item().x;key('keydown','ArrowRight');key('keyup','ArrowRight');key('keydown','ArrowRight',{shiftKey:true});key('keyup','ArrowRight');equal(item().x,before+2.25,'Configured nudge');
  });
- await test('Completed gestures retain matching preview/export/plot vertices',async()=>{
+ await test('Completed gestures retain preview/export and reachable plot vertices',async()=>{
   await awaitFills(svg());const paths=fillPlotPaths(svg());assert(paths.length>0,'No generated boundary');
   const exported=exportFilledSvg(svg(),read().paper.width,read().paper.height);assert(!exported.includes('rotation-hit'),'Editor handle exported');
   const clone=new DOMParser().parseFromString(exported,'image/svg+xml').documentElement as unknown as SVGSVGElement;document.body.append(clone);clone.style.position='absolute';clone.style.width='500px';
@@ -169,7 +170,8 @@ async function run(){
   clone.remove();assert(recovered.length>0,'Export lost trajectories');
   assert(paths.flatMap((p:any)=>p.points).every((point:any)=>exportedPoints.some(p=>Math.hypot(p.x-point.x,p.y-point.y)<.00001)),'Export altered generated vertices');
   const plan=await prepareJob(svg(),read().paper,read().settings).promise;assert(plan.events.length>0,'Plot empty');
-  const generatedVertices=paths.flatMap((p:any)=>p.points);assert(generatedVertices.every((point:any)=>plan.events.some((e:any)=>e.kind==='xy'&&Math.hypot(e.to.x-point.x,e.to.y-point.y)<.00001)),'Plot altered generated vertices');
+  // Plot endpoints use the current integer step lattice and remove redundant collinear vertices.
+  const generatedVertices=paths.flatMap((p:any)=>roundStepPath(p.points,read().settings));assert(generatedVertices.every((point:any)=>plan.events.some((e:any)=>e.kind==='xy'&&Math.hypot(e.to.x-point.x,e.to.y-point.y)<.00001)),'Plot lost reachable generated vertices');
  });
  sessionStorage.setItem('modifier-fixture-report',logs.join('\n'));sessionStorage.setItem('modifier-fixture-phase','reload');location.reload();
  }catch(error){results.textContent=logs.join('\n')+`\nFAIL ${(error as Error).stack}`;}

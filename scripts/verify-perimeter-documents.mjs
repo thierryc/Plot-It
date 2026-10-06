@@ -5,7 +5,9 @@ async (page) => {
   await page.getByRole('button',{name:'Text',exact:true}).click();
   await page.locator('#text-value').fill('Hello');
   await page.locator('#text-size').fill('24');
-  await page.locator('#text-form [data-typography="fontId"]').selectOption('inter');
+  await page.locator('#text-form [data-font-picker-trigger]').click();
+  await page.getByRole('combobox', {name:'Search fonts',exact:true}).fill('Inter Regular');
+  await page.getByRole('option', {name:/^Inter Regular Outlines/}).click();
   await page.getByRole('button',{name:'Add to canvas',exact:true}).click();
   await page.waitForFunction(()=>document.querySelectorAll('#paper [data-fill-source]').length===5);
   const fixture = await page.evaluate(async()=>{

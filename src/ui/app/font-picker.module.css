@@ -1,0 +1,36 @@
+.font-picker { display:grid; gap:var(--field-gap); min-width:0; }
+.font-field-label { color:var(--text-secondary); font-size:var(--font-size-ui); }
+.font-picker-trigger { width:100%; min-width:0; min-height:var(--control-height); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 8px; border:1px solid var(--control-border); border-radius:7px; background:var(--control); color:var(--ink); text-align:left; font-size:var(--font-size-ui); cursor:pointer; }
+.font-picker-trigger>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.font-picker-trigger:hover { border-color:var(--hover-border); background:var(--hover); }
+.font-picker-trigger:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+.font-picker-popup { position:fixed; inset:auto; margin:0; padding:14px; width:min(570px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); overflow:hidden; border:1px solid var(--control-border); border-radius:12px; background:var(--surface); color:var(--ink); box-shadow:var(--island-shadow); }
+.font-picker-popup:popover-open { display:flex; flex-direction:column; gap:12px; }
+.font-picker-head { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:var(--font-size-ui); }
+.font-picker-close { display:grid; place-items:center; width:28px; height:28px; border:0; border-radius:6px; color:var(--muted); background:transparent; font-size:22px; cursor:pointer; }
+.font-picker-close:hover { background:var(--hover); }
+.font-search { width:100%; height:var(--control-height); padding:4px 8px; border:1px solid var(--control-border); border-radius:7px; background:var(--control); color:var(--ink); font-size:var(--font-size-ui); }
+.font-search:focus-visible { outline:2px solid var(--focus-ring); border-color:var(--focus); }
+.font-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.font-filters label { display:grid; gap:5px; color:var(--text-secondary); font-size:var(--font-size-ui); }
+.font-filters select { font-size:var(--font-size-ui); }
+.font-picker-summary { display:flex; justify-content:space-between; gap:8px; color:var(--text-quiet); font-size:var(--font-size-ui); }
+.font-picker-summary button { padding:0; border:0; background:transparent; color:var(--text-secondary); text-decoration:underline; cursor:pointer; font-size:var(--font-size-ui); }
+.font-results { min-height:96px; max-height:min(340px,calc(100dvh - 260px)); overflow:auto; overscroll-behavior:contain; border:1px solid var(--line); border-radius:8px; background:var(--surface-subtle); }
+.font-result { display:grid; grid-template-columns:minmax(0,1fr) 155px; align-items:center; gap:12px; min-height:66px; padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; }
+.font-result:last-child { border-bottom:0; }
+.font-result:hover { background:var(--hover); }
+.font-result[data-highlighted],.font-result[aria-selected=true] { background:var(--active); box-shadow:inset 3px 0 var(--accent); }
+.font-result-description { display:grid; gap:5px; min-width:0; }
+.font-result-name { overflow-wrap:anywhere; font-size:var(--font-size-ui); font-weight:550; color:var(--ink); }
+.font-result-description small { font-size:10px; color:var(--text-quiet); }
+.font-coverage-badge { font-size:9px; color:var(--text-secondary); }
+.font-specimen { width:100%; height:40px; object-fit:contain; opacity:.8; }
+:global([data-theme=dark]) .font-specimen { filter:invert(1); opacity:.85; }
+.font-empty { color:var(--text-secondary); padding:24px 12px; font-size:var(--font-size-ui); }
+.font-picker-hint { margin:0; font-size:10px; line-height:1.5; color:var(--text-quiet); }
+@media(max-width:430px) { .font-picker-popup { padding:12px; } .font-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } .font-filters label:last-child { grid-column:1/-1; } .font-result { grid-template-columns:minmax(0,1fr) 100px; padding:10px 8px; gap:8px; } .font-results { max-height:calc(100dvh - 300px); } }
+@media(forced-colors:active) { .font-specimen { forced-color-adjust:none; background:#fff; filter:none; opacity:1; } .font-result[data-highlighted] { outline:2px solid Highlight; } }
+@media(max-width:639px), (pointer:coarse) { .font-picker-close { width:44px; height:44px; } .font-picker-trigger { min-height:44px; } .font-picker-summary button { min-height:44px; } }
+
+@media(max-width:639px), (pointer:coarse) { .font-search { height:44px; } }

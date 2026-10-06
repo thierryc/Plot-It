@@ -36,7 +36,7 @@ Both notices ship with the production app and source archive.
 `catalog.json` describes 87 reviewed PlotFont library entries plus Inter Regular,
 Inter Italic, and Square Bot Sans. Five overlap the existing immediate fonts; the
 Layout Demo is additional, yielding 91 bundled menu entries plus Plot Sans.
-Defaults and existing font IDs remain compatible. The menu groups related fonts.
+Defaults and existing font IDs remain compatible. The shared font picker filters by style, drawing type, and collection.
 Only selected assets load from `public/fonts/library`; all notices, ancestor
 licenses, source SVG/JHF/LFF files, and original JSON metadata are retained. JSON
 is compacted without changing its geometry. The catalog records original-export
@@ -53,3 +53,7 @@ Fourteen Hershey JHF collections explicitly use private-use mappings. These
 drawings may be addressed by their declared private-use Unicode scalar; ordinary
 Greek/Cyrillic/Japanese text mappings are not qualified. Simple layout supports
 those explicit symbols, while complex scripts still require OpenType layout.
+
+The font picker uses locally generated SVG specimens and loads only thumbnails
+near the visible rows. See [Font menus and specimens](../../docs/FONT_PICKER.md)
+for generation, imported-font caching, keyboard interaction, and filter metadata.

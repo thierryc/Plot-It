@@ -1,0 +1,6 @@
+.check { display:flex; align-items:center; gap:var(--space-2); min-height:28px; color:var(--text-secondary); font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); cursor:pointer; }
+.check span { min-width:0; overflow-wrap:anywhere; }
+.checkbox { appearance:auto; width:var(--checkbox-size); height:var(--checkbox-size); min-width:var(--checkbox-size); min-height:0; max-width:var(--checkbox-size); max-height:var(--checkbox-size); flex:0 0 var(--checkbox-size); padding:0; margin:0; border:initial; border-radius:initial; background:initial; accent-color:var(--accent); cursor:inherit; }
+.checkbox:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
+.check:has(:disabled) { cursor:default; opacity:.6; }
+@media(max-width:639px), (pointer:coarse) { .check { min-height:var(--touch-target); } }

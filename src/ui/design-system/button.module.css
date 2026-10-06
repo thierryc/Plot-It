@@ -1,0 +1,11 @@
+.button { min-height:var(--button-height); border:1px solid var(--control-border); background:var(--button); color:var(--ink); border-radius:var(--radius-button); padding:4px 8px; font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); display:inline-flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
+.button:hover:not(:disabled) { border-color:var(--hover-border); background:var(--hover); }
+.button:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+.button:disabled { opacity:.38; cursor:default; }
+.primary { color:var(--on-primary); background:var(--primary); border-color:var(--primary); padding-inline:12px; }
+.primary:hover:not(:disabled) { background:var(--primary-hover); }
+.ghost { border-color:transparent; background:transparent; box-shadow:none; }
+.danger { color:var(--danger); }
+.icon-button { border-radius:var(--radius-control); width:var(--toolbar-size); height:var(--toolbar-size); padding:0; flex:none; }
+.button svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+@media(max-width:639px), (pointer:coarse) { .button { min-height:var(--touch-target); } .icon-button { border-radius:var(--radius-control); width:var(--touch-target); height:var(--touch-target); } }

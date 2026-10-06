@@ -41,8 +41,18 @@ export interface PlotSettings {
   cornering: number;
   penUp: number;
   penDown: number;
+  penRateRaise?: number;
+  penRateLower?: number;
+  penDelayUpMs?: number;
+  penDelayDownMs?: number;
+  penReloadWaitMs?: number;
   margin: number;
   reorderMode: "preserve" | "nearest" | "reversible";
+  /** Optional for older documents/network clients; 0 disables these geometry changes. */
+  pathJoinToleranceMm?: number;
+  pathSimplifyToleranceMm?: number;
+  closedPathStart?: 'preserve' | 'nearest' | 'random';
+  pathRandomSeed?: number;
   /** Legacy storage compatibility; execution always pauses for different pens. */
   pauseOnToolChange: boolean;
   maxPenDownMm: number;
@@ -114,8 +124,17 @@ export const initialState: AppState = {
     cornering: 0.127,
     penUp: 50,
     penDown: 60,
+    penRateRaise: 75,
+    penRateLower: 50,
+    penDelayUpMs: 150,
+    penDelayDownMs: 0,
+    penReloadWaitMs: 0,
     margin: 10,
     reorderMode: "reversible",
+    pathJoinToleranceMm: 0,
+    pathSimplifyToleranceMm: 0,
+    closedPathStart: 'preserve',
+    pathRandomSeed: 1,
     pauseOnToolChange: true,
     maxPenDownMm: 0,
     returnToOrigin: true

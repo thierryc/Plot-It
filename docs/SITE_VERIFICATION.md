@@ -23,6 +23,12 @@ and 1440 pixels. Direct route loads and refreshes worked. The keyboard skip link
 moves focus to the main content. Light and dark themes render; the saved theme
 survives navigation into the editor and refresh.
 
+The AP.CX marquee footer was checked on all four public pages in light and dark
+themes at 320, 390, 768, and 1440 pixels. Animation, pause/resume, reduced motion,
+theme refresh, keyboard focus, offscreen canvas cleanup, and back navigation
+were verified in the production preview. Canvas 2D and HTML fallbacks were
+checked with the corresponding rendering contexts disabled.
+
 The hosted editor offered Direct USB and Simulation. Font loading and text drawing
 worked, as did SVG import, simulation, pause, resume, and stop. Saved drawings
 survived navigation and refresh. These checks do not constitute a complete

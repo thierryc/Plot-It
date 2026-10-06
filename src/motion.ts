@@ -43,6 +43,48 @@ export function profileStepsPerMm(profile: PlotSettings["profile"]): number {
   return fullStepsPerMm * 8; // EBB EM mode 2: 1/8 microsteps.
 }
 
+/** Absolute XM lattice coordinates; rounding deltas separately causes drift. */
+export function quantizePoint(point: Point, settings: PlotSettings): Point {
+  const machine = machinePoint(point, settings.machineRotation), scale = profileStepsPerMm(settings.profile);
+  return { x: Math.round(machine.x * scale) + 0, y: Math.round(machine.y * scale) + 0 };
+}
+
+export interface StepVertex { requested: Point; position: Point }
+
+/** Keep source directions alongside reachable endpoints so rounding adds no false corners. */
+export function stepPathVertices(points: Point[], settings: PlotSettings): StepVertex[] {
+  const source: Point[] = [];
+  // Remove only redundant points on the same straight segment. Otherwise a
+  // densely sampled diagonal would become a long staircase on the step grid.
+  for (const point of points) {
+    if (![point.x, point.y].every(Number.isFinite)) throw new Error('Invalid trajectory coordinate.');
+    const last = source.at(-1);
+    if (last && point.x === last.x && point.y === last.y) continue;
+    while (source.length > 1) {
+      const a = source.at(-2)!, b = source.at(-1)!;
+      const ux = b.x - a.x, uy = b.y - a.y, vx = point.x - b.x, vy = point.y - b.y;
+      if (ux * vx + uy * vy <= 0 || Math.abs(ux * vy - uy * vx) > 1e-12 * Math.hypot(ux,uy) * Math.hypot(vx,vy)) break;
+      source.pop();
+    }
+    source.push(point);
+  }
+  const result: StepVertex[] = [];
+  let previous: Point | undefined;
+  const scale = profileStepsPerMm(settings.profile);
+  for (const point of source) {
+    const steps = quantizePoint(point, settings);
+    if (previous && steps.x === previous.x && steps.y === previous.y) continue;
+    result.push({ requested: { ...point }, position: canvasPoint({ x: steps.x / scale, y: steps.y / scale }, settings.machineRotation) });
+    previous = steps;
+  }
+  return result;
+}
+
+/** Plan distances from the reachable step endpoints, retaining cumulative tiny moves. */
+export function roundStepPath(points: Point[], settings: PlotSettings): Point[] {
+  return stepPathVertices(points, settings).map(vertex => vertex.position);
+}
+
 export function quantizeAbsoluteMove(
   fromMm: Point,
   toMm: Point,

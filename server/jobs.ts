@@ -40,6 +40,12 @@ export class JobStore {
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
     const record = { ...previous, ...fields }; await atomicJson(path + '.state', record); return record;
   }
+  async saveDiagnostics(id: string, value: unknown): Promise<void> {
+    await atomicJson(this.path(id) + '.diagnostics', value);
+  }
+  async getDiagnostics(id: string): Promise<unknown> {
+    return JSON.parse(await readFile(this.path(id) + '.diagnostics', 'utf8'));
+  }
   async recoverInterrupted() {
     await mkdir(this.directory, { recursive: true, mode: 0o700 });
     let interrupted = 0;

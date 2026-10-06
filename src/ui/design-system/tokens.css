@@ -1,0 +1,39 @@
+:root:has([data-ui-root]) {
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
+  --control-height:30px; --button-height:32px; --touch-target:44px; --checkbox-size:16px;
+  --field-gap:4px; --panel-gap:8px; --panel-padding:14px; --toolbar-size:36px;
+  --radius-button:9999px; --radius-control:6px; --radius-surface:12px; --layer-paper:2; --layer-status:3; --layer-controls:5; --layer-progress:6; --layer-toast:20;
+  --font-size-ui:14px; --font-size-secondary:12px; --line-height-ui:20px;
+  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:var(--font-ui); font-size:var(--font-size-ui); font-synthesis:none; color-scheme:light;
+  color:var(--ink); background:var(--app-background);
+  --ink:#1b1b1f; --accent:#0B99FF; --line:#e1e3e9; --muted:#60606b;
+  --app-background:#f3f4f6; --surface:#fafafb; --surface-subtle:#f0f1f4;
+  --control:#ffffff; --button:#f7f8fa; --hover:#edf3fa; --active:#dfedfc;
+  --control-border:#d5d8e0; --hover-border:#a5c9e9; --focus:#006bb5; --accent-text:#006bb5; --focus-ring:#0b99ff33;
+  --text-secondary:#454550; --text-quiet:#656570;
+  --stage:#f0f1f5; --stage-dot:#dfe2e9; --note:#f0f8ff;
+  --primary:#0B99FF; --on-primary:#06243a; --primary-hover:#32a9ff;
+  --status:#0B99FF; --status-halo:#e1f2ff; --progress-track:#e8edf2;
+  --dialog:#ffffff; --backdrop:#0c0c0e59; --toast:#1b1b1f; --toast-text:#ffffff; --toast-error:#8c2727;
+  --danger:#a32a2a; --island-shadow:0 0 0 1px #1b1b1f08,0 2px 5px #1b1b1f06,0 8px 24px #1b1b1f0d;
+  --select-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2360606b' stroke-width='1.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"]:has([data-ui-root]) {
+  color-scheme:dark;
+  --ink:#e3e3e8; --accent:#0B99FF; --line:#35353f; --muted:#b1b1bd;
+  --app-background:#121212; --surface:#232329; --surface-subtle:#232329;
+  --control:#232329; --button:#232329; --hover:#0b99ff18; --active:#0b99ff30;
+  --control-border:#46464f; --hover-border:#0b99ff80; --focus:#0B99FF; --accent-text:#0B99FF; --focus-ring:#0b99ff55;
+  --text-secondary:#d0d0da; --text-quiet:#aaaab7;
+  --stage:#17171b; --stage-dot:#24242c; --note:#0b99ff18;
+  --primary:#0B99FF; --on-primary:#06243a; --primary-hover:#32a9ff;
+  --status:#0B99FF; --status-halo:#0b99ff25; --progress-track:#383842;
+  --dialog:#232329; --backdrop:#0c0c0ea6; --toast:#e3e3e8; --toast-text:#1b1b1f; --toast-error:#ffb2ac;
+  --danger:#ffb2ac; --island-shadow:0 0 0 1px #ffffff06,0 8px 24px #00000030;
+  --select-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b1b1bd' stroke-width='1.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+@media(max-width:639px), (pointer:coarse) {
+  :root:has([data-ui-root]) { --field-gap:6px; --panel-gap:12px; --toolbar-size:44px; }
+}

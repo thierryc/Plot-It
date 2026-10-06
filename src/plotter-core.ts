@@ -1,9 +1,13 @@
 import type { PlotSettings, Point } from "./model";
-import { compileMotion, type MotionPlan } from "./motion-plan";
-import { validateMotionCommand } from './motion-command';
+import type { MotionPlan } from "./motion-plan";
+import { compilePlotProcess, executePlotProcess, type PlotProcess } from './plot-process';
+import { eventSignal, type PlotSignal } from './plot-signals';
 import { canvasPoint, profileStepsPerMm } from "./motion";
 import { DEFAULT_MACHINE_ROTATION } from './model';
-import { PenState, penTransition, servoPosition, SERVO_PIN, SERVO_POWER_TIMEOUT_MS } from './pen-control';
+import { PenState, SERVO_POWER_TIMEOUT_MS } from './pen-control';
+import { EbbPen } from './ebb-pen';
+import type { PenSettings } from './pen-control';
+import { parsePowerStatus, unavailablePower, type PowerStatus } from './ebb-power';
 
 export interface SerialPortInfo { usbVendorId?: number; usbProductId?: number }
 export interface SerialPortLike {
@@ -19,7 +23,7 @@ export interface SerialTransport {
   requestPort(): Promise<SerialPortLike>;
   addEventListener?(type: 'disconnect', listener: (event: Event) => void): void;
 }
-export interface ExecutionOptions { precompile?: boolean; positionBudgetMs?: number; maxCompiledCommands?: number }
+export interface ExecutionOptions { positionBudgetMs?: number; maxCompiledCommands?: number; sleep?: (durationMs: number) => Promise<void> }
 
 export interface PlotProgress {
   completed: number;
@@ -30,12 +34,13 @@ export interface PlotProgress {
 export interface PlotterTrace {
   time: number; elapsedMs?: number; commandId: number | null; command: string;
   reason: string; event: number; state: PlotProgress['state'];
-  phase: 'requested' | 'written' | 'received' | 'acknowledged' | 'settled' | 'failed' | 'marker';
-  pen: number | null; response?: string; error?: string; note?: string;
+  phase: 'requested' | 'written' | 'received' | 'acknowledged' | 'settled' | 'failed';
+  pen: number | null; response?: string; error?: string;
 }
 export interface PlotterJobTrace {
+  protocol: 'ebb-timed-sp-v1';
   startedAt: string; firmware: string | null; settings: PlotSettings; estimatedDuration: number;
-  plannedPenEvents: Array<{event:number; start:number; penDown:boolean; tool:string}>;
+  plan: MotionPlan; signals: PlotSignal[]; droppedSignals: number;
   entries: PlotterTrace[]; droppedEntries: number;
 }
 const JOB_TRACE_LIMIT = 20_000;
@@ -62,7 +67,13 @@ export class PlotterCore {
   private pausedSettled = false;
   private stopRequested = false;
   private readonly penState = new PenState();
-  private servoInitialized = false;
+  private readonly penDevice = new EbbPen(this.penState, {
+    command: command => this.command(command), queued: duration => {
+      this.noteQueuedMotion(duration); this.penIdleNotBefore = performance.now() + duration;
+    },
+    sleep: duration => this.execution.sleep?.(duration) ?? new Promise(resolve => setTimeout(resolve, duration)),
+    now: () => performance.now(),
+  });
   private traceEntries: PlotterTrace[] = [];
   private penTraceEntries: PlotterTrace[] = [];
   private jobTrace: PlotterJobTrace | null = null;
@@ -84,9 +95,19 @@ export class PlotterCore {
   private firmware: [number, number, number] = [0, 0, 0];
   public onProgress: (progress: PlotProgress) => void = () => undefined;
   public onPosition: ((position: Point) => void) | null = null;
+  public onSignal: (signal: PlotSignal) => void = () => undefined;
+  private supply = unavailablePower();
+  private lastPowerPoll = -Infinity;
+  private elapsedStartedAt: number | null = null;
+  private elapsedFinishedMs = 0;
+  get powerStatus(): PowerStatus { return { ...this.supply }; }
+  get elapsedMs(): number { return this.elapsedStartedAt === null ? this.elapsedFinishedMs : performance.now()-this.elapsedStartedAt; }
+  private latestSignal: PlotSignal | null = null;
+  get executionSignal(): PlotSignal | null { return this.latestSignal ? structuredClone(this.latestSignal) : null; }
   private lastPositionPoll = -Infinity;
   private positionFeedback = true;
   private expectedMotionIdleAt = 0;
+  private penIdleNotBefore = 0;
 
   get canAdjustPen(): boolean { return this.connected && (!this.busy || (this.paused && this.pausedSettled && !this.stopRequested && !this.cancelRequested)) && !this.penOperation; }
   get active(): boolean { return this.busy; }
@@ -103,14 +124,13 @@ export class PlotterCore {
   get diagnosticTrace(): PlotterTrace[] { return this.traceEntries.map(entry => ({...entry})); }
   get diagnosticPenTrace(): PlotterTrace[] { return this.penTraceEntries.map(entry => ({...entry})); }
   get diagnosticJobTrace(): PlotterJobTrace | null { return this.jobTrace ? structuredClone(this.jobTrace) : null; }
-  markPenMovement(): void { this.trace('operator','marker',{note:'Unexpected pen movement observed'}); }
-  configurePen(settings: Pick<PlotSettings, 'penUp' | 'penDown'>): void {
+  configurePen(settings: PenSettings): void {
     if (this.busy) throw new Error('Wait until the plotter is idle before changing pen heights.');
-    if (this.penState.configure(settings)) this.servoInitialized = false;
+    this.penState.configure(settings);
   }
-  private trace(command: string, phase: PlotterTrace['phase'], details: Pick<PlotterTrace,'response' | 'error' | 'note'> = {}): void {
+  private trace(command: string, phase: PlotterTrace['phase'], details: Pick<PlotterTrace,'response' | 'error'> = {}): void {
     const time = performance.now();
-    const entry: PlotterTrace = {time,command,phase,commandId:phase !== 'marker' && this.pendingCommand?.command === command ? this.pendingCommand.id : null,
+    const entry: PlotterTrace = {time,command,phase,commandId:this.pendingCommand?.command === command ? this.pendingCommand.id : null,
       reason:this.commandReason,event:this.lastProgress.completed,state:this.lastProgress.state,pen:this.penState.requested,...details};
     if (this.jobTrace) {
       entry.elapsedMs = time-this.jobTraceStart;
@@ -119,14 +139,14 @@ export class PlotterCore {
         // Trim in batches so diagnostics don't shift a large array on each USB
         // command. The separate pen journal preserves important transitions.
         const drop = 2000;
-        this.jobTrace.entries.splice(0,drop); this.jobTrace.droppedEntries += drop;
+        this.jobTrace.entries.splice(1000,drop); this.jobTrace.droppedEntries += drop;
       }
     }
     this.traceEntries.push(entry);
     if (this.traceEntries.length > 500) this.traceEntries.splice(0,this.traceEntries.length-500);
-    // Long LM/QS/QG streams must not erase the pen commands needed to diagnose
+    // Long XM/QS/QG streams must not erase the pen commands needed to diagnose
     // an unexpected physical movement. Retain their own bounded journal.
-    if (/^(S2|SC|SR|SP|TP|ES|EM)(,|$)/.test(command) || phase === 'settled' || phase === 'failed' || phase === 'marker') {
+    if (/^(S2|SC|SR|SP|TP|ES|EM)(,|$)/.test(command) || phase === 'settled' || phase === 'failed') {
       this.penTraceEntries.push(entry);
       if (this.penTraceEntries.length > 200) this.penTraceEntries.splice(0,this.penTraceEntries.length-200);
     }
@@ -166,6 +186,7 @@ export class PlotterCore {
       const product = info.usbProductId?.toString(16).padStart(4, "0") ?? "unknown";
       this.deviceLabel = `${vendor}:${product} · ${version.replace(/^V,/, "")}`;
       this.ready = true;
+      await this.pollPower(true);
       return this.deviceLabel;
     } catch (error) {
       await this.cleanup().catch((cleanupError) => console.error("EBB connection cleanup failed", cleanupError));
@@ -186,10 +207,12 @@ export class PlotterCore {
     this.buffer = "";
     this.firmware = [0, 0, 0];
     this.deviceLabel = "";
+    this.supply = unavailablePower(); this.lastPowerPoll = -Infinity;
     this.positionKnown = false;
-    this.penState.invalidate(); this.penState.powerHeld = false; this.servoInitialized = false;
+    this.penState.invalidate(); this.penState.powerHeld = false; this.penDevice.reset();
     this.motorsEngaged = false;
     this.expectedMotionIdleAt = 0;
+    this.penIdleNotBefore = 0;
     this.cancelRequested = true;
     this.resume();
     this.onConnectionChange();
@@ -282,36 +305,11 @@ export class PlotterCore {
       || (currentMajor === major && currentMinor === minor && currentPatch >= patch);
   }
 
-  private async initializeServo(target = this.penState.up, rate = penTransition(null,target).rate): Promise<void> {
-    if (this.servoInitialized) return;
-    this.penState.requested = target;
-    await this.command('SC,8,8'); await this.command('SC,9,3');
-    // SC,1 is not configuration-only: firmware queues SP using its remembered
-    // pen state. Make both endpoints the requested target before enabling it,
-    // so an old up/down state cannot replay a stale (possibly extreme) height.
-    await this.command(`SC,4,${servoPosition(target)}`);
-    await this.command(`SC,5,${servoPosition(target)}`);
-    await this.command(`SC,10,${rate}`);
-    if (this.firmwareAtLeast(2,6,0)) await this.command(`SR,${this.penState.powerHeld ? 0 : SERVO_POWER_TIMEOUT_MS},1`);
-    await this.command('SC,1,1');
-    await this.command(`SC,4,${servoPosition(this.penState.up)}`);
-    await this.command(`SC,5,${servoPosition(this.penState.down)}`);
-    await this.command(`SC,11,${penTransition(this.penState.down,this.penState.up).rate}`);
-    await this.command(`SC,12,${penTransition(this.penState.up,this.penState.down).rate}`);
-    // Do not accept/cache SC's implicit movement. The explicit S2 that follows
-    // supplies the required settling delay before any XY motion.
-    this.servoInitialized = true;
-  }
-
   private async pen(percent: number, delayMs: number, reason = 'planned pen transition', force = false): Promise<void> {
     this.commandReason = reason;
-    const from = this.penState.current(performance.now());
-    if (!force && from === percent) return;
-    const move = penTransition(from,percent,delayMs);
-    await this.initializeServo(percent,move.rate);
-    this.penState.requested = percent;
-    await this.command(`S2,${move.position},${SERVO_PIN},${move.rate},${move.duration}`);
-    this.penState.accept(percent,performance.now());
+    if (!force && this.penState.current(performance.now()) === percent) return;
+    if (!this.penState.powerHeld && this.firmwareAtLeast(2,6,0)) await this.command(`SR,${SERVO_POWER_TIMEOUT_MS},1`);
+    await this.penDevice.move(percent, delayMs, force);
   }
 
   private async waitWhilePaused(progress: PlotProgress, tool?: string, resumePen: number | null = this.penState.up): Promise<void> {
@@ -339,6 +337,27 @@ export class PlotterCore {
   private async waitForTool(tool: string, progress: PlotProgress): Promise<void> {
     this.paused = true;
     await this.waitWhilePaused(progress, tool);
+  }
+
+  /** Serial queries run through the feeder, never through a competing timer. */
+  private async pollPower(force = false): Promise<void> {
+    if (!force && performance.now()-this.lastPowerPoll < 2000) return;
+    this.lastPowerPoll = performance.now();
+    if (!this.firmwareAtLeast(2,2,3)) { this.supply=unavailablePower('Supply monitoring requires EBB firmware 2.2.3 or newer.',Date.now()); return; }
+    const response = await this.query('QC');
+    // Legacy replies end in OK; future replies include QC and omit that line.
+    // A rejected command has no second line and must leave the stream aligned.
+    if (!response.startsWith('QC,') && !response.startsWith('!') && response !== 'OK' && response !== 'QC') {
+      const terminator = await this.readLine();
+      if (terminator !== 'OK') throw new Error(`Unexpected QC terminator: ${terminator}`);
+    }
+    this.supply=parsePowerStatus(response);
+  }
+  async checkPowerSupply(): Promise<PowerStatus> {
+    await this.manual(()=>this.pollPower(true)); return this.powerStatus;
+  }
+  private requirePower(): void {
+    if (this.supply.state === 'low') throw new Error(this.supply.message);
   }
 
   private async pollPosition(force = false): Promise<void> {
@@ -372,16 +391,23 @@ export class PlotterCore {
   }
 
   private async waitUntilIdle(): Promise<void> {
+    // A queue status is not a pen-contact sensor. Enforce the complete SP
+    // allowance on the host as well, even if an early query reports idle.
+    const remainingPenTime = this.penIdleNotBefore - performance.now();
+    if (remainingPenTime > 0) await (this.execution.sleep?.(remainingPenTime) ?? new Promise(resolve => setTimeout(resolve, remainingPenTime)));
+    this.penIdleNotBefore = 0;
     const deadline = Math.max(performance.now(), this.expectedMotionIdleAt) + 10_000;
     while (performance.now() <= deadline) {
       await this.pollPosition();
       if (this.firmwareAtLeast(2, 6, 2)) {
         const response = await this.query("QG");
         const hex = response.includes(",") ? response.split(",").at(-1)! : response;
+        if (!/^[0-9a-f]{2}$/i.test(hex)) throw new Error(`Unexpected QG response: ${response}`);
         const status = Number.parseInt(hex, 16);
         if (Number.isFinite(status) && (status & 0x0f) === 0) { this.expectedMotionIdleAt = 0; this.markPenSettled(); await this.pollPosition(true); return; }
       } else {
         const response = await this.query("QM");
+        if (!/^QM,[01],[01],[01],[01]$/.test(response)) throw new Error(`Unexpected QM response: ${response}`);
         const fields = response.split(",");
         if (fields[1] === "0" && fields[4] === "0") { this.expectedMotionIdleAt = 0; this.markPenSettled(); await this.pollPosition(true); return; }
       }
@@ -395,17 +421,40 @@ export class PlotterCore {
   }
 
   private async emergencyStop(): Promise<void> {
-    this.penState.invalidate(); this.commandReason = 'emergency stop';
-    await this.write("ES,1");
-    const response = await this.readLine();
+    this.commandReason = 'emergency stop';
+    await this.flushMotion(true);
+  }
+
+  private async flushMotion(disableMotors: boolean): Promise<boolean> {
+    this.penState.invalidate();
+    const command = this.firmwareAtLeast(2,8,0) ? `ES,${disableMotors ? 1 : 0}` : 'ES';
+    await this.write(command);
+    let response = await this.readLine();
+    // A reset may leave a trailing acknowledgement. It is not an ES status:
+    // use a version marker to resynchronize without waiting forever for a
+    // status that a malformed reply might have omitted.
+    const resynchronize=response === 'OK';
+    if (resynchronize) {
+      await this.write('V');
+      for (let skipped=0; response === 'OK' && skipped<4; skipped++) response=await this.readLine();
+    }
     if (response.startsWith("!")) throw new Error(`Emergency stop failed: ${response}`);
-    if (/^[01]$/.test(response)) {
+    const legacy = response.match(/^([01])(?:,[+-]?\d+,[+-]?\d+,[+-]?\d+,[+-]?\d+)?$/);
+    const future = response.match(/^ES,([01])$/);
+    if (legacy) {
       const terminator = await this.readLine();
       if (terminator !== "OK") throw new Error(`Unexpected emergency-stop response: ${terminator}`);
-    } else if (!response.startsWith("ES")) {
+    } else if (!future && response !== 'ES') {
       throw new Error(`Unexpected emergency-stop response: ${response}`);
     }
+    if (resynchronize) {
+      const marker=await this.readLine();
+      if (!this.matchesFirmwareReply(marker)) throw new Error(`Unexpected emergency-stop synchronization response: ${marker}`);
+    }
+    this.trace(command, 'acknowledged');
     this.expectedMotionIdleAt = 0;
+    this.penIdleNotBefore = 0;
+    return (legacy?.[1] ?? future?.[1]) === '1';
   }
 
   private assertIdle(): void {
@@ -423,10 +472,9 @@ export class PlotterCore {
 
   async setPen(percent: number, force = false): Promise<void> {
     if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new Error("Pen height must be between 0 and 100 percent.");
-    const restorePower = async () => { if (force && this.firmwareAtLeast(2,6,0)) await this.command(`SR,${this.penState.powerHeld ? 0 : SERVO_POWER_TIMEOUT_MS},1`); };
-    if (!this.busy) { await this.manual(async () => { await restorePower(); await this.pen(percent, 120, 'manual pen test', force); }); return; }
+    if (!this.busy) { await this.manual(async () => { await this.pen(percent, 120, 'manual pen control', force); }); return; }
     if (!this.canAdjustPen) throw new Error("Pause the plot and wait until it has stopped before adjusting the pen.");
-    const operation = (async () => { await restorePower(); await this.pen(percent, 120, 'manual pen test during pause', force); await this.waitUntilIdle(); })();
+    const operation = (async () => { await this.pen(percent, 120, 'manual pen control during pause', force); await this.waitUntilIdle(); })();
     this.penOperation = operation;
     try { await operation; }
     catch (error) { this.positionKnown = false; this.penState.invalidate(); this.cancel(); throw error; }
@@ -473,7 +521,10 @@ export class PlotterCore {
 
   private async home(settings: PlotSettings): Promise<void> {
     if (!Number.isFinite(settings.travelSpeed) || settings.travelSpeed <= 0) throw new Error("Travel speed must be positive.");
-    await this.pen(settings.penUp,120,'home lift');
+    // A user may have adjusted the physical pen since the cached up command.
+    this.penState.invalidate();
+    await this.pen(settings.penUp,120,'home lift',true);
+    await this.waitUntilIdle();
     const durationMs = Math.hypot(this.stepPosition.x,this.stepPosition.y) / profileStepsPerMm(settings.profile) / settings.travelSpeed * 1000;
     if (this.firmwareAtLeast(2,6,2)) {
       await this.command(`HM,${Math.min(25000,Math.max(2,Math.round(settings.travelSpeed * profileStepsPerMm(settings.profile))))}`);
@@ -485,154 +536,159 @@ export class PlotterCore {
     await this.waitUntilIdle(); this.stepPosition={x:0,y:0};
   }
 
-  async plot(plan: MotionPlan): Promise<void> {
-    this.assertIdle();
-    if (!plan.passes.length) throw new Error('There are no paths to plot.');
-    this.configurePen(plan.settings);
-    // Compile the complete motion stream before any preparation can move hardware.
-    // The browser adapter retains its established on-demand behavior.
-    let preparedCursor: Point = { x: 0, y: 0 };
-    let commandCount = 0;
-    const supportsLM = this.firmwareAtLeast(2,5,3);
-    const prepared = this.execution.precompile ? plan.events.map(event => {
-      const limit = this.execution.maxCompiledCommands ?? 1_000_000;
-      if (event.kind === 'xy' && !supportsLM && Math.ceil(event.duration / .015) + commandCount > limit) throw new Error('Compiled job exceeds command limit.');
-      const moves = compileMotion(event, plan.settings, preparedCursor, supportsLM);
-      commandCount += moves.length;
-      if (commandCount > (this.execution.maxCompiledCommands ?? 1_000_000)) throw new Error('Compiled job exceeds command limit.');
-      for (const move of moves) {
-        validateMotionCommand(move.command);
-        preparedCursor = move.targetSteps;
-      }
-      return moves;
-    }) : null;
-    this.busy = true; this.cancelRequested = false; this.paused = false; this.stopRequested = false; this.pausedSettled = false;
+  private beginPlot(process: PlotProcess): void {
+    const { plan } = process;
+    this.busy = true; this.cancelRequested = false; this.paused = false;
+    this.stopRequested = false; this.pausedSettled = false;
     this.positionFeedback = true; this.lastPositionPoll = -Infinity;
-    const settings = plan.settings;
-    this.machineRotation = settings.machineRotation ?? DEFAULT_MACHINE_ROTATION;
-    this.lastProgress = { completed: 0, total: plan.events.length, state: "plotting" };
+    this.machineRotation = plan.settings.machineRotation ?? DEFAULT_MACHINE_ROTATION;
+    this.latestSignal = null;
+    this.lastProgress = { completed: 0, total: plan.events.length, state: 'plotting' };
     this.jobTraceStart = performance.now();
-    this.jobTrace = {startedAt:new Date().toISOString(),firmware:this.firmwareLabel,settings:structuredClone(settings),estimatedDuration:plan.duration,
-      plannedPenEvents:plan.events.flatMap((event,i) => event.kind === 'pen' ? [{event:i,start:event.start,penDown:event.penDown,tool:event.tool}] : []),entries:[],droppedEntries:0};
-    let stepCursor: Point = { x: 0, y: 0 };
-    let completed = 0;
-    const total = plan.events.length;
-    let failed = false;
-    let terminal: PlotProgress['state'] = 'finished';
-    try {
-      await this.waitUntilIdle();
-      this.commandReason = 'job servo setup'; this.penState.powerHeld = this.firmwareAtLeast(2,6,0);
-      const alreadyInitialized = this.servoInitialized;
-      await this.initializeServo();
-      if (this.penState.powerHeld && alreadyInitialized) await this.command('SR,0,1');
-      // SR only updates the reload value. Refresh the live countdown even
-      // when cached pen-up state would otherwise suppress the command.
-      if (this.penState.powerHeld) { await this.pen(settings.penUp,0,'job servo power hold',true); await this.waitUntilIdle(); }
-      if (!this.hasOrigin(settings.profile)) {
-        await this.captureOrigin(settings.profile, 'automatic');
-        await this.waitUntilIdle();
+    this.elapsedStartedAt = this.jobTraceStart; this.elapsedFinishedMs = 0;
+    this.jobTrace = {
+      startedAt: new Date().toISOString(), firmware: this.firmwareLabel,
+      settings: structuredClone(plan.settings), estimatedDuration: plan.duration,
+      protocol: 'ebb-timed-sp-v1',
+      plan: structuredClone(plan), signals: [], droppedSignals: 0, entries: [], droppedEntries: 0,
+    };
+  }
+
+  private sendPlotSignal(process: PlotProcess, index: number, phase: PlotSignal['phase']): void {
+    const signal = eventSignal(process.plan, process.penCounts, index, phase, performance.now() - this.jobTraceStart);
+    this.latestSignal = signal;
+    if (this.jobTrace) {
+      this.jobTrace.signals.push(signal);
+      // Preserve startup evidence as well as the recent tail, independently
+      // of the much noisier serial query log. The full plan is always retained.
+      if (this.jobTrace.signals.length > JOB_TRACE_LIMIT) {
+        this.jobTrace.signals.splice(1000, 2000); this.jobTrace.droppedSignals += 2000;
       }
-      // Stop/Pause requested during origin capture must survive preparation.
-      await this.waitWhilePaused({ completed, total, state: 'plotting' });
-      // Return to the established physical origin without re-enabling/resetting EBB counters.
-      if (!this.stopRequested && !this.cancelRequested) await this.home(settings);
-      for (const [eventIndex, event] of plan.events.entries()) {
-        // Keep queued work within one continuous motion section. Draining at
-        // rest boundaries also gives pause/stop a chance before the next section.
-        if (event.kind !== "xy" || event.initialSpeed < 1e-9) {
-          await this.waitUntilIdle();
-          if (this.stopRequested || this.cancelRequested) break;
-          await this.waitWhilePaused({ completed, total, state: "plotting" },undefined,event.kind === 'pen' ? null : event.penDown ? settings.penDown : settings.penUp);
-        }
-        if (this.cancelRequested || (this.stopRequested && (event.kind !== "xy" || event.initialSpeed < 1e-9))) break;
-        if (event.kind === "tool") {
-          await this.waitUntilIdle();
-          await this.waitForTool(event.tool, { completed, total, state: "plotting" });
-        } else if (event.kind === "pen") {
-          await this.pen(event.penDown ? settings.penDown : settings.penUp, Math.round(event.duration * 1000));
-        } else {
-          this.commandReason = event.penDown ? 'drawing motion' : 'travel motion';
-          for (const move of prepared?.[eventIndex] ?? compileMotion(event, settings, stepCursor, this.firmwareAtLeast(2,5,3))) {
-            if (this.cancelRequested) break;
-            await this.command(move.command); stepCursor = move.targetSteps; this.stepPosition = stepCursor;
-            // Optional counter queries only use generous command-duration windows.
-            // Never add a query to a short LM/XM stream to satisfy a UI update.
-            const budget = this.execution.positionBudgetMs;
-            const moveMs = move.command.startsWith('XM,') ? Number(move.command.split(',')[1]) : event.duration * 1000;
-            this.noteQueuedMotion(moveMs);
-            if (budget === undefined || moveMs >= budget) await this.pollPosition();
-          }
-        }
-        if (this.cancelRequested) break;
-        completed++; this.emit({ completed, total, state: this.stopRequested ? "stopping" : this.paused ? "pausing" : "plotting" });
-      }
-      await this.penOperation;
-      if (!this.cancelRequested) {
-        await this.waitUntilIdle();
-        // Requests can arrive after the final command was acknowledged while
-        // the board is still physically executing it.
-        await this.waitWhilePaused({ completed, total, state: "plotting" });
-      }
-      await this.penOperation;
-      if (this.stopRequested && !this.cancelRequested) {
-        this.emit({ completed, total, state: "returning" });
-        await this.home(settings);
-        terminal = 'stopped';
-      } else if (this.cancelRequested) {
-        await this.emergencyStop(); this.positionKnown = false;
-        terminal = 'cancelled';
-      }
-    } catch (error) {
-      failed = true;
-      this.positionKnown = false;
-      await this.emergencyStop().catch(() => undefined);
-      throw error;
-    } finally {
-      let cleanupError: unknown;
-      try {
-        await this.pen(settings.penUp,120,'job cleanup lift');
-        await this.waitUntilIdle();
-        if (!failed && !this.cancelRequested && this.stopRequested && terminal === 'finished') {
-          this.emit({ completed, total, state: 'returning' });
-          await this.home(settings); terminal = 'stopped';
-        }
-        if (!failed && this.cancelRequested && terminal !== 'cancelled') {
-          await this.emergencyStop(); terminal = 'cancelled';
-        }
-      } catch (error) {
-        cleanupError = error;
-        await this.emergencyStop().catch(() => undefined);
-      }
-      // Re-arm idle servo power-off without moving an already lifted pen.
-      // SR changes the reload value; S2 refreshes the actual countdown.
-      try {
-        if (this.firmwareAtLeast(2,6,0)) {
-          this.commandReason = 'idle servo power timeout';
-          await this.command(`SR,${SERVO_POWER_TIMEOUT_MS}`);
-          await this.pen(settings.penUp,0,'idle servo power timeout',true);
-          await this.waitUntilIdle();
-        }
-      } catch (error) { cleanupError ??= error; this.penState.invalidate(); }
-      this.penState.powerHeld = false;
-      try {
-        // Stop can also arrive while the final servo-power command settles.
-        if (!failed && !cleanupError && !this.cancelRequested && this.stopRequested && terminal === 'finished') {
-          this.emit({ completed, total, state: 'returning' });
-          await this.home(settings); terminal = 'stopped';
-        }
-        if (!failed && !cleanupError && this.cancelRequested && terminal !== 'cancelled') {
-          await this.emergencyStop();
-          await this.pen(settings.penUp,120,'cancel cleanup lift');
-          await this.waitUntilIdle(); terminal = 'cancelled';
-        }
-      } catch (error) { cleanupError ??= error; this.positionKnown = false; }
-      // Release only after final motion and pen lift settle. A missing/rejected
-      // acknowledgement must not claim the motors are off or the job succeeded.
-      try { await this.releaseMotors(); }
-      catch (error) { cleanupError ??= new Error(`Could not release motors: ${(error as Error).message}`); }
-      this.busy = false; this.pausedSettled = false; this.paused = false;
-      if (!failed && cleanupError) throw cleanupError;
     }
+    this.onSignal(structuredClone(signal));
+  }
+
+  private async resetPlotterSettings(settings: PlotSettings): Promise<void> {
+    this.commandReason = 'startup queue purge';
+    const interrupted = this.firmwareAtLeast(2,2,7) ? await this.flushMotion(false) : false;
+    if (interrupted) this.positionKnown = false;
+    // EBB 2.8.1 ES removes motor moves, but not queued servo commands. Drain
+    // those while stationary before changing calibration or starting the plan.
+    // Keep the working servo/PWM engine; R reinitializes it and its GPIO pins.
+    this.commandReason = 'startup pen queue drain';
+    await this.waitUntilIdle();
+    this.expectedMotionIdleAt = this.penIdleNotBefore = 0;
+    this.penState.powerHeld = false;
+    this.penState.invalidate();
+    this.penDevice.reset();
+    this.commandReason = 'startup machine setup';
+    await this.command('SC,2,0');
+    await this.penDevice.configure();
+    this.penState.powerHeld = this.firmwareAtLeast(2,6,0);
+    if (this.penState.powerHeld) await this.command('SR,0,1');
+    if (!this.hasOrigin(settings.profile)) await this.captureOrigin(settings.profile, 'automatic');
+  }
+
+  private matchesFirmwareReply(response: string): boolean {
+    const match=response.match(/^(?:V,)?(?:EBB|EBBv\d+_and_above EB) Firmware Version (\d+)\.(\d+)\.(\d+)(?:\b.*)?$/i);
+    return !!match && this.firmware.every((value,index)=>value===Number(match[index+1]));
+  }
+
+  private async preparePlot(settings: PlotSettings): Promise<void> {
+    await this.resetPlotterSettings(settings);
+    await this.waitUntilIdle();
+    await this.waitWhilePaused(this.lastProgress);
+    if (!this.stopRequested && !this.cancelRequested && (this.stepPosition.x || this.stepPosition.y)) await this.home(settings);
+  }
+
+  private async finishPlot(settings: PlotSettings, completed: number, total: number, terminal: PlotProgress['state']): Promise<PlotProgress['state']> {
+    await this.penOperation;
+    if (this.cancelRequested && terminal !== 'cancelled') {
+      await this.emergencyStop(); this.positionKnown = false; terminal = 'cancelled';
+    }
+    await this.waitUntilIdle();
+    await this.pen(settings.penUp, 120, 'job cleanup lift');
+    await this.waitUntilIdle();
+    if (this.stopRequested && !this.cancelRequested && terminal === 'finished') {
+      this.emit({ completed, total, state: 'returning' });
+      await this.home(settings); terminal = 'stopped';
+    }
+    if (this.firmwareAtLeast(2,6,0)) {
+      // The final lifted pen has settled. Release power without another move.
+      this.commandReason = 'idle servo power';
+      await this.command(`SR,${SERVO_POWER_TIMEOUT_MS},0`);
+      this.penState.invalidate();
+    }
+    this.penState.powerHeld = false;
+    // A control request may arrive while the final power command is awaiting ACK.
+    if (this.cancelRequested && terminal !== 'cancelled') {
+      await this.emergencyStop(); this.positionKnown = false; terminal = 'cancelled';
+      await this.pen(settings.penUp,120,'cancel cleanup lift'); await this.waitUntilIdle();
+    } else if (this.stopRequested && terminal === 'finished') {
+      this.emit({ completed, total, state: 'returning' });
+      await this.home(settings); terminal = 'stopped';
+    } else return terminal;
+    if (this.firmwareAtLeast(2,6,0)) { await this.command(`SR,${SERVO_POWER_TIMEOUT_MS},0`); this.penState.invalidate(); }
+    return terminal;
+  }
+
+  async plot(input: MotionPlan): Promise<void> {
+    this.assertIdle();
+    const process = compilePlotProcess(input, this.execution.maxCompiledCommands);
+    const { settings } = process.plan, total = process.steps.length;
+    this.stopRequested = false; this.cancelRequested = false; this.busy = true;
+    try {
+      await this.pollPower(true);
+      if (this.stopRequested || this.cancelRequested) { this.emit({completed:0,total,state:this.cancelRequested?'cancelled':'stopped'}); return; }
+      this.requirePower();
+    } finally { this.busy = false; }
+    this.configurePen(settings); this.beginPlot(process);
+    let completed = 0, terminal: PlotProgress['state'] = 'finished';
+    let failure: unknown;
+    try {
+      await this.preparePlot(settings);
+      completed = await executePlotProcess(process, {
+        waitUntilIdle: () => this.waitUntilIdle(),
+        boundary: async ({ event }) => {
+          if (this.stopRequested || this.cancelRequested) return false;
+          await this.pollPower(); this.requirePower();
+          await this.waitWhilePaused({ completed, total, state: 'plotting' }, undefined,
+            event.kind === 'pen' ? null : event.penDown ? settings.penDown : settings.penUp);
+          return !this.stopRequested && !this.cancelRequested;
+        },
+        cancelled: () => this.cancelRequested,
+        changeTool: tool => this.waitForTool(tool, { completed, total, state: 'plotting' }),
+        movePen: (down, duration) => this.pen(down ? settings.penDown : settings.penUp, duration, 'planned pen transition', true),
+        moveXY: async (move, { event }) => {
+          this.commandReason = event.penDown ? 'drawing motion' : 'travel motion';
+          await this.command(move.command); this.stepPosition = move.targetSteps;
+          if (performance.now()-this.lastPowerPoll >= 2000) { await this.pollPower(); this.requirePower(); }
+          this.noteQueuedMotion(move.durationMs);
+          // Keep UI queries out of short, continuous motion blocks.
+          if (move.durationMs >= (this.execution.positionBudgetMs ?? 30)) await this.pollPosition();
+        },
+        signal: ({ index }, phase) => this.sendPlotSignal(process, index, phase),
+        progress: count => {
+          completed = count;
+          this.emit({ completed, total, state: this.stopRequested ? 'stopping' : this.paused ? 'pausing' : 'plotting' });
+        },
+      });
+      if (!this.cancelRequested) await this.waitWhilePaused({ completed, total, state: 'plotting' });
+    } catch (error) {
+      failure = error; this.positionKnown = false; this.cancelRequested = true; terminal = 'cancelled';
+      await this.emergencyStop().catch(() => undefined);
+    }
+    try { terminal = await this.finishPlot(settings, completed, total, terminal); }
+    catch (error) {
+      failure ??= error; this.positionKnown = false;
+      await this.emergencyStop().catch(() => undefined);
+    } finally {
+      try { await this.releaseMotors(); }
+      catch (error) { failure ??= new Error(`Could not release motors: ${(error as Error).message}`); }
+      this.elapsedFinishedMs = this.elapsedMs; this.elapsedStartedAt = null;
+      this.busy = false; this.pausedSettled = false; this.paused = false; this.penState.powerHeld = false;
+    }
+    if (failure) throw failure;
     this.emit({ completed: terminal === 'finished' ? total : completed, total, state: terminal });
   }
 }

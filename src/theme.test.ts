@@ -40,14 +40,14 @@ describe("interface themes", () => {
     theme.setPreference("dark"); env.systemChange(false);
     expect(env.root.dataset.theme).toBe("dark");
     theme.setPreference("system"); expect(env.root.dataset.theme).toBe("light");
-    expect(env.meta.setAttribute).toHaveBeenLastCalledWith("content", "#f5f5f5");
+    expect(env.meta.setAttribute).toHaveBeenLastCalledWith("content", "#ffffff");
   });
 
   it("persists separately and restores an explicit preference", () => {
     const env = environment("dark"); const theme = env.initialize();
     expect(theme.preference).toBe("dark");
     expect(env.root.dataset.theme).toBe("dark");
-    expect(env.meta.setAttribute).toHaveBeenLastCalledWith("content", "#242424");
+    expect(env.meta.setAttribute).toHaveBeenLastCalledWith("content", "#232329");
     theme.setPreference("light");
     expect(env.storage.setItem).toHaveBeenCalledExactlyOnceWith(THEME_KEY, "light");
     // Only root attributes and browser chrome are touched; no editor rendering occurs.
@@ -77,25 +77,28 @@ describe("interface themes", () => {
     }
   });
 
-  it("keeps canvas guides independent and UI text contrast readable", () => {
-    const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
-    const canvasRules = css.match(/\.paper[^{}]*\{[^}]*\}/g)!;
-    expect(canvasRules.length).toBeGreaterThan(5);
-    for (const rule of canvasRules) {
-      for (const [, token] of rule.matchAll(/var\((--[\w-]+)/g)) {
-        expect(["--paper-color", "--paper-ratio", "--zoom"]).toContain(token);
-      }
-    }
+  it("uses the exact accent and readable interface colors without recoloring artwork", () => {
+    const css = readFileSync(new URL("./ui/design-system/tokens.css", import.meta.url), "utf8");
+    const canvas = readFileSync(new URL("./ui/app/canvas.module.css", import.meta.url), "utf8");
+    expect(canvas).toContain('background:var(--paper-color, #ffffff)');
+    expect(canvas).toContain('stroke:#0B99FF');
     const luminance = (hex: string) => {
-      const value = parseInt(hex.slice(1, 3), 16) / 255;
-      return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+      const rgb = [1, 3, 5].map(offset => {
+        const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+        return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+      });
+      return rgb[0]! * .2126 + rgb[1]! * .7152 + rgb[2]! * .0722;
     };
-    for (const palette of css.match(/:root[^{}]*\{[^}]*\}/g)!) {
-      const tokens = Object.fromEntries([...palette.matchAll(/(--[\w-]+):\s*(#[\da-f]{6})\b/g)].map(([, name, value]) => [name!, value!]));
-      for (const value of Object.values(tokens)) expect(value.slice(1, 3)).toBe(value.slice(3, 5));
-      for (const [foreground, background] of [["--ink", "--control"], ["--muted", "--surface"], ["--text-quiet", "--surface-subtle"], ["--on-primary", "--primary"]]) {
+    for (const palette of css.match(/:root[^{}]*\{[^}]*\}/g)!.filter(block => block.includes("--accent:"))) {
+      const tokens = Object.fromEntries([...palette.matchAll(/(--[\w-]+):\s*(#[\da-fA-F]{6})\b/g)].map(([, name, value]) => [name!, value!]));
+      expect(tokens['--accent']).toBe('#0B99FF');
+      for (const [foreground, background] of [["--ink", "--control"], ["--muted", "--surface"], ["--text-quiet", "--surface-subtle"], ["--on-primary", "--primary"], ["--accent-text", "--surface"]]) {
         const a = luminance(tokens[foreground!]!), b = luminance(tokens[background!]!);
         expect((Math.max(a, b) + .05) / (Math.min(a, b) + .05)).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const background of ["--surface", "--surface-subtle", "--control"]) {
+        const a = luminance(tokens["--focus"]!), b = luminance(tokens[background]!);
+        expect((Math.max(a, b) + .05) / (Math.min(a, b) + .05)).toBeGreaterThanOrEqual(3);
       }
     }
   });

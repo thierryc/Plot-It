@@ -1,0 +1,7 @@
+.color-field { display:grid; gap:var(--field-gap); min-width:0; }
+.color-inputs { display:grid; grid-template-columns:38px minmax(0,1fr); align-items:center; gap:8px; }
+.color { width:38px; min-width:0; height:var(--control-height); padding:4px; border:1px solid var(--control-border); border-radius:var(--radius-control); background:var(--control); cursor:pointer; }
+.color:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+.color:disabled { opacity:.6; }
+.color-inputs input[type=text] { font-variant-numeric:tabular-nums; }
+@media(max-width:639px), (pointer:coarse) { .color { width:44px; height:44px; } .color-inputs { grid-template-columns:44px minmax(0,1fr); } }

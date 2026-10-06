@@ -1,0 +1,26 @@
+.canvas-error { margin:0; font-size:var(--font-size-ui); color:var(--ink); }
+:global(.node-active) { border-color:var(--accent); color:var(--ink); }
+.two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.progress-track { height:6px; background:var(--progress-track); border-radius:5px; overflow:hidden; }
+.progress-track i { display:block; height:100%; background:var(--accent); transition:width .2s; }
+.progress-label { font:400 9px var(--font-ui); color:var(--muted); }
+.type-checks { display:grid; gap:4px; }
+.typography-advanced { margin-top:12px; }
+.font-load input { font-size:10px; }
+:global(.fill-error) { color:var(--danger); }
+.fill-task-progress { display:grid; gap:8px; min-width:0; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+.fill-task-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--text-secondary); font-size:var(--font-size-ui); line-height:1.4; }
+[data-fill-task-percent] { flex-shrink:0; font-variant-numeric:tabular-nums; }
+.fill-task-progress progress { display:block; width:100%; height:8px; border:0; border-radius:4px; overflow:hidden; background:var(--progress-track); accent-color:var(--primary); }
+.fill-task-progress progress::-webkit-progress-bar { background:var(--progress-track); border-radius:4px; }
+.fill-task-progress progress::-webkit-progress-value { background:var(--primary); border-radius:4px; transition:width .1s ease; }
+.fill-task-progress progress::-moz-progress-bar { background:var(--primary); border-radius:4px; }
+.fill-task-progress progress:indeterminate { background:linear-gradient(90deg,var(--progress-track) 0%,var(--primary) 45%,var(--progress-track) 90%); background-size:200% 100%; animation:fill-task-busy 1.5s linear infinite; }
+.fill-task-progress progress:indeterminate::-webkit-progress-bar { background:transparent; }
+@keyframes fill-task-busy { to { background-position:-200% 0; } }
+@media (prefers-reduced-motion:reduce) { .fill-task-progress progress:indeterminate { animation:none; } .fill-task-progress progress::-webkit-progress-value { transition:none; } }
+@media (prefers-reduced-motion:reduce) { :global(.plot-mode) :global(.paper-shadow) { transition:none; } }
+.nudge-preferences label { display:grid; gap:6px; font-size:var(--font-size-ui); color:var(--muted); }
+.settings-theme { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:var(--font-size-ui); padding:0 8px; }
+.nudge-preferences { display:grid; gap:12px; padding-top:16px; border-top:1px solid var(--line); margin:16px 8px 0; }
+.theme-select { width:112px; }

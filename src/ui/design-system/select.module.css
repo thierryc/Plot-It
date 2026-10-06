@@ -1,0 +1,7 @@
+.select { min-width:0; width:100%; height:var(--control-height); min-height:var(--control-height); border:1px solid var(--control-border); border-radius:var(--radius-control); background-color:var(--control); color:var(--ink); padding:4px 28px 4px 8px; font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); appearance:none; background-image:var(--select-arrow); background-repeat:no-repeat; background-position:right 8px center; background-size:16px; }
+.select:focus-visible { outline:2px solid var(--focus); outline-offset:1px; }
+.select:disabled { opacity:.6; }
+.select[aria-invalid=true] { border-color:var(--danger); }
+.select[multiple] { height:auto; appearance:auto; background-image:none; }
+@media(max-width:639px), (pointer:coarse) { .select { height:var(--touch-target); min-height:var(--touch-target); } }
+@media(forced-colors:active) { .select { appearance:auto; background-image:none; padding-right:9px; } }

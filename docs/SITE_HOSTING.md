@@ -34,6 +34,12 @@ with its own prefix. Documents, fonts and themes retain their original
 origin-based browser-storage keys. The site does not call the Node API.
 
 Marketing/documentation pages use static HTML and the existing theme helper.
+Their AP.CX footer uses the vanilla API of `@ap.cx/gl-marquee` pinned to `0.1.0`,
+with the bundled Square Bot Sans font and local CSS Module styles. It uses
+PlotFont's layout: top links and motion control, a full-width marquee, then
+AP.CX branding, project license/source links, and the privacy statement.
+It follows the page theme, honors reduced motion, offers a pause control, and releases its
+canvas when offscreen. Canvas 2D and regular HTML text provide fallbacks.
 Keep hardware statements dated, link primary sources, and distinguish
 documented controller protocol from actual machine testing. No private
 design-system package or new site framework is required.

@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { awaitFills, fillPlotPaths } from './fill-dom';
 import { flattenPlotPathsAsync } from './svg';
 import { WorkSlice } from './cooperative';
+import { initialState } from './model';
+import { buildMotionPlan } from './motion-plan';
+import { defaultPens, preparePenPaths } from './pens';
 
 function preview(legacy = false): SVGSVGElement {
   const root = document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -19,7 +22,7 @@ function preview(legacy = false): SVGSVGElement {
       <g data-generated-fill="true" ${legacy ? '' : 'data-fill-path-key="fill-1"'}>
         <path stroke="#000000" stroke-width=".35" d="M60 40 L80 40 L80 70 L60 40"/>
       </g>
-      <path data-fill-source="true" d="M0 0L8 0L8 8Z"/>
+      <path data-fill-source="true" data-fill-path-key="fill-1" d="M0 0L8 0L8 8Z"/>
     </g>
   </g>`;
   // Suppressed sources and generated paths require no geometry sampling.
@@ -36,6 +39,38 @@ describe('generated geometry without an in-memory preview cache',()=>{
     expect(paths[0]).toEqual({points:[{x:10.12345,y:12},{x:30,y:12},{x:30,y:24},{x:10.12345,y:12}],tool:'#171714',width:.5,sourceKey:'fill-0',orderGroup:undefined});
     expect(paths[2]?.orderGroup).toBe('text');
     expect(await flattenPlotPathsAsync(svg,new WorkSlice(),paths)).toEqual(paths);
+  });
+  it.each(['outline', 'hatch'])('plots a shared eight-glyph %s batch once', async mode => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const strokes = mode === 'outline'
+      ? ['M10 10 L20 10 L20 20 L10 20 L10 10', 'M30 10 L40 10 L40 20 L30 20 L30 10']
+      : ['M10 10 L20 10', 'M10 12 L20 12'];
+    svg.innerHTML = `<g id="artwork-layer"><g data-item-id="text">${Array.from({length: 8}, (_, i) =>
+      `<path data-opentype-outline="1" data-opentype-glyph="0-${i}" data-fill-source="true" data-fill-path-key="text-batch" d="M0 0L1 0L1 1Z"/>`).join('')}
+      <g data-generated-fill="true" data-fill-path-key="text-batch">${strokes.map(d => `<path stroke="#000000" stroke-width=".35" d="${d}"/>`).join('')}</g>
+    </g></g>`;
+    Object.assign(svg, {getScreenCTM: () => ({inverse: () => ({})})});
+    const previewPaths = fillPlotPaths(svg);
+    const paths = await flattenPlotPathsAsync(svg, new WorkSlice(), previewPaths);
+    const settings = {...initialState.settings, reorderMode: 'reversible' as const};
+    const plan = buildMotionPlan(preparePenPaths(paths, settings, defaultPens()).paths, settings);
+    const drawingMm = plan.events.filter(e => e.kind === 'xy' && e.penDown)
+      .reduce((sum, e) => sum + Math.hypot(e.to.x - e.from.x, e.to.y - e.from.y), 0);
+    expect(drawingMm).toBeCloseTo(mode === 'outline' ? 80 : 20, 8);
+    expect(paths).toEqual(previewPaths);
+    expect(plan.events.filter(e => e.kind === 'pen' && e.penDown)).toHaveLength(2);
+  });
+  it('preserves intentional identical strokes belonging to different source batches', async () => {
+    const svg = preview();
+    const text = svg.querySelector('[data-item-id="text"]')!;
+    const copy = text.cloneNode(true) as Element;
+    copy.setAttribute('data-item-id', 'text-copy');
+    copy.querySelectorAll('[data-fill-path-key]').forEach(node => node.setAttribute('data-fill-path-key', 'fill-copy'));
+    text.after(copy);
+    const paths = fillPlotPaths(svg);
+    expect(paths).toHaveLength(4);
+    expect(paths[2]!.points).toEqual(paths[3]!.points);
+    expect(await flattenPlotPathsAsync(svg, new WorkSlice(), paths)).toEqual(paths);
   });
   it('rejects a missing generated batch rather than silently omitting an object',()=>{
     const svg = preview();

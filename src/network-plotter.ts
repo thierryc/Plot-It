@@ -1,6 +1,9 @@
+import { unavailablePower } from './ebb-power';
+import type { PenSettings } from './pen-control';
 import { initialState, type PlotSettings, type Point } from './model';
 import type { MotionPlan } from './motion-plan';
 import type { PlotProgress, PlotterTrace, PlotterJobTrace } from './plotter-core';
+import type { PlotSignal } from './plot-signals';
 import type { PlotDestination } from './plot-destination';
 import { terminalStatus, type ControlAction, type ControlResult, type JobRecord, type NetworkSnapshot } from './network-protocol';
 
@@ -9,6 +12,8 @@ export class NetworkPlotter implements PlotDestination {
   onConnectionChange = () => {};
   onProgress: (progress: PlotProgress) => void = () => {};
   onPosition: ((position: Point) => void) | null = null;
+  onSignal: (signal: PlotSignal) => void = () => {};
+  get executionSignal(): PlotSignal | null { return this.snapshot.signal ?? null; }
   onError: (message: string) => void = () => {};
   private socket: WebSocket | null = null;
   private opening: Promise<void> | null = null;
@@ -39,6 +44,9 @@ export class NetworkPlotter implements PlotDestination {
   get supported() { return true; }
   get connected() { return this.networkConnected && this.snapshot.connected; }
   get connecting() { return this.opening !== null || this.snapshot.connecting; }
+  get powerStatus() { return this.snapshot.power ?? unavailablePower(); }
+  get elapsedMs() { return this.snapshot.elapsedMs ?? 0; }
+  async checkPowerSupply() { await this.request('check-power'); return this.powerStatus; }
   get firmwareLabel() { return this.snapshot.firmware; }
   get active() { return this.snapshot.jobId !== null && !terminalStatus(this.snapshot.status) && this.snapshot.status !== 'idle'; }
   get progress(): PlotProgress {
@@ -55,9 +63,8 @@ export class NetworkPlotter implements PlotDestination {
   get diagnosticTrace() { return this.trace; }
   get diagnosticPenTrace() { return this.penTrace; }
   get diagnosticJobTrace() { return this.jobTrace; }
-  configurePen(settings: Pick<PlotSettings, 'penUp' | 'penDown'>) { this.settings = { ...this.settings, ...settings }; }
+  configurePen(settings: PenSettings) { this.settings = { ...this.settings, ...settings }; }
   invalidateOrigin() { this.background('invalidate-origin'); }
-  markPenMovement() { this.background('mark'); }
   pause() { this.background('pause'); }
   resume() { this.background(this.snapshot.status === 'tool-change' ? 'continue' : 'resume'); }
   stop() { this.background('stop'); }
@@ -85,9 +92,11 @@ export class NetworkPlotter implements PlotDestination {
             if (!ready) { ready = true; clearTimeout(timer); resolve(); }
             if (next.epoch === this.snapshot.epoch && next.revision <= this.snapshot.revision) return;
             const freshPosition = next.positionTimestamp !== this.snapshot.positionTimestamp || next.epoch !== this.snapshot.epoch || next.jobId !== this.snapshot.jobId;
-            const changed = !this.networkConnected || next.connected !== this.snapshot.connected || next.connecting !== this.snapshot.connecting || next.jobId !== this.snapshot.jobId || next.status !== this.snapshot.status || next.canAdjustPen !== this.snapshot.canAdjustPen || next.motorsOn !== this.snapshot.motorsOn || next.origin !== this.snapshot.origin || next.error !== this.snapshot.error;
+            const freshSignal = next.signal && (next.epoch !== this.snapshot.epoch || next.jobId !== this.snapshot.jobId || next.signal.eventIndex !== this.snapshot.signal?.eventIndex || next.signal.phase !== this.snapshot.signal?.phase);
+            const changed = !this.networkConnected || next.connected !== this.snapshot.connected || next.connecting !== this.snapshot.connecting || next.jobId !== this.snapshot.jobId || next.status !== this.snapshot.status || next.canAdjustPen !== this.snapshot.canAdjustPen || next.motorsOn !== this.snapshot.motorsOn || next.origin !== this.snapshot.origin || next.error !== this.snapshot.error || JSON.stringify(next.power) !== JSON.stringify(this.snapshot.power);
             this.networkConnected = true; this.snapshot = next; if (changed) this.onConnectionChange();
             if (next.position && freshPosition) this.onPosition?.(next.position);
+            if (freshSignal) this.onSignal(next.signal!);
             this.onProgress(this.progress); for (const watcher of this.watchers) watcher();
           } else if (message.type === 'ownership') { this.controlling = message.controlling; this.onConnectionChange(); }
           else if (message.type === 'offline') { this.networkConnected = false; this.controlling = false; this.snapshot = { ...this.snapshot, revision: -1 }; this.onConnectionChange(); this.report(new Error('Runner connection lost. Check job state after reconnecting.')); }
@@ -135,7 +144,14 @@ export class NetworkPlotter implements PlotDestination {
   async engageMotors() { await this.request('engage'); }
   async disengageMotors(penUp = this.settings.penUp) { await this.request('release', { settings: { ...this.settings, penUp } }); }
   async refreshDiagnostics() {
-    const result = await this.request('diagnostics') as { entries: PlotterTrace[]; penTransitions: PlotterTrace[]; job: PlotterJobTrace | null };
+    type Diagnostics = { entries: PlotterTrace[]; penTransitions: PlotterTrace[]; job: PlotterJobTrace | null; download?: string };
+    let result = await this.request('diagnostics') as Diagnostics;
+    if (result.download) {
+      if (!/^\/api\/v1\/jobs\/[a-zA-Z0-9_-]+\/diagnostics$/.test(result.download)) throw new Error('Invalid diagnostics URL');
+      const response = await fetch(result.download, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Could not download plot diagnostics');
+      result = await response.json() as Diagnostics;
+    }
     this.trace = result.entries; this.penTrace = result.penTransitions; this.jobTrace = result.job;
   }
   async activePlan(): Promise<MotionPlan | null> {

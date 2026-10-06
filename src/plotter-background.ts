@@ -1,3 +1,4 @@
+import styles from './ui/app/canvas.module.css';
 import type { PlotSettings, Point } from './model';
 import { setupAngle, setupPen, setupSize } from './plotter-setup';
 
@@ -24,22 +25,22 @@ export class PlotterBackground {
   };
 
   constructor(private paper: SVGSVGElement, private settings: () => PlotSettings) {
-    const stage = paper.closest<HTMLElement>('.stage')!;
+    const stage = paper.closest<HTMLElement>('#stage')!;
     this.layer = document.createElement('div');
-    this.layer.className = 'plotter-background';
+    this.layer.className = `plotter-background ${styles['plotter-background']}`;
     this.layer.setAttribute('aria-hidden', 'true');
     this.layer.inert = true;
-    this.layer.innerHTML = `<div class="plotter-rig">
-      <div class="plotter-main-rail"></div><div class="plotter-main-rail second"></div>
-      <img class="plotter-motor top" src="/plotter/motor-top.svg" alt="" width="234.652" height="123.227" draggable="false">
-      <img class="plotter-motor bottom" src="/plotter/motor-bottom.svg" alt="" width="90.9091" height="90.9091" draggable="false">
-      <div class="plotter-arm"><img src="/plotter/pen-arm.svg" alt="" width="968.182" height="80.4546" draggable="false"></div>
-      <div class="plotter-carriage"></div>
+    this.layer.innerHTML = `<div class="plotter-rig ${styles["plotter-rig"]}" data-rig="rig">
+      <div class="plotter-main-rail ${styles["plotter-main-rail"]}"></div><div class="plotter-main-rail ${styles["plotter-main-rail"]} second ${styles["second"]}"></div>
+      <img class="plotter-motor ${styles["plotter-motor"]} top ${styles["top"]}" src="/plotter/motor-top.svg" alt="" width="234.652" height="123.227" draggable="false">
+      <img class="plotter-motor ${styles["plotter-motor"]} bottom ${styles["bottom"]}" src="/plotter/motor-bottom.svg" alt="" width="90.9091" height="90.9091" draggable="false">
+      <div class="plotter-arm ${styles["plotter-arm"]}" data-rig="arm"><img src="/plotter/pen-arm.svg" alt="" width="968.182" height="80.4546" draggable="false"></div>
+      <div class="plotter-carriage ${styles["plotter-carriage"]}" data-rig="carriage"></div>
     </div>`;
     stage.parentElement!.append(this.layer);
-    this.rig = this.layer.querySelector<HTMLDivElement>('.plotter-rig')!;
-    this.arm = this.layer.querySelector<HTMLDivElement>('.plotter-arm')!;
-    this.carriage = this.layer.querySelector<HTMLDivElement>('.plotter-carriage')!;
+    this.rig = this.layer.querySelector<HTMLDivElement>('[data-rig="rig"]')!;
+    this.arm = this.layer.querySelector<HTMLDivElement>('[data-rig="arm"]')!;
+    this.carriage = this.layer.querySelector<HTMLDivElement>('[data-rig="carriage"]')!;
     this.observer = new ResizeObserver(this.refresh);
     this.observer.observe(stage); this.observer.observe(paper);
     this.mutation = new MutationObserver(this.refresh);
@@ -71,7 +72,7 @@ export class PlotterBackground {
 
   destroy(): void {
     cancelAnimationFrame(this.frame); this.observer.disconnect(); this.mutation.disconnect();
-    this.paper.closest('.stage')?.removeEventListener('scroll', this.refresh);
+    this.paper.closest('#stage')?.removeEventListener('scroll', this.refresh);
     this.paper.removeEventListener('plotter-position', this.onPosition);
     this.layer.remove();
   }

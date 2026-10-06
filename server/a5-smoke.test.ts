@@ -30,15 +30,15 @@ describe('A5 physical smoke-test preparation (no hardware)', () => {
     for (const corner of [{ x: width, y: 0 }, { x: width, y: height }, { x: 0, y: height }]) {
       expect(drawing.some(event => event.to.x === corner.x && event.to.y === corner.y)).toBe(true);
     }
-    for (const lm of [true, false]) {
+    {
       let cursor = { x: 0, y: 0 };
-      for (const event of plan.events) for (const move of compileMotion(event, plan.settings, cursor, lm)) {
+      for (const event of plan.events) for (const move of compileMotion(event, plan.settings, cursor)) {
         validateMotionCommand(move.command); cursor = move.targetSteps;
       }
       expect(cursor).toEqual({ x: 0, y: 0 });
     }
   });
-  it.each(['axidraw', 'xylodraw'] as const)('keeps the drawing on A5 and preflights both firmware modes for %s', profile => {
+  it.each(['axidraw', 'xylodraw'] as const)('keeps the drawing on A5 and preflights timed EBB commands for %s', profile => {
     const plan = a5SmokePlan({ ...initialState.settings, profile, penUp: 30, penDown: 45 });
     expect(validateJob({ version: 1, requestId: 'a5-smoke', plan }).plan).toBe(plan);
     expect(plan.passes).toHaveLength(1);
@@ -51,9 +51,9 @@ describe('A5 physical smoke-test preparation (no hardware)', () => {
         if (event.penDown) { expect(point.x).toBeGreaterThanOrEqual(24); expect(point.y).toBeGreaterThanOrEqual(24); }
       }
     }
-    for (const lm of [true, false]) {
+    {
       let cursor = { x: 0, y: 0 };
-      for (const event of plan.events) for (const move of compileMotion(event, plan.settings, cursor, lm)) {
+      for (const event of plan.events) for (const move of compileMotion(event, plan.settings, cursor)) {
         validateMotionCommand(move.command); cursor = move.targetSteps;
       }
       expect(cursor).toEqual({ x: 0, y: 0 });

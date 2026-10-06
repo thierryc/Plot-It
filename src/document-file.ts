@@ -1,3 +1,4 @@
+import { penTimingSettings } from './pen-control';
 import { initialState, defaultFillSettings, type AppState, type ArtworkItem, type PlotSettings, type TextOptions } from './model';
 import { canvasPaper } from './paper';
 import { restorePaperColor } from './colors';
@@ -7,6 +8,7 @@ import { setupModel } from './plotter-setup';
 import { validateFill } from './fill';
 import { sanitizeArtworkMarkup } from './svg';
 import { documentName } from './document-name';
+import { pathOptimizationSettings } from './path-optimization';
 
 export const DOCUMENT_EXTENSION = '.plit.json';
 export const DOCUMENT_ACCEPT = '.plit,.plit.json,application/json';
@@ -36,6 +38,7 @@ function settingsFrom(value: unknown): PlotSettings {
   const source = object(value ?? {}, 'plot settings');
   const result = {...initialState.settings, ...source, ...restoreMachineOrientation(source), pauseOnToolChange: true} as PlotSettings;
   result.axidrawModel = setupModel(source.axidrawModel);
+  Object.assign(result,pathOptimizationSettings(result),penTimingSettings(result));
   if (!['axidraw','xylodraw'].includes(result.profile) || !['preserve','nearest','reversible'].includes(result.reorderMode)) throw new Error('Invalid machine profile or path order.');
   for (const key of ['speed','travelSpeed','drawAcceleration','travelAcceleration'] as const) number(result[key], key, .000001);
   for (const key of ['cornering','margin','maxPenDownMm'] as const) number(result[key], key, 0);

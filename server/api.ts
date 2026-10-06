@@ -40,6 +40,11 @@ export async function startApi(options: ApiOptions) {
         catch (reason) { json(res, 400, { error: (reason as Error).message }); } return;
         } finally { uploading = false; }
       }
+      const diagnosticsId = path.match(/^\/api\/v1\/jobs\/([a-zA-Z0-9_-]+)\/diagnostics$/)?.[1];
+      if (diagnosticsId && req.method === 'GET') {
+        try { json(res, 200, await store.getDiagnostics(diagnosticsId)); }
+        catch { json(res, 404, { error: 'Diagnostics not found' }); } return;
+      }
       const id = path.match(/^\/api\/v1\/jobs\/([a-zA-Z0-9_-]+)$/)?.[1];
       if (id && req.method === 'GET') {
         try { const record = await store.get(id); const snapshot = runner.snapshot?.jobId === id ? runner.snapshot : null; json(res, 200, { ...record, ...(snapshot ? { status: snapshot.status, snapshot } : {}) }); }

@@ -1,5 +1,6 @@
 import type { PenPreferences, Point, PlotSettings } from './model';
 import { clipPlotPaths, splitPlotPaths, type PlotPath } from './svg';
+import { closedPolyline, nearestClosedVertex, optimizePathUnits, pathOptimizationSettings, protectedPath, rotateClosedPath } from './path-optimization';
 
 export interface PlotPen { color: string; name: string; sources: string[]; included: boolean }
 export const defaultPens = (): PenPreferences => ({ assignments: {}, excluded: [], order: [], mode: 'group' });
@@ -67,31 +68,50 @@ export function discoverPens(paths: PlotPath[], preferences: PenPreferences): Pl
 }
 
 /** Optimize atomic units, retaining every protected block's internal operation order. */
-function orderUnits(units: PlotPath[][], mode: PlotSettings['reorderMode']): PlotPath[] {
-  if (mode === 'preserve') return units.flat();
+function orderUnits(units: PlotPath[][], settings: PlotSettings, mode = settings.reorderMode): PlotPath[] {
+  const options=pathOptimizationSettings(settings);
+  const closedStart=(unit:PlotPath[],cursor:Point)=>unit.length===1&&!protectedPath(unit[0]!)&&closedPolyline(unit[0]!.points)&&options.closedPathStart==='nearest'
+    ? nearestClosedVertex(unit[0]!.points,cursor) : 0;
+  const orient=(unit:PlotPath[],cursor:Point)=>{
+    const start=closedStart(unit,cursor);
+    return start ? [{...unit[0]!,points:rotateClosedPath(unit[0]!.points,start)}] : unit;
+  };
+  if (mode === 'preserve') {
+    let cursor:Point={x:0,y:0},tool=''; const result:PlotPath[]=[];
+    for (const unit of units) {
+      if (unit[0]!.tool!==tool) cursor={x:0,y:0};
+      const chosen=orient(unit,cursor); result.push(...chosen);
+      cursor=chosen.at(-1)!.points.at(-1)!; tool=chosen.at(-1)!.tool;
+    }
+    return result;
+  }
   const remaining = [...units], result: PlotPath[] = [];
   // Each color change parks at origin, so each ranked bucket starts there.
   let cursor: Point = { x: 0, y: 0 };
   while (remaining.length) {
     let best = 0, reverse = false, distance = Infinity;
     remaining.forEach((unit, index) => {
-      const start = unit[0]!.points[0]!, end = unit.at(-1)!.points.at(-1)!;
+      const start = unit[0]!.points[closedStart(unit,cursor)]!, end = unit.at(-1)!.points.at(-1)!;
       const forward = Math.hypot(start.x - cursor.x, start.y - cursor.y);
-      const backward = mode === 'reversible' && !unit[0]!.orderGroup ? Math.hypot(end.x - cursor.x, end.y - cursor.y) : Infinity;
+      const backward = mode === 'reversible' && !unit[0]!.orderGroup && !closedPolyline(unit[0]!.points) ? Math.hypot(end.x - cursor.x, end.y - cursor.y) : Infinity;
       if (Math.min(forward, backward) < distance) { best = index; reverse = backward < forward; distance = Math.min(forward, backward); }
     });
-    const unit = remaining.splice(best, 1)[0]!;
+    const unit = orient(remaining.splice(best, 1)[0]!,cursor);
     result.push(...unit.map(path => ({ ...path, points: reverse ? [...path.points].reverse() : [...path.points] })));
     cursor = result.at(-1)!.points.at(-1)!;
+    // A protected block may contain several pens. The next bucket-colored
+    // stroke changes tool and therefore starts its travel from the origin.
+    if (result.at(-1)!.tool !== units[0]?.[0]?.tool) cursor={x:0,y:0};
   }
   return result;
 }
 
 export function preparePenPaths(source: PlotPath[], settings: PlotSettings, preferences: PenPreferences, paper?: { width: number; height: number }): { paths: PlotPath[]; pens: PlotPen[] } {
+  pathOptimizationSettings(settings);
   const clipped = paper ? clipPlotPaths(source, { minX: settings.margin, minY: settings.margin, maxX: paper.width - settings.margin, maxY: paper.height - settings.margin }) : source;
   const pens = discoverPens(clipped, preferences);
   const mapped = clipped.filter(path => !preferences.excluded.includes(path.tool)).map(path => ({ ...path, tool: preferences.assignments[path.tool]?.color ?? path.tool }));
-  if (preferences.mode === 'source') return { paths: splitPlotPaths(mapped, settings.maxPenDownMm), pens };
+  if (preferences.mode === 'source') return { paths: splitPlotPaths(orderUnits(optimizePathUnits(mapped.map(path=>[path]),settings,true),settings,'preserve'),settings.maxPenDownMm),pens };
   const units: PlotPath[][] = [];
   // Form blocks before filtering so omitted operations never join unrelated source blocks.
   let block: PlotPath[] | undefined;
@@ -103,5 +123,5 @@ export function preparePenPaths(source: PlotPath[], settings: PlotSettings, pref
   for (const unit of units.filter(unit => unit.length)) {
     const color = unit[0]!.tool; const bucket = buckets.get(color) ?? []; bucket.push(unit); buckets.set(color, bucket);
   }
-  return { paths: splitPlotPaths(pens.flatMap(pen => orderUnits(buckets.get(pen.color) ?? [], settings.reorderMode)), settings.maxPenDownMm), pens };
+  return { paths: splitPlotPaths(pens.flatMap(pen => orderUnits(optimizePathUnits(buckets.get(pen.color) ?? [],settings),settings)), settings.maxPenDownMm), pens };
 }

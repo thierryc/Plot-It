@@ -48,11 +48,11 @@ scripts/node-lts.sh --npm run preview
 
 ## Documents and calibration
 
-Double-click the plot name in the top bar to rename it; Enter saves and Escape cancels. The name is saved locally, included in document files, and used for download filenames.
+Open the top-left menu and double-click the plot name, or choose Rename plot, to rename it; Enter saves and Escape cancels. The name is saved locally, included in document files, and used for download filenames.
 
-**Shapes** in the left toolbar inserts a rectangle, square, circle, ellipse, triangle, or line at the center of the paper. Select it to edit its dimensions, SVG geometry, pen color, and fill.
+**Shapes** in the floating top toolbar inserts a rectangle, ellipse, triangle, or line at the center of the paper. Set equal width and height to make a rectangle square or an ellipse circular. Select it to edit its dimensions, SVG geometry, pen color, and fill.
 
-The left toolbar's **Save** and **Load** use the editable, versioned
+The top-left menu's **Save** and **Load** use the editable, versioned
 **.plit.json** document format (also accepted as **.plit**), including paper, artwork, plotting preferences
 and custom fonts. Load replaces the current document and can be undone.
 **More → Calibration sheet** adds a grid of crossing lines with adjustable
@@ -83,13 +83,15 @@ share that mapping.
 
 ## Editing artwork
 
-Choose System, Light, or Dark in the top toolbar to theme the interface. System follows your device appearance; your choice is saved separately from the drawing and does not affect undo history. Paper color is a separate document setting in the Paper panel (white by default), supports undo/redo, and stays unchanged when resizing. Existing pen-color controls remain independent; new text and freehand paths use black. Paper color is a material preview only: SVG export and plot commands contain the artwork, not a filled paper background.
+Drawing tools float above the canvas; zoom, fit, canvas size, and undo/redo sit at the bottom right. Edit/Plot stays at the top right. The inspector stays open at widths of 640px and above; on phones, use the Inspector button to open its drawer.
 
-Click the paper-size control in the canvas toolbar to choose a preset, enter custom width/height in millimetres, or swap orientation. Apply changes only the canvas, not the artwork or its placement; Cancel leaves the document unchanged. Canvas changes support undo/redo and custom dimensions persist locally. SVG export uses the selected physical size. Canvas dimensions do not override the plotter's physical travel limits.
+Choose System, Light, or Dark in the top-left menu to theme the interface. System follows your device appearance; your choice is saved separately from the drawing and does not affect undo history. Paper color is a separate document setting in the Paper panel (white by default), supports undo/redo, and stays unchanged when resizing. Existing pen-color controls remain independent; new text and freehand paths use black. Paper color is a material preview only: SVG export and plot commands contain the artwork, not a filled paper background.
+
+Click the paper-size control at the bottom right of the canvas to choose a preset, enter custom width/height in millimetres, or swap orientation. Apply changes only the canvas, not the artwork or its placement; Cancel leaves the document unchanged. Canvas changes support undo/redo and custom dimensions persist locally. SVG export uses the selected physical size. Canvas dimensions do not override the plotter's physical travel limits.
 
 Artwork stays mounted while you drag, rotate, resize, or edit nodes. The active source and handles update once per animation frame. Moving and rotation retain cached fills; resizing and node edits show outlines until their cleaned geometry is regenerated on release. Escape restores the original geometry, and each completed gesture has one undo entry.
 
-Click an object on the paper or in **Objects** to move it and edit its position, size, rotation, or pen color. Drag a corner to resize. Hold Shift while resizing to preserve proportions, or while dragging to move horizontally or vertically. Constraints also apply to selected SVG elements; pressing or releasing Shift during a gesture updates the constraint. Option/Alt-drag duplicates; Option/Alt can be pressed or released during a drag. Option/Alt-resize keeps the center fixed, and Shift + Option/Alt also preserves proportions. Drag the rotation handle above the selection; Shift snaps to absolute 15° steps. Hold Space before dragging to pan anywhere on the canvas; Fit to view resets pan and scrolling. Duplicate or Ctrl/Cmd + D repeats the last copy’s displacement and rotation, including subsequent moves, nudges, and rotation of that copy. Resizing, edits, or selecting another artwork starts a new copy chain with a 5 mm diagonal offset. Escape restores the starting artwork and discards provisional copies. Unexpected capture loss, pointer cancellation, or focus loss saves the last valid artwork transformation in one undo step. Interrupted viewport panning restores its starting position. Arrow keys nudge by 0.1 mm; Shift + arrow nudges by 1 mm. Change both distances in Settings; these browser-local preferences are independent of plot documents. Holding an arrow key produces one undo entry. Undo is Ctrl/Cmd + Z; redo is Ctrl/Cmd + Shift + Z.
+Click an object on the paper or in **Objects** to move it and edit its position, size, rotation, or pen color. Drag a corner to resize. Hold Shift while resizing to preserve proportions, or while dragging to move horizontally or vertically. Constraints also apply to selected SVG elements; pressing or releasing Shift during a gesture updates the constraint. Option/Alt-drag duplicates; Option/Alt can be pressed or released during a drag. Option/Alt-resize keeps the center fixed, and Shift + Option/Alt also preserves proportions. Drag the rotation handle above the selection; Shift snaps to absolute 15° steps. Hold Space before dragging to pan anywhere on the canvas; Fit to view resets pan and scrolling. Duplicate or Ctrl/Cmd + D repeats the last copy’s displacement and rotation, including subsequent moves, nudges, and rotation of that copy. Resizing, edits, or selecting another artwork starts a new copy chain with a 5 mm diagonal offset. Escape restores the starting artwork and discards provisional copies. Unexpected capture loss, pointer cancellation, or focus loss saves the last valid artwork transformation in one undo step. Interrupted viewport panning restores its starting position. Arrow keys nudge by 0.1 mm; Shift + arrow nudges by 1 mm. Change both distances in the top-left menu; these browser-local preferences are independent of plot documents. Holding an arrow key produces one undo entry. Undo is Ctrl/Cmd + Z; redo is Ctrl/Cmd + Shift + Z.
 
 The **Paper**, **Objects**, **Selection**, **SVG elements**, and **Plot fill**
 sections collapse independently. Their open state stays in place while editing
@@ -114,8 +116,9 @@ The sample [editable-elements.svg](public/examples/editable-elements.svg) includ
 
 ## Motion engine and licensing
 
-Plot-it adapts Saxi 0.17.1's latest verified planner, revision
-`2640a3dd6c7a5261985f334255b827edb30e3109` (2026-09-23).
+Plot-it uses an original polyline acceleration planner and documented timed EBB
+commands. Pen control configures explicit Up/Down endpoints and separate rates,
+then sends SP commands with settling waits. No Saxi code is used.
 The app is AGPL-3.0-only. See LICENSE and THIRD_PARTY_NOTICES.md.
 The Source link downloads the corresponding source archive generated before
 local development and production builds. Deploy it alongside the built app.

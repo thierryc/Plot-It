@@ -9,32 +9,37 @@ async (page) => {
   const undo = () => page.getByRole('button', { name: 'Undo', exact: true }).click();
   const redo = () => page.getByRole('button', { name: 'Redo', exact: true }).click();
   const title = () => page.locator('[data-document-name]');
+  await page.getByRole('button', { name: 'Main menu', exact: true }).click();
   await title().dblclick();
   await page.getByRole('textbox', { name: 'Plot name', exact: true }).fill('Canvas controls');
   await page.getByRole('textbox', { name: 'Plot name', exact: true }).press('Enter');
   assert((await state()).documentName === 'Canvas controls', 'Title was not saved');
+  await page.keyboard.press('Escape');
   await undo(); assert(await title().textContent() === 'Untitled plot', 'Title undo failed');
   await redo(); assert(await title().textContent() === 'Canvas controls', 'Title redo failed');
+  await page.getByRole('button', { name: 'Main menu', exact: true }).click();
   await title().dblclick();
   await page.getByRole('textbox', { name: 'Plot name', exact: true }).fill('Cancel this');
   await page.getByRole('textbox', { name: 'Plot name', exact: true }).press('Escape');
   assert(await title().textContent() === 'Canvas controls', 'Title cancellation failed');
+  await page.keyboard.press('Escape');
   await page.reload(); assert(await title().textContent() === 'Canvas controls', 'Title restoration failed');
   const insert = async name => {
     await page.getByRole('button', { name: 'Shapes', exact: true }).click();
     await page.getByRole('button', { name, exact: true }).click();
   };
-  for (const name of ['Rectangle', 'Square', 'Circle', 'Ellipse', 'Triangle', 'Line']) await insert(name);
-  assert((await state()).items.length === 6, 'Shape insertion failed');
+  for (const name of ['Rectangle', 'Ellipse', 'Triangle', 'Line']) await insert(name);
+  assert((await state()).items.length === 4, 'Shape insertion failed');
   await page.evaluate(async () => {
     const { parsePlotIt, serializePlotIt } = await import('/src/document-file.ts');
     const saved = JSON.parse(localStorage.getItem('plot-it-document'));
     const restored = parsePlotIt(serializePlotIt(saved)).state;
-    if (restored.documentName !== saved.documentName || restored.items.length !== 6) throw Error('Document round-trip failed');
+    if (restored.documentName !== saved.documentName || restored.items.length !== 4) throw Error('Document round-trip failed');
     const { flattenPlotPaths } = await import('/src/svg.ts');
     const paths = flattenPlotPaths(document.querySelector('#paper'));
-    if (paths.length !== 6 || paths.some(path => path.points.length < 2)) throw Error('Shapes are not plottable');
+    if (paths.length !== 4 || paths.some(path => path.points.length < 2)) throw Error('Shapes are not plottable');
   });
+  await page.getByRole('button', { name: 'Main menu', exact: true }).click();
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   assert((await download).suggestedFilename() === 'Canvas controls.plit.json', 'Save ignored the title');
@@ -51,10 +56,15 @@ async (page) => {
   const startDrag = async () => {
     const p = await center(); await page.mouse.move(p.x, p.y); await page.mouse.down(); return p;
   };
-  const livePosition = () => page.locator('#paper [data-item-id]').evaluate(group => {
+  // Gesture previews are coalesced on animation frames; sample after paint.
+  const nextFrame = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+  const livePosition = async () => {
+    await nextFrame();
+    return page.locator('#paper [data-item-id]').evaluate(group => {
     const match = group.getAttribute('transform').match(/^translate\(([^ ]+) ([^)]+)\)/);
     return { x: Number(match[1]), y: Number(match[2]) };
-  });
+    });
+  };
   let p = await startDrag();
   await page.keyboard.down('Shift'); await page.mouse.move(p.x + 40, p.y + 12); await page.mouse.up(); await page.keyboard.up('Shift');
   let item = (await state()).items[0];
@@ -97,10 +107,13 @@ async (page) => {
   await undo(); await undo();
   // Select the native SVG element: gestures modify its transform, not item dimensions.
   await page.locator('[data-select-element="0"]').click();
-  const elementBounds = () => page.locator('.selection-ui .selection-box').evaluate(rect => ({
+  const elementBounds = async () => {
+    await nextFrame();
+    return page.locator('.selection-ui .selection-box').evaluate(rect => ({
     x: Number(rect.getAttribute('x')), y: Number(rect.getAttribute('y')),
     width: Number(rect.getAttribute('width')), height: Number(rect.getAttribute('height'))
-  }));
+    }));
+  };
   let before = await elementBounds(); await resize(true); let after = await elementBounds();
   assert(near(after.width / after.height, before.width / before.height), 'Proportional element resize failed');
   assert(near(after.x, before.x) && near(after.y, before.y), 'Opposite element corner moved');
@@ -113,5 +126,5 @@ async (page) => {
   await page.mouse.up(); await page.keyboard.up('Shift');
   await undo(); await redo();
   await page.screenshot({ path: 'output/playwright/canvas-controls.png' });
-  return { title: 'rename, cancellation, persistence, undo/redo, filename passed', shapes: '6 editable and plottable shapes passed', constraints: 'object, element, rotation, mid-gesture modifiers and undo/redo passed' };
+  return { title: 'rename, cancellation, persistence, undo/redo, filename passed', shapes: '4 editable and plottable shapes passed', constraints: 'object, element, rotation, mid-gesture modifiers and undo/redo passed' };
 }

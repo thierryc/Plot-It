@@ -1,5 +1,6 @@
 import './styles.css';
 import { initializeTheme } from '../src/theme';
+import { initializeFooter } from './footer';
 const theme = initializeTheme(window, document);
 const selector = document.querySelector<HTMLSelectElement>('#theme-selector');
 if (selector) {
@@ -8,3 +9,6 @@ if (selector) {
 }
 const hint = document.querySelector<HTMLElement>('[data-browser-hint]');
 if (hint && !('serial' in navigator)) hint.textContent = 'Editing and simulation need no installation. Web Serial is unavailable in this browser; use desktop Chrome or Edge for Direct USB plotting.';
+
+const disposeFooter = initializeFooter();
+import.meta.hot?.dispose(disposeFooter);

@@ -19,7 +19,7 @@ export function initializeTheme(host: Window, page: Document) {
     const theme = resolveTheme(preference, media.matches);
     page.documentElement.dataset.theme = theme;
     page.documentElement.dataset.themePreference = preference;
-    page.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#242424" : "#f5f5f5");
+    page.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#232329" : "#ffffff");
   };
   apply();
   media.addEventListener("change", () => { if (preference === "system") apply(); });

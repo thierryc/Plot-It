@@ -1,6 +1,10 @@
+import { penTimingSettings } from './pen-control';
 import type { MotionPlan } from './motion-plan';
 import type { PlotSettings, Point } from './model';
 import type { PlotProgress } from './plotter-core';
+import type { PlotSignal } from './plot-signals';
+import type { PowerStatus } from './ebb-power';
+import { pathOptimizationSettings } from './path-optimization';
 
 export const NETWORK_VERSION = 1;
 export const DEFAULT_MAX_BYTES = 32 * 1024 * 1024;
@@ -16,8 +20,10 @@ export interface NetworkSnapshot {
   origin: 'unset' | 'automatic' | 'explicit'; originProfile: PlotSettings['profile'] | null;
   motorsOn: boolean; canAdjustPen: boolean; error?: string;
   connectionPolicy?: 'manual' | 'auto'; connectionDesired?: boolean;
+  signal?: PlotSignal | null;
+  power?: PowerStatus; elapsedMs?: number;
 }
-export const CONTROL_ACTIONS = ['start', 'pause', 'resume', 'continue', 'stop', 'cancel', 'pen', 'set-origin', 'return-origin', 'engage', 'release', 'invalidate-origin', 'mark', 'diagnostics', 'connect-ebb', 'disconnect-ebb'] as const;
+export const CONTROL_ACTIONS = ['start', 'pause', 'resume', 'continue', 'stop', 'cancel', 'pen', 'set-origin', 'return-origin', 'engage', 'release', 'invalidate-origin', 'diagnostics', 'check-power', 'connect-ebb', 'disconnect-ebb'] as const;
 export type ControlAction = typeof CONTROL_ACTIONS[number];
 export interface ControlRequest { version: 1; requestId: string; action: ControlAction | 'claim' | 'release-control'; jobId?: string; percent?: number; settings?: PlotSettings; profile?: PlotSettings['profile'] }
 export interface ControlResult { type: 'result'; requestId: string; ok: boolean; error?: string; value?: unknown }
@@ -36,7 +42,7 @@ export function validateSettings(value: unknown): PlotSettings {
   for (const key of ['penUp', 'penDown'] as const) requireValue(number(s[key], 0, 100), `Invalid ${key}`);
   for (const key of ['cornering', 'margin', 'maxPenDownMm'] as const) requireValue(number(s[key], 0, 1_000_000), `Invalid ${key}`);
   requireValue(typeof s.returnToOrigin === 'boolean' && typeof s.pauseOnToolChange === 'boolean', 'Invalid execution flags');
-  requireValue(['preserve', 'nearest', 'reversible'].includes(s.reorderMode), 'Invalid path ordering'); return s;
+  requireValue(['preserve', 'nearest', 'reversible'].includes(s.reorderMode), 'Invalid path ordering'); pathOptimizationSettings(s); penTimingSettings(s); return s;
 }
 /** Network inputs are untrusted even on a trusted LAN. No arbitrary serial commands. */
 export function validateJob(value: unknown, limits: { maxEvents?: number } = {}): JobEnvelope {

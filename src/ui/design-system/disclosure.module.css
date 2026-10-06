@@ -1,0 +1,5 @@
+.disclosure { min-width:0; }
+.disclosure > summary { cursor:pointer; font:600 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); color:var(--ink); }
+.disclosure > summary:focus-visible { outline:2px solid var(--focus); outline-offset:2px; border-radius:3px; }
+.disclosure[open] > summary { margin-bottom:var(--panel-gap); }
+@media(max-width:639px), (pointer:coarse) { .disclosure > summary { min-height:44px; align-content:center; } }

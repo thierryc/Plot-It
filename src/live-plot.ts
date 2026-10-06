@@ -3,6 +3,7 @@ import { positionPlanTime } from "./live-position";
 import { samplePlan, type MotionPlan } from './motion-plan';
 import { PlotOverlay } from './plot-overlay';
 import type { PlotProgress } from './plotter';
+import type { PlotSignal } from './plot-signals';
 
 const clock = (time: number) => `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
 
@@ -39,22 +40,33 @@ export class LivePlot {
   private measuredPosition: Point | null = null;
   private executedTime = 0;
   private ended = false;
+  private commandedPenDown: boolean | undefined;
+  private hasSignals = false;
   constructor(private plan: MotionPlan, paper: SVGSVGElement, private onUpdate: (view: ReturnType<typeof livePlotView>, progress: PlotProgress) => void) {
     this.progress = { completed: 0, total: plan.events.length, state: 'plotting' };
     this.visual = new PlotOverlay(plan, paper);
   }
   observePosition(position: Point): void { this.measuredPosition = position; this.update(this.progress); }
+  observeSignal(signal: PlotSignal): void {
+    this.hasSignals = true;
+    if (signal.phase === 'settled' || signal.kind === 'pen' && signal.phase === 'started') {
+      this.executedTime = Math.max(this.executedTime, signal.planTime);
+      this.commandedPenDown = signal.penDown;
+    }
+    this.update(this.progress);
+  }
   update(progress: PlotProgress, manualPen?: boolean): void {
     this.progress = progress;
     const returning = progress.state === 'returning' || progress.state === 'stopped';
+    const terminal = ['finished', 'stopped', 'cancelled'].includes(progress.state);
     const queued = livePlotView(this.plan, progress, this.ended).time;
     if (this.measuredPosition && !returning) this.executedTime = positionPlanTime(this.plan, this.measuredPosition, this.executedTime, queued);
     // A settled pen change is known exactly even without optional position queries.
     if (progress.state === 'tool-change') this.executedTime = queued;
-    const view = livePlotView(this.plan, progress, this.ended, this.measuredPosition ? this.executedTime : undefined);
+    const view = livePlotView(this.plan, progress, this.ended, this.measuredPosition || this.hasSignals ? this.executedTime : undefined);
     this.visual.update(view.time, {
       position: returning || progress.state === 'tool-change' ? { x: 0, y: 0 } : this.measuredPosition ?? undefined,
-      penDown: returning || view.paused ? manualPen ?? false : manualPen,
+      penDown: terminal ? false : returning || view.paused ? manualPen ?? false : manualPen ?? this.commandedPenDown,
     });
     this.onUpdate(view, progress);
   }

@@ -1,12 +1,12 @@
 import {
   ArrowLeft, ArrowUp, ArrowDown, ChevronDown, Copy, Download, Maximize, Minus, MousePointer,
   Pause, Play, Square, Pencil, Plus, Redo2, RotateCw, Settings, Shapes, Trash, Type, Undo2, Upload, Usb, X, Save, FolderOpen, Ellipsis,
-  Circle, RectangleHorizontal, Triangle, Slash, createElement
+  Circle, RectangleHorizontal, Triangle, Slash, Menu, PanelRight, createElement
 } from 'lucide';
 
 // Named imports keep unused Lucide icons out of the production bundle.
 const icons = {
-  cursor: MousePointer, pen: Pencil, text: Type, upload: Upload, usb: Usb,
+  menu: Menu, panel: PanelRight, cursor: MousePointer, pen: Pencil, text: Type, upload: Upload, usb: Usb,
   circle: Circle, rectangle: RectangleHorizontal, square: Square, triangle: Triangle, line: Slash,
   download: Download, undo: Undo2, redo: Redo2, trash: Trash, rotate: RotateCw, fit: Maximize,
   close: X, shape: Shapes, chevron: ChevronDown, back: ArrowLeft, save: Save, load: FolderOpen, more: Ellipsis,

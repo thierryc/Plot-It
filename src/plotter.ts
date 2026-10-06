@@ -1,5 +1,6 @@
-import { PlotterCore, type SerialPortLike } from './plotter-core';
+import { PlotterCore, type SerialPortLike, type ExecutionOptions } from './plotter-core';
 export type { PlotProgress, PlotterTrace, PlotterJobTrace } from './plotter-core';
+export type { PlotSignal } from './plot-signals';
 declare global {
   interface Navigator {
     serial?: {
@@ -10,11 +11,11 @@ declare global {
 }
 /** Browser facade: firmware and machine execution live in the shared core. */
 export class Plotter extends PlotterCore {
-  constructor() {
+  constructor(execution: ExecutionOptions = {}) {
     super({
       get supported() { return typeof navigator !== 'undefined' && Boolean(navigator.serial); },
       requestPort: () => navigator.serial!.requestPort({ filters: [{ usbVendorId: 0x04d8, usbProductId: 0xfd92 }] }),
       addEventListener: (type, listener) => navigator.serial?.addEventListener?.(type, listener),
-    });
+    }, execution);
   }
 }

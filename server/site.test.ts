@@ -10,10 +10,15 @@ describe('hosted site contract', () => {
       const html = read(`site/${path}`);
       expect(html).toContain('href="/app/"');
       expect(html).toContain('href="/docs/"');
-      expect(html).toContain('An Another Planet Experience project');
+      expect(html).toContain('Another Planet Creative eXperience');
       expect(html).toContain('https://ap.cx/');
       expect(html).toContain('Beta · Active development');
-      expect(new JSDOM(html).window.document.querySelector('#main')?.getAttribute('tabindex')).toBe('-1');
+      const document = new JSDOM(html).window.document;
+      expect(document.querySelector('#main')?.getAttribute('tabindex')).toBe('-1');
+      const banner = document.querySelector('footer [data-apcx-marquee]');
+      expect(banner?.getAttribute('aria-hidden')).toBe('true');
+      expect(banner?.textContent).toContain('Another Planet . Creative eXperience');
+      expect(document.querySelector('[data-marquee-motion]')?.getAttribute('aria-controls')).toBe(banner?.id);
     }
     expect(read('site/app/index.html')).toContain('../../src/main.ts');
     expect(read('index.html')).not.toContain('site/site');

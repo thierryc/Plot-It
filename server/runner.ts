@@ -36,7 +36,7 @@ export async function startRunner(options: RunnerOptions) {
     persistence = persistence.then(() => store.update(id, fields)).then(() => undefined).catch(reason => { error = `Could not persist job state: ${String(reason)}`; });
   };
   const snapshot = (): NetworkSnapshot => ({ epoch, revision: ++revision, timestamp: Date.now(), connected: core.connected, connecting: core.connecting, firmware: core.firmwareLabel,
-    jobId, status, progress: core.progress, position, positionTimestamp, origin: core.originStatus,
+    jobId, status, progress: core.progress, signal: core.executionSignal, power: core.powerStatus, elapsedMs: core.elapsedMs, position, positionTimestamp, origin: core.originStatus,
     originProfile: core.hasOrigin('axidraw') ? 'axidraw' : core.hasOrigin('xylodraw') ? 'xylodraw' : null, motorsOn: core.motorsOn, canAdjustPen: core.canAdjustPen, connectionPolicy, connectionDesired, ...(error ? { error: error.slice(0, 4096) } : {}) });
   const publish = () => { const current = snapshot(); for (const channel of channels.values()) channel.publish(current); };
   core.onProgress = progress => {
@@ -44,6 +44,9 @@ export async function startRunner(options: RunnerOptions) {
     if (next !== 'idle' && next !== status) { status = next; publish(); persist(); }
   };
   core.onPosition = observed => { position = observed; positionTimestamp = Date.now(); };
+  // XY signals are coalesced by the existing telemetry timer. Publishing
+  // every short block here would put JSON/socket work in the motion feeder.
+  core.onSignal = signal => { if (signal.kind !== 'xy' && signal.phase === 'settled') publish(); };
   core.onConnectionChange = publish;
   const connectDevice = async () => {
     if (connecting) return connecting;
@@ -118,14 +121,21 @@ export async function startRunner(options: RunnerOptions) {
     }
     else if (request.action === 'set-origin') { await core.setOrigin(request.profile!); recoveryRequired = false; }
     else if (request.action === 'return-origin') await core.returnToOrigin(request.settings!);
+    else if (request.action === 'check-power') await core.checkPowerSupply();
     else if (request.action === 'engage') await core.engageMotors();
     else if (request.action === 'release') await core.disengageMotors(request.settings!.penUp);
     else if (request.action === 'invalidate-origin') core.invalidateOrigin();
-    else if (request.action === 'mark') core.markPenMovement();
     else if (request.action === 'diagnostics') {
       if (core.active || starting) throw new Error('Download diagnostics after plotting has stopped');
       const trace = core.diagnosticJobTrace;
-      return { entries: core.diagnosticTrace.slice(-20), penTransitions: core.diagnosticPenTrace.slice(-20), job: trace ? { ...trace, plannedPenEvents: trace.plannedPenEvents.slice(-20), entries: trace.entries.slice(-20), droppedEntries: trace.droppedEntries + Math.max(0, trace.entries.length - 20) } : null };
+      const diagnostics = { entries: core.diagnosticTrace, penTransitions: core.diagnosticPenTrace, job: trace };
+      if (jobId && trace) {
+        // Export the complete retained journal via HTTP. Plans and signals
+        // must never be truncated to fit the 64 KiB control frame.
+        await store.saveDiagnostics(jobId, diagnostics);
+        return { download: `/api/v1/jobs/${jobId}/diagnostics` };
+      }
+      return { entries: diagnostics.entries.slice(-20), penTransitions: diagnostics.penTransitions.slice(-20), job: null };
     } else throw new Error('Unsupported runner command');
     publish();
     } finally { manualBusy = false; settled(); manualCompletion = null; publish(); }

@@ -37,8 +37,8 @@ function open(connected = false) {
 beforeEach(() => {
   jobs = []; save = vi.fn(); exit = vi.fn(); state = structuredClone(initialState); state.pens = defaultPens();
   root = document.createElement('div'); document.body.append(root);
-  root.innerHTML = `<header class="top-actions"><div class="mode-switch" role="group" aria-label="Workspace mode"><button data-action="edit-mode" aria-pressed="true">Edit</button><button data-action="open-plot" aria-pressed="false">Plot</button></div><button data-action="undo">Undo</button><button data-action="redo">Redo</button></header>
-    <main><aside class="tool-rail"></aside><button class="canvas-size-button"></button><svg id="paper"><g id="artwork-layer"></g></svg><aside class="inspector"><section data-editor>Editing controls</section></aside></main>`;
+  root.innerHTML = `<header class="top-actions"><div class="mode-switch" role="radiogroup" aria-label="Workspace mode" data-segmented><button data-action="edit-mode" role="radio" aria-checked="true" tabindex="0">Edit</button><button data-action="open-plot" role="radio" aria-checked="false" tabindex="-1">Plot</button></div><button data-action="undo" data-edit-control>Undo</button><button data-action="redo" data-edit-control>Redo</button></header>
+    <main><div data-ui="drawing-toolbar" data-edit-control></div><button class="canvas-size-button" data-edit-control></button><svg id="paper"><g id="artwork-layer"></g></svg><aside class="inspector" data-ui="inspector"><section data-editor>Editing controls</section></aside></main>`;
   mocks.prepare.mockImplementation((_svg, _paper, _settings, progress) => {
     const pending = deferred<MotionPlan>();
     const job = { ...pending, progress, cancel: vi.fn(() => pending.reject(new Error('Planning cancelled.'))) };
@@ -51,6 +51,39 @@ beforeEach(() => {
 afterEach(async () => { workspace?.destroy(); await flush(); root.remove(); vi.restoreAllMocks(); vi.unstubAllGlobals(); mocks.prepare.mockReset(); });
 
 describe('Plot sidebar preparation and recovery', () => {
+  it('persists optimization controls, replans, and gates random seed entry by start mode',async()=>{
+    open(); jobs[0]!.resolve(plan()); await flush();
+    const input=(key:string)=>root.querySelector<HTMLInputElement>(`[data-plot-setting="${key}"]`)!;
+    expect(input('pathRandomSeed').disabled).toBe(true);
+    for (const [key,value] of [['pathJoinToleranceMm','.15'],['pathSimplifyToleranceMm','.02']]) {
+      const field=input(key!); field.value=value!; field.dispatchEvent(new Event('change',{bubbles:true}));
+      expect(state.settings[key as keyof typeof state.settings]).toBe(Number(value));
+      jobs.at(-1)!.resolve(plan()); await flush();
+    }
+    const select=root.querySelector<HTMLSelectElement>('[data-plot-setting="closedPathStart"]')!;
+    select.value='random'; select.dispatchEvent(new Event('change',{bubbles:true})); jobs.at(-1)!.resolve(plan()); await flush();
+    expect(state.settings.closedPathStart).toBe('random'); expect(input('pathRandomSeed').disabled).toBe(false);
+    const seed=input('pathRandomSeed'); seed.value='42'; seed.dispatchEvent(new Event('change',{bubbles:true})); jobs.at(-1)!.resolve(plan()); await flush();
+    expect(state.settings.pathRandomSeed).toBe(42);
+    expect(mocks.prepare).toHaveBeenLastCalledWith(expect.anything(),expect.anything(),expect.objectContaining({pathJoinToleranceMm:.15,pathSimplifyToleranceMm:.02,closedPathStart:'random',pathRandomSeed:42}),expect.anything(),expect.anything());
+    const invalid=input('pathRandomSeed'); invalid.value='1.5'; invalid.dispatchEvent(new Event('change',{bubbles:true}));
+    expect(state.settings.pathRandomSeed).toBe(42); expect(root.textContent).toContain('Enter a valid value');
+    expect(save).toHaveBeenCalled(); expect(plotter.plot).not.toHaveBeenCalled();
+  });
+  it('shows the simulation counter outside the paper and resets it on Stop', async () => {
+    open(); const prepared = plan(); jobs[0]!.resolve(prepared); await flush();
+    const signals: unknown[] = [];
+    root.querySelector('#paper')!.addEventListener('plot-execution-signal', event => signals.push((event as CustomEvent).detail));
+    button('choose-simulation').click(); frame(0); frame(100000);
+    const counter = root.querySelector<HTMLElement>('[data-plot-pen-counter]')!;
+    expect(counter.hidden).toBe(false); expect(counter.closest('svg')).toBeNull();
+    expect(counter.querySelector('[data-pen-down-count]')!.textContent).toBe('1');
+    expect(counter.querySelector('[data-pen-up-count]')!.textContent).toBe('2');
+    expect(signals.length).toBeGreaterThan(0);
+    button('start').click(); button('stop').click();
+    expect(counter.querySelector('[data-pen-down-count]')!.textContent).toBe('0');
+    workspace.destroy(); expect(root.querySelector('[data-plot-pen-counter]')).toBeNull();
+  });
   it('updates the device label after connecting server USB and explains local USB ownership', async () => {
     vi.stubGlobal('location', { hostname: '127.0.0.1' });
     const remote = new NetworkPlotter({ epoch: 'runner', revision: 1, timestamp: 1, connected: false, connecting: false, firmware: null, jobId: null, status: 'idle', progress: { completed: 0, total: 0, state: 'idle' }, position: null, positionTimestamp: null, origin: 'unset', originProfile: null, motorsOn: false, canAdjustPen: false });
@@ -115,6 +148,50 @@ describe('Plot sidebar preparation and recovery', () => {
     button('pen-up').click(); await flush(); expect(plotter.setPen).toHaveBeenCalledWith(30);
     expect(plotter.plot).not.toHaveBeenCalled();
   });
+  it.each(['penUp', 'penDown', 'speed'] as const)('keeps %s keyboard edits focused and the sidebar in place while updating the plan', async key => {
+    open(true); jobs[0]!.resolve(plan()); await flush();
+    const scroll = root.querySelector<HTMLElement>('.plot-scroll')!;
+    const heights = root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!;
+    heights.open = true;
+    scroll.scrollTop = 327;
+    const input = root.querySelector<HTMLInputElement>(`[data-plot-setting="${key}"]`)!;
+    input.focus(); input.value = '31'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(jobs).toHaveLength(1); // Typing validates without replacing the field.
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(jobs).toHaveLength(2);
+    expect(root.querySelector('.plot-scroll')).toBe(scroll);
+    expect(document.activeElement).toBe(input);
+    expect(scroll.scrollTop).toBe(327);
+    expect(button('start').disabled).toBe(true);
+    expect(root.querySelector<HTMLInputElement>('[data-pen-include]')!.disabled).toBe(true);
+    expect(button('only').disabled).toBe(true);
+    expect(plotter.plot).not.toHaveBeenCalled();
+    const updated = plan(); updated.settings = { ...updated.settings, [key]: 31 };
+    jobs[1]!.resolve(updated); await flush();
+    expect(root.querySelector(`[data-plot-setting="${key}"]`)).toBe(input);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe('31');
+    expect(root.querySelector<HTMLElement>('.plot-scroll')!.scrollTop).toBe(327);
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!.open).toBe(true);
+    // A subsequent spinner/arrow edit commits through the same surviving field.
+    input.value = '32'; input.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(state.settings[key]).toBe(32); expect(jobs).toHaveLength(3);
+    jobs[2]!.resolve(plan()); await flush();
+  });
+  it('preserves a newer unfinished keyboard value when preparation finishes', async () => {
+    open(true); jobs[0]!.resolve(plan()); await flush();
+    root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!.open = true;
+    const input = root.querySelector<HTMLInputElement>('[data-plot-setting="penDown"]')!;
+    input.focus(); input.value = '52';
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true }));
+    const updated = plan(); updated.settings.penDown = 52;
+    jobs[1]!.resolve(updated); await flush();
+    expect(document.activeElement).toBe(input); expect(input.value).toBe('');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(button('start').disabled).toBe(true);
+    expect(state.settings.penDown).toBe(52); expect(plotter.setPen).not.toHaveBeenCalled();
+  });
   it('explains resolution-filtered artwork separately from deselected pens', async () => {
     open(true); jobs[0]!.resolve({...plan(),events:[],duration:0,passes:[]}); await flush();
     expect(root.textContent).toContain('No drawing paths remain at the machine’s resolution.');
@@ -134,17 +211,15 @@ describe('Plot sidebar preparation and recovery', () => {
     vi.advanceTimersByTime(1000); expect(revoke).toHaveBeenCalledWith('blob:machine-log'); vi.useRealTimers();
     delete (URL as unknown as Record<string,unknown>).createObjectURL; delete (URL as unknown as Record<string,unknown>).revokeObjectURL;
   });
-  it('marks a physical observation without issuing a pen test or starting a plot', () => {
-    open(true); const mark = vi.spyOn(plotter,'markPenMovement');
-    button('mark-pen-movement').click(); expect(mark).toHaveBeenCalledOnce();
-    expect(plotter.setPen).not.toHaveBeenCalled(); expect(plotter.plot).not.toHaveBeenCalled();
-    expect(root.textContent).toContain('Pen movement marked in the machine log.');
-  });
   it('locks editing and selects Plot mode without starting hardware', async () => {
     open(true);
+    const sections = root.querySelectorAll('.plot-scroll > section');
+    expect(sections[0]!.querySelector('[data-plot-destination]')).not.toBeNull();
+    expect(sections[1]!.classList.contains('plot-settings-section')).toBe(true);
+    expect(sections[2]!.classList.contains('plot-pens-section')).toBe(true);
     expect(root.querySelector('[data-action="edit-mode"]')!.textContent).toContain('Edit');
-    expect(root.querySelector('[data-action="edit-mode"]')!.getAttribute('aria-pressed')).toBe('false');
-    expect(root.querySelector('[data-action="open-plot"]')!.getAttribute('aria-pressed')).toBe('true');
+    expect(root.querySelector('[data-action="edit-mode"]')!.getAttribute('aria-checked')).toBe('false');
+    expect(root.querySelector('[data-action="open-plot"]')!.getAttribute('aria-checked')).toBe('true');
     expect((root.querySelector('[data-action="redo"]') as HTMLElement).inert).toBe(true);
     expect(button('start').disabled).toBe(true);
     jobs[0]!.resolve(plan()); await flush();
@@ -258,5 +333,41 @@ describe('Plot sidebar preparation and recovery', () => {
     expect(status()).toBe('Plot needs attention'); expect(root.textContent).toContain('Return to origin failed');
     expect(root.textContent).not.toContain('Stopped · returned to origin');
     expect((root.querySelector('[data-action="edit-mode"]') as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
+describe('pen timing, statistics, supply and placement controls',()=>{
+  it('persists independent pen timing in simulation and replans before playback',async()=>{
+    open(); jobs[0]!.resolve(plan()); await flush();
+    for(const [key,value] of [['penRateRaise','20'],['penRateLower','30'],['penDelayUpMs','500'],['penDelayDownMs','200'],['penReloadWaitMs','1000']]){
+      const input=root.querySelector<HTMLInputElement>(`[data-plot-setting="${key}"]`)!;
+      expect(input.disabled).toBe(false); input.value=value!; input.dispatchEvent(new Event('change',{bubbles:true}));
+      expect(state.settings[key as keyof typeof state.settings]).toBe(Number(value)); jobs.at(-1)!.resolve(plan()); await flush();
+    }
+    expect(save).toHaveBeenCalled(); expect(plotter.setPen).not.toHaveBeenCalled();
+    expect(root.querySelector('[data-plot-distances]')!.textContent).toMatch(/Drawing 5.0 mm · Travel/);
+  });
+  it('simulates the placement bounds and follows with the original drawing on Play',async()=>{
+    open(); const original=plan(); jobs[0]!.resolve(original); await flush();
+    const signals: Array<{penDown:boolean;source:string}> = [];
+    root.querySelector('#paper')!.addEventListener('plot-execution-signal',event=>signals.push((event as CustomEvent).detail));
+    button('bounds-preview').click(); frame(0); frame(100000);
+    expect(signals.every(s=>!s.penDown)).toBe(true); expect(status()).toContain('Bounding box · Complete');
+    expect(root.querySelector('[data-plot-distances]')!.textContent).toContain('Drawing 0.0 mm');
+    expect(root.querySelector('[data-plot-elapsed]')!.textContent).toContain('Simulation time');
+    button('start').click(); frame(100001); frame(200000);
+    expect(signals.some(s=>s.penDown)).toBe(true); expect(status()).toBe('Complete'); expect(plotter.plot).not.toHaveBeenCalled();
+  });
+  it('runs bounds explicitly over USB, keeps the drawing available, and shows power/elapsed',async()=>{
+    open(true); const original=plan(); jobs[0]!.resolve(original); await flush();
+    vi.spyOn(plotter,'powerStatus','get').mockReturnValue({state:'low',supplyRaw:12,referenceRaw:394,checkedAt:1,message:'Motor supply is low or missing.'});
+    vi.spyOn(plotter,'elapsedMs','get').mockReturnValue(72000);
+    vi.mocked(plotter.plot).mockImplementation(async sent=>{plotter.onProgress({completed:sent.events.length,total:sent.events.length,state:'finished'});});
+    button('bounds-preview').click(); await flush(); await flush();
+    expect(plotter.plot).toHaveBeenCalledWith(expect.objectContaining({events:expect.arrayContaining([expect.objectContaining({kind:'xy',penDown:false})])}));
+    const sent=vi.mocked(plotter.plot).mock.calls[0]![0]; expect(sent.events.every(e=>!e.penDown)).toBe(true);
+    expect(root.querySelector('[data-power-status]')!.textContent).toContain('Supply ADC 12/1023');
+    expect(root.querySelector('[data-plot-elapsed]')!.textContent).toContain('Elapsed 1:12');
+    button('start').click(); await flush(); expect(vi.mocked(plotter.plot).mock.calls.at(-1)![0]).toEqual(original);
   });
 });

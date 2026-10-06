@@ -113,7 +113,14 @@ function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = fal
   for (const element of artwork.querySelectorAll<SVGGeometryElement>(DRAWABLE)) {
     yield;
     if (skipGenerated && element.closest("[data-generated-fill]")) continue;
-    if (skipGenerated && element.hasAttribute('data-fill-source')) { paths.push(...(bySource.get(element.getAttribute('data-fill-path-key') ?? '') ?? [])); continue; }
+    if (skipGenerated && element.hasAttribute('data-fill-source')) {
+      const sourceKey = element.getAttribute('data-fill-path-key') ?? '';
+      paths.push(...(bySource.get(sourceKey) ?? []));
+      // Several editable glyphs can share one resolved batch. Insert that batch
+      // at its first source only, retaining intentional strokes within it.
+      bySource.delete(sourceKey);
+      continue;
+    }
     if (element.closest(".selection-ui,defs,clipPath,mask,pattern,marker,symbol") || element.hasAttribute("data-fill-source")) continue;
     const matrix = element.getScreenCTM();
     if (!matrix) continue;

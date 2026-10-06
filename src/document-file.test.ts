@@ -16,6 +16,16 @@ const document = () => {
 };
 const file = () => JSON.parse(serializePlotIt(document()));
 describe('.plit.json documents', () => {
+  it('round-trips optimization controls and supplies old documents with disabled geometry changes',()=>{
+    const state=document(); Object.assign(state.settings,{pathJoinToleranceMm:.15,pathSimplifyToleranceMm:.02,closedPathStart:'random',pathRandomSeed:987});
+    expect(parsePlotIt(serializePlotIt(state)).state.settings).toEqual(state.settings);
+    const data=JSON.parse(serializePlotIt(state));
+    for (const key of ['pathJoinToleranceMm','pathSimplifyToleranceMm','closedPathStart','pathRandomSeed']) delete data.document.settings[key];
+    expect(parsePlotIt(JSON.stringify(data)).state.settings).toMatchObject({pathJoinToleranceMm:0,pathSimplifyToleranceMm:0,closedPathStart:'preserve',pathRandomSeed:1});
+    for (const [key,value] of [['pathJoinToleranceMm',-1],['pathSimplifyToleranceMm','bad'],['closedPathStart','invalid'],['pathRandomSeed',1.5]]) {
+      const bad=structuredClone(data); bad.document.settings[key as string]=value; expect(()=>parsePlotIt(JSON.stringify(bad))).toThrow('Invalid');
+    }
+  });
   it('restores setup models without changing saved orientation or older documents', () => {
     const data = file(); data.document.settings.axidrawModel = 'v3-a3'; data.document.settings.machineRotation = 270;
     expect(parsePlotIt(JSON.stringify(data)).state.settings).toMatchObject({ axidrawModel: 'v3-a3', machineRotation: 270 });

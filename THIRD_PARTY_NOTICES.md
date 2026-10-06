@@ -2,18 +2,26 @@
 
 Plot-it is distributed under AGPL-3.0-only; see LICENSE.
 
-## Saxi motion planner
+## Plotting protocol references
 
-`src/vendor/saxi/planning.ts` and `vec.ts` derive from alexrudd2/saxi,
-version 0.17.1, revision 2640a3dd6c7a5261985f334255b827edb30e3109 (2026-09-23).
-Original authors: Jeremy Rose (nornagon) and Saxi contributors.
-https://github.com/alexrudd2/saxi
-License: AGPL-3.0-only. The planner credits Michael Fogleman's axi planner.
-Local changes remove unused application options/imports, expose the single-path
-planner, and add bounded-index assertions for stricter TypeScript checking.
-`src/motion-plan.ts` adapts Saxi's EBB rate calculations to physical-mm plans
-and absolute target quantization. The SVG editor remains the project's own implementation; fill geometry uses
-Clipper-lib as noted below.
+The current trajectory planner and timed EBB command compiler are original
+TypeScript implementations. No Saxi module is included in the current source or
+runtime. The earlier Saxi-based version and its notices are retained in a local
+workspace archive, excluded from distribution.
+
+Protocol behavior is specified by the public EBB command documentation:
+https://evil-mad.github.io/EggBot/ebb2.html
+Pen configuration, separate raise/lower rates, timing estimates, host pacing,
+short-move policies, step/rate correction, and path optimization behavior
+were checked against Evil Mad Scientist's AxiDraw Python driver, revision
+`a0df054f41f8e3ae8d408e08e7b2656968e375f1`, and Plotink revision
+`4976b86080c25a10a9f979b870669dc62a1741fa`. Those reference implementations
+remain under their own licenses; they are not vendored in this application.
+https://github.com/evil-mad/axidraw
+https://github.com/evil-mad/plotink
+
+Plot-it's existing AGPL-3.0-only application license is unchanged. The SVG editor
+remains the project's own implementation; fill geometry uses Clipper-lib below.
 
 The app's Source link downloads the corresponding source and build instructions.
 `npm run dev` and `npm run build` regenerate this archive from the current checkout.
@@ -33,6 +41,11 @@ Lucide: ISC license; https://github.com/lucide-icons/lucide.
 HarfBuzz.js / HarfBuzz: MIT license; https://github.com/harfbuzz/harfbuzzjs.
 Font test fixtures retain their OFL licenses in src/test-fonts.
 Dependency packages retain their upstream license notices.
+
+The public site's AP.CX marquee uses `@ap.cx/gl-marquee` 0.1.0 under MIT,
+copyright (c) 2026 Thierry C. Its full notice is distributed in
+[public/licenses/apcx-gl-marquee.txt](public/licenses/apcx-gl-marquee.txt).
+The marquee reuses the bundled Square Bot Sans font with its existing OFL notice.
 
 ## Bundled PlotFont fonts
 

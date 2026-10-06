@@ -1,0 +1,4 @@
+.field { display:grid; gap:var(--field-gap); min-width:0; font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); color:var(--text-secondary); }
+.field-label { font-size:var(--font-size-ui); color:var(--text-secondary); }
+.field-error { margin:0; color:var(--danger); font-size:var(--font-size-secondary); line-height:1.5; }
+.field-help { margin:0; color:var(--text-quiet); font-size:var(--font-size-secondary); line-height:1.5; }

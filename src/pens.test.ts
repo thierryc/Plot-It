@@ -50,6 +50,32 @@ describe('physical pen palette', () => {
 });
 
 describe('pen order versus path order', () => {
+  it('orders from origin after a protected multi-pen block ends with another pen',()=>{
+    const source=[path(black,1,'font'),path(red,100,'font'),path(black,90),path(black,20)];
+    const result=preparePenPaths(source,{...settings,reorderMode:'nearest'},defaultPens()).paths;
+    expect(result.map(p=>p.points[0]!.x)).toEqual([1,100,20,90]);
+    expect(result.slice(0,2)).toEqual(source.slice(0,2));
+  });
+  it('chooses nearest closed starts during ordering and follows the previous stroke cursor',()=>{
+    const ring={tool:black,points:[{x:100,y:100},{x:20,y:20},{x:40,y:20},{x:100,y:100}]};
+    const far=path(black,50);
+    const configured={...settings,closedPathStart:'nearest' as const,reorderMode:'nearest' as const};
+    const result=preparePenPaths([far,ring],configured,defaultPens()).paths;
+    expect(result[0]!.points[0]).toEqual({x:20,y:20}); expect(result[0]!.points.at(-1)).toEqual({x:20,y:20});
+    const preferences={...defaultPens(),mode:'source' as const};
+    const source=preparePenPaths([far,ring],configured,preferences).paths;
+    expect(source[0]).toEqual(far); expect(source[1]!.points[0]).toEqual({x:40,y:20});
+  });
+  it('splits the entire joined/simplified drawing into reload chunks before motion planning',()=>{
+    const source=[{tool:black,points:[{x:10,y:10},{x:20,y:10}]},{tool:black,points:[{x:20.1,y:10},{x:30,y:10}]}];
+    const configured={...settings,pathJoinToleranceMm:.2,pathSimplifyToleranceMm:.01,maxPenDownMm:6};
+    const prepared=preparePenPaths(source,configured,defaultPens());
+    expect(prepared.paths).toHaveLength(4);
+    const lengths=prepared.paths.map(p=>p.points.slice(1).reduce((sum,q,i)=>sum+Math.hypot(q.x-p.points[i]!.x,q.y-p.points[i]!.y),0));
+    expect(lengths).toEqual([6,6,6,2]);
+    const plan=buildMotionPlan(prepared.paths,configured); expect(plan.events.filter(event=>event.kind==='pen'&&event.penDown)).toHaveLength(4);
+    expect(plan.events.filter(event=>event.kind==='pen').map(event=>event.to)).toEqual([{x:0,y:0},{x:10,y:10},{x:16,y:10},{x:16,y:10},{x:22,y:10},{x:22,y:10},{x:28,y:10},{x:28,y:10},{x:30,y:10}]);
+  });
   it('groups colors before optimizing paths and respects manual pen rank', () => {
     const source = [path(red, 30), path(black, 40), path(red, 10), path(black, 20)];
     const preferences = defaultPens(); preferences.order = [black, red];

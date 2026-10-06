@@ -18,7 +18,7 @@ let service: { close(): Promise<void> };
 if (mode === 'runner') {
   const connectionPolicy = process.env.PLOT_CONNECTION_POLICY ?? 'manual';
   if (connectionPolicy !== 'manual' && connectionPolicy !== 'auto') throw new Error('PLOT_CONNECTION_POLICY must be manual or auto');
-  service = await startRunner({ directory, socketDirectory, maxEvents, connectionPolicy, core: new PlotterCore(new NodeSerialTransport(process.env.EBB_DEVICE), { precompile: true, positionBudgetMs: 30 }) });
+  service = await startRunner({ directory, socketDirectory, maxEvents, connectionPolicy, core: new PlotterCore(new NodeSerialTransport(process.env.EBB_DEVICE), { positionBudgetMs: 30 }) });
 }
 else if (mode === 'api') {
   const origins = (process.env.PLOT_ORIGINS ?? 'http://127.0.0.1:8787,http://localhost:8787').split(',').map(value => new URL(value.trim()).origin);

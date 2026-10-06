@@ -1,0 +1,8 @@
+html,body,#app { height:auto; min-height:100%; overflow:auto; }
+.showcase { max-width:760px; margin:auto; padding:20px; color:var(--ink); background:var(--app-background); font:400 14px/1.5 var(--font-ui); }
+.example { padding:14px; margin:12px 0; display:grid; gap:8px; }
+.examples { display:flex; flex-wrap:wrap; gap:8px; }
+.showcase h1 { font-size:26px; }
+.showcase h2 { font-size:16px; margin:0; }
+.standalone-check { display:flex; gap:8px; align-items:center; min-height:44px; }
+@media(max-width:639px) { .showcase { padding:16px; } }

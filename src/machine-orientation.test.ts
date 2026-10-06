@@ -18,15 +18,15 @@ describe('standard machine orientation', () => {
     for (const [to, expected] of [
       [{x:10,y:0}, {x:0,y:10*scale}],
       [{x:0,y:10}, {x:-10*scale,y:0}],
-    ]) for (const lm of [true, false]) {
+    ]) {
       const settings: PlotSettings = {...initialState.settings,profile,returnToOrigin:false};
       delete settings.machineRotation; // Missing settings also use the new standard.
       const plan = buildMotionPlan([{points:[{x:0,y:0},to!],tool:'#000000'}], settings);
       let cursor = {x:0,y:0}, motor1 = 0, motor2 = 0;
-      for (const event of plan.events) for (const move of compileMotion(event,settings,cursor,lm)) {
+      for (const event of plan.events) for (const move of compileMotion(event,settings,cursor)) {
         const values = move.command.split(',').map(Number);
-        motor1 += lm ? values[2]! : values[2]! + values[3]!;
-        motor2 += lm ? values[5]! : values[2]! - values[3]!;
+        motor1 += values[2]! + values[3]!;
+        motor2 += values[2]! - values[3]!;
         cursor = move.targetSteps;
       }
       expect(cursor).toEqual(expected);

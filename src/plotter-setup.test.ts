@@ -26,7 +26,7 @@ describe('physical setup preview', () => {
     expect(a3.events).toEqual(a4.events);
     expect(a3.duration).toBe(a4.duration);
     const event = a4.events.find(event => event.kind === 'xy')!;
-    expect(compileMotion(event, a3.settings, { x: 0, y: 0 }, true))
-      .toEqual(compileMotion(event, a4.settings, { x: 0, y: 0 }, true));
+    expect(compileMotion(event, a3.settings, { x: 0, y: 0 }))
+      .toEqual(compileMotion(event, a4.settings, { x: 0, y: 0 }));
   });
 });

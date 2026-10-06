@@ -1,32 +1,47 @@
+import inputStyles from './ui/design-system/input.module.css';
+import { bindColorControls } from './ui/app/color-events';
+import { bindWorkspaceCommands, captureCheckboxFocus } from './ui/app/events';
+import { penTimingSettings } from './pen-control';
 import "./styles.css";
+import { FontPicker } from "./font-picker";
+import { fontChoices } from "./font-choices";
+import { customFontPreviews } from "./font-preview-cache";
+import { classes } from './ui/design-system';
+import { editorViews } from './ui/app/editor-views';
+import { workspaceShell } from './ui/app/shell';
+import inspectorStyles from './ui/app/inspector.module.css';
+import workspaceStyles from './ui/app/workspace.module.css';
+
+import { mainMenu } from './ui/app/workspace';
+import { WorkspaceOverlays } from './ui/app/overlays';
 import { applicationDeployment } from './app-deployment';
 import type { TaskProgress } from "./task-progress";
-import { FillPreview, adoptFillPreviewClone, awaitFills, effectiveFill, hasActiveFill, hasElementFills, ELEMENT_FILL_ATTRIBUTE, exportFilledSvg } from './fill-dom';
-import { fillSpacing, validateFill } from './fill';
+import { FillPreview, adoptFillPreviewClone, awaitFills, effectiveFill, hasActiveFill, ELEMENT_FILL_ATTRIBUTE, exportFilledSvg } from './fill-dom';
+import { validateFill } from './fill';
 import { fillDocumentKey } from './fill-dom';
 import { defaultFillSettings, type FillSettings } from './model';
 import { prepareJob } from "./plot-job";
 import { PlotWorkspace } from "./plot-workspace";
 import { calibrationSheet } from './calibration';
-import { DOCUMENT_ACCEPT, DOCUMENT_EXTENSION, MAX_DOCUMENT_BYTES, documentFontIds, isPlotItDocumentFile, parsePlotIt, serializePlotIt } from './document-file';
+import { DOCUMENT_EXTENSION, MAX_DOCUMENT_BYTES, documentFontIds, isPlotItDocumentFile, parsePlotIt, serializePlotIt } from './document-file';
 import { exportDocumentFonts, importDocumentFonts } from './typography';
-import { canonicalColor, restorePens } from "./pens";
+import { restorePens } from "./pens";
 import { restoreMachineOrientation } from './motion';
+import { pathOptimizationSettings } from './path-optimization';
 import { PlotterBackground } from './plotter-background';
-import { PLOTTER_POSITIONS, setupModel } from './plotter-setup';
-import { icon } from "./icons";
+import { setupModel } from './plotter-setup';
 import { initializeTheme } from "./theme";
-import { parseHexColor, restorePaperColor } from "./colors";
+import { restorePaperColor } from "./colors";
 import { initialState, itemTransform, PAPERS, type AppState, type ArtworkItem, type Point } from "./model";
 import { freehandItem, parseSvg, renderItem } from "./svg";
-import { recoverPlotText, supportedCharacters, textToItem } from "./plot-font";
-import { constrainedDelta, editElement, elementName, ELEMENT_NAME_ATTRIBUTE, elements, markupRoot, movePathNode, parsePath, pathData, pathNodes, resizedDimensions, resizedItem, SHAPE_FIELDS } from "./editor";
-import { SHAPES, shapeItem, type ShapeKind } from './shapes';
+import { recoverPlotText, textToItem } from "./plot-font";
+import { constrainedDelta, editElement, elementName, ELEMENT_NAME_ATTRIBUTE, elements, markupRoot, movePathNode, parsePath, pathData, pathNodes, resizedDimensions, resizedItem } from "./editor";
+import { shapeItem, type ShapeKind } from './shapes';
 import { documentName, documentFilename } from './document-name';
-import { DEFAULT_FONT_ID, defaultTextOptions, editTypography, ensureFontLoaded, findFont, fontTextOptions, loadedFonts, loadFontFile, migrateOutlineText, restoreFonts, textOptions, typographyToItem } from "./typography";
+import { defaultTextOptions, editTypography, ensureFontLoaded, findFont, fontTextOptions, loadFontFile, migrateOutlineText, restoreFonts, textOptions, typographyToItem } from "./typography";
 import type { TextOptions } from "./model";
 import { Plotter } from "./plotter";
-import { canvasPaper, MAX_CANVAS_MM, MIN_CANVAS_MM, paperPresetIndex, restorePaper } from "./paper";
+import { canvasPaper, paperPresetIndex, restorePaper } from "./paper";
 import { GestureController, type GestureSample } from './gesture';
 import { editorPreferences, type EditorPreferences } from './editor-preferences';
 import { angleStep, snappedAngle, DuplicationChain, clonedMarkup, cloneSvgElement, remapSvgIds, type SelectionPose } from './editor-modifiers';
@@ -43,6 +58,7 @@ let selectedElement: number | null = null;
 let editNodes = false;
 let selectedNode: { command: number; pair: number } | null = null;
 let plotWorkspace: PlotWorkspace | null = null;
+let overlays: WorkspaceOverlays | undefined;
 let plotterBackground: PlotterBackground | null = null;
 let fieldEditInput: Element | null = null;
 const fillPreview = new FillPreview();
@@ -83,18 +99,9 @@ function rememberInspectorSections(): void {
     inspectorSections.set(details.dataset.inspectorSection!, details.open);
   });
 }
-function inspectorSection(key: string): string {
-  return `data-inspector-section="${key}" ${(inspectorSections.get(key) ?? true) ? 'open' : ''}`;
-}
-function colorControl(label: string, color: string, attributes: string): string {
-  let value = '#000000';
-  try { value = canonicalColor(color); } catch { /* A color picker cannot represent SVG none or gradients. */ }
-  return `<div class="color-field"><span class="field-label">${label}</span><div class="color-inputs"><input type="color" ${attributes} value="${value}" aria-label="${label} picker"><input type="text" data-color-hex value="${value}" aria-label="${label} hex" autocomplete="off" spellcheck="false" placeholder="#RRGGBB"></div><p class="field-error" data-color-error role="alert" hidden></p></div>`;
-}
-function selectionPanelMarkup(): string {
-  const item = selected();
-  return `<summary class="panel-title">Selection</summary><div class="panel-body">${item && !item.text ? elementList(item) : ""}${item ? inspectorMarkup(item) : '<p class="panel-empty">Select an object on the paper or in the object list.</p>'}</div>`;
-}
+
+
+function selectionPanelMarkup(): string { return views().selectionPanelMarkup(); }
 
 function cloneState(value = state): AppState { return structuredClone(value); }
 function loadState(): AppState {
@@ -114,6 +121,8 @@ function loadState(): AppState {
       settings: {
         ...initialState.settings,
         ...parsed.settings,
+        ...pathOptimizationSettings(parsed.settings ?? {}),
+        ...penTimingSettings(parsed.settings ?? {}),
         axidrawModel: setupModel(parsed.settings?.axidrawModel),
         pauseOnToolChange: true,
         ...restoreMachineOrientation(parsed.settings),
@@ -168,132 +177,54 @@ function commitField(input: HTMLInputElement | HTMLTextAreaElement, mutator: () 
     const element = liveElement(), data = app.querySelector<HTMLTextAreaElement>("[data-path-data]");
     if (element && data && data !== input) data.value = element.getAttribute("d") ?? "";
   }
-  const objects = app.querySelector(".objects-panel");
+  const objects = app.querySelector('[data-ui="objects-panel"]');
   if (objects) {
-    const scroll = objects.querySelector(".object-list")?.scrollTop ?? 0;
+    const scroll = objects.querySelector('[data-object-list]')?.scrollTop ?? 0;
     objects.innerHTML = objectsMarkup(); bindEditorEvents(objects); restoreObjectListScroll(scroll);
   }
   app.querySelector<HTMLButtonElement>('[data-action="undo"]')!.disabled = !history.length;
   app.querySelector<HTMLButtonElement>('[data-action="redo"]')!.disabled = !future.length;
 }
 function persist(): void { localStorage.setItem("plot-it-document", JSON.stringify(state)); plotterBackground?.refresh(); }
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]!);
-}
+
 function selected(): ArtworkItem | undefined { return state.items.find((item) => item.id === state.selectedId); }
 
 
+const fontPickers = new Set<FontPicker>();
 function render(): void {
   if (plotWorkspace) return;
+  const restoreCheckboxFocus = captureCheckboxFocus(app);
+  const inspectorOpen = overlays?.inspectorOpen ?? false;
+  overlays?.destroy();
   plotterBackground?.destroy();
   finishNudge();
   // Settle the gesture while its SVG and geometry are still available.
   gestures.finish(false);
   document.title = `${state.documentName} · Plot-it`;
   rememberInspectorSections();
-  const settingsOpen = app.querySelector("#settings-popover")?.matches(":popover-open") ?? false;
-  const inspectorScroll = app.querySelector(".inspector")?.scrollTop ?? 0;
-  const objectListScroll = app.querySelector(".objects-panel .object-list")?.scrollTop ?? 0;
+  const menuOpen = app.querySelector("#main-menu")?.matches(":popover-open") ?? false;
+  const inspectorScroll = app.querySelector('[data-ui="inspector"]')?.scrollTop ?? 0;
+  const objectListScroll = app.querySelector('[data-ui="objects-panel"] [data-object-list]')?.scrollTop ?? 0;
   const stageScroll = app.querySelector("#stage");
   const scroll = { top: stageScroll?.scrollTop ?? 0, left: stageScroll?.scrollLeft ?? 0 };
   const item = selected();
-  app.innerHTML = `
-    <div class="app-shell">
-      <header class="topbar">
-        <div class="brand"><span class="brand-mark">P</span><span>Plot-it</span><span class="beta" title="Beta · Active development">BETA</span>${deployment.hosted ? '<a href="/" class="hosted-home" aria-label="Plot-it home">Home</a>' : ''}</div>
-        <div class="document-title"><span class="status-dot"></span><button class="document-name" data-document-name title="Double-click or press F2 to rename the plot">${escapeHtml(state.documentName)}</button><span class="saved">Saved locally</span></div>
-        <div class="top-actions">
-          <button class="button ghost icon-button" data-action="undo" title="Undo" aria-label="Undo" ${history.length ? "" : "disabled"}>${icon("undo")}</button>
-          <button class="button ghost icon-button" data-action="redo" title="Redo" aria-label="Redo" ${future.length ? "" : "disabled"}>${icon("redo")}</button>
-          <button class="button ghost" data-action="install" ${installPrompt ? "" : "hidden"}>Install app</button>
-          ${plotControlsMarkup()}
-        </div>
-      </header>
-      <main class="workspace">
-        <aside class="tool-rail" aria-label="Drawing tools">
-          <button class="tool ${state.tool === "select" ? "active" : ""}" data-tool="select" title="Select (V)">${icon("cursor")}<span>Select</span></button>
-          <button class="tool ${state.tool === "draw" ? "active" : ""}" data-tool="draw" title="Draw (P)">${icon("pen")}<span>Draw</span></button>
-          <button class="tool" data-action="add-text" title="Add plot text">${icon("text")}<span>Text</span></button>
-          <button class="tool" data-action="shapes" popovertarget="shape-menu" title="Insert a shape" aria-haspopup="dialog" aria-expanded="false" aria-controls="shape-menu">${icon("shape")}<span>Shapes</span></button>
-          <div class="rail-rule"></div>
-          <button class="tool" data-action="import" title="Import SVG">${icon("upload")}<span>Import</span></button>
-          <button class="tool" data-action="export" title="Export SVG" ${state.items.length ? "" : "disabled"}>${icon("download")}<span>Export</span></button>
-          <button class="tool" data-action="save-document" title="Save Plot-it document (.plit.json)">${icon("save")}<span>Save</span></button>
-          <button class="tool" data-action="load-document" title="Load Plot-it document (.plit or .plit.json)">${icon("load")}<span>Load</span></button>
-          <button class="tool" data-action="more-elements" popovertarget="more-elements" title="More elements" aria-haspopup="dialog" aria-expanded="false" aria-controls="more-elements">${icon("more")}<span>More</span></button>
-          <button class="tool settings-trigger" popovertarget="settings-popover" title="Settings" aria-label="Settings" aria-haspopup="dialog">${icon("settings")}<span>Settings</span></button>
-        </aside>
-        <section class="stage-wrap">
-          ${fillProgressMarkup(true)}
-          <div class="stage-toolbar">
-            <button class="canvas-size-button" data-action="canvas-size" aria-label="Change canvas size" aria-haspopup="dialog" title="Change canvas size"><strong>${state.paper.name}</strong><span>${state.paper.width} × ${state.paper.height} mm</span><span class="canvas-size-chevron" aria-hidden="true">${icon("chevron")}</span></button>
-            <div class="zoom-control"><button data-action="zoom-out" title="Zoom out" aria-label="Zoom out">${icon("minus")}</button><span>${Math.round(state.zoom * 100)}%</span><button data-action="zoom-in" title="Zoom in" aria-label="Zoom in">${icon("plus")}</button><button data-action="zoom-fit" title="Fit to view and reset pan" aria-label="Fit to view">${icon("fit")}</button></div>
-          </div>
-          <div class="stage" id="stage" tabindex="0" aria-label="Editing canvas">
-            <div class="paper-shadow" style="--paper-ratio:${state.paper.width}/${state.paper.height};--zoom:${state.zoom};translate:${pan.x}px ${pan.y}px">
-              <svg id="paper" class="paper" style="--paper-color:${state.paperColor}" viewBox="0 0 ${state.paper.width} ${state.paper.height}" role="img" aria-label="Plotting paper">
-                <defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#d5d5d5" stroke-width=".18"/></pattern></defs>
-                <rect id="paper-background" width="100%" height="100%" fill="${state.paperColor}"/>
-                <rect width="100%" height="100%" fill="url(#grid)" opacity=".52"/>
-                <rect x="${state.settings.margin}" y="${state.settings.margin}" width="${Math.max(0, state.paper.width - state.settings.margin * 2)}" height="${Math.max(0, state.paper.height - state.settings.margin * 2)}" class="margin-guide"/>
-                <g id="artwork-layer" fill="none" stroke="currentColor" stroke-width=".35" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round">
-                  ${state.items.map((entry) => renderItem(entry, entry.id === state.selectedId)).join("")}
-                </g>
-                ${item ? selectionMarkup(item) : ""}
-                <path id="draft-path" class="draft-path" d=""/>
-              </svg>
-              ${state.items.length ? "" : `<div class="empty-state"><div class="empty-icon">${icon("pen")}</div><h2>Start with a line</h2><p>Drop an SVG here, draw directly, or set type with single-line or loaded OpenType fonts.</p><div><button class="button primary" data-action="import">Import SVG</button><button class="button" data-action="add-text">Add text</button></div><small>Everything stays in your browser.</small></div>`}
-            </div>
-          </div>
-          <footer class="statusbar"><span><i></i>${plotter.connected ? `EBB connected · Firmware ${plotter.firmwareLabel}` : plotter.supported ? "Web Serial ready in Chrome" : "Web Serial requires desktop Chrome or Edge"}</span>${deployment.hosted ? '<span class="hosted-attribution"><span class="hosted-extra"><a href="/docs/">Docs</a> · <a href="https://github.com/thierryc/Plot-It/issues">Support on GitHub</a> · </span><a href="https://ap.cx/" title="An Another Planet Experience project">AP.CX</a></span>' : ''}<span><a href="/plot-it-source.tar.gz" download>Source · AGPL-3.0</a> · ${state.items.length} object${state.items.length === 1 ? "" : "s"}</span></footer>
-        </section>
-        <aside class="inspector">
-          <details class="panel editor-panel" ${inspectorSection("paper")}><summary class="panel-title">Paper</summary><div class="panel-body"><label>Size<select data-setting="paper">${paperOptions(paperPresetIndex(state.paper))}</select></label><button class="button" data-action="canvas-size">Canvas dimensions…</button>${colorControl("Paper color", state.paperColor, 'data-setting="paperColor"')}<label>Safe margin<div class="unit-input"><input type="number" min="0" max="50" step="1" value="${state.settings.margin}" data-setting="margin"><span>mm</span></div></label></div></details>
-          <details class="panel editor-panel" ${inspectorSection('setup')}><summary class="panel-title">Plotter setup</summary><div class="panel-body">
-            <label>Machine profile<select data-setting="profile"><option value="axidraw" ${state.settings.profile === 'axidraw' ? 'selected' : ''}>AxiDraw / EBB</option><option value="xylodraw" ${state.settings.profile === 'xylodraw' ? 'selected' : ''}>XyloDraw</option></select></label>
-            ${state.settings.profile === 'axidraw' ? `<label>AxiDraw model<select data-setting="axidrawModel"><option value="v3-a4" ${setupModel(state.settings.axidrawModel) === 'v3-a4' ? 'selected' : ''}>V3 · A4</option><option value="v3-a3" ${state.settings.axidrawModel === 'v3-a3' ? 'selected' : ''}>V3/A3 · A3</option></select></label>` : ''}
-            <label>Plotter position<select data-setting="machineRotation">${PLOTTER_POSITIONS.map(option => `<option value="${option.rotation}" ${(state.settings.machineRotation ?? 90) === option.rotation ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
-            <p class="field-help">Position sets the machine orientation. The diagram follows the pen during simulation. Fit frames the paper.</p>
-          </div></details>
-          <details class="panel editor-panel objects-panel" ${inspectorSection("objects")}>${objectsMarkup()}</details>
-          <details class="panel editor-panel selection-panel" ${inspectorSection("selection")}>${selectionPanelMarkup()}</details>
-
-        </aside>
-      </main>
-      <input id="file-input" type="file" accept="image/svg+xml,.svg" hidden>
-      <input id="document-input" type="file" accept="${DOCUMENT_ACCEPT}" hidden>
-      <section id="shape-menu" class="elements-popover shape-popover" popover="auto" role="dialog" aria-labelledby="shape-title">
-        <div class="dialog-head"><h2 id="shape-title">Insert a shape</h2><button class="close" popovertarget="shape-menu" popovertargetaction="hide" aria-label="Close shapes">${icon("close")}</button></div>
-        <div class="shape-grid">${SHAPES.map(shape => `<button class="button" data-add-shape="${shape.id}">${icon(shape.icon)}<span>${shape.label}</span></button>`).join('')}</div>
-      </section>
-      <section id="more-elements" class="elements-popover" popover="auto" role="dialog" aria-labelledby="elements-title">
-        <div class="dialog-head"><h2 id="elements-title">Add an element</h2><button class="close" popovertarget="more-elements" popovertargetaction="hide" aria-label="Close elements">${icon("close")}</button></div>
-        <h3>Calibration sheet</h3><p>Crossing horizontal and vertical lines cover the paper inside its safe margin. Check for faint or missing lines to find uneven pen contact.</p>
-        <label>Line spacing<div class="unit-input"><input id="calibration-spacing" type="number" min="2" max="100" step="1" value="20"><span>mm</span></div></label>
-        <p id="calibration-error" class="field-error" role="alert" hidden></p>
-        <button class="button primary" data-action="surface-calibration">${icon("plus")} Add calibration sheet</button>
-      </section>
-      <dialog id="text-dialog">${textDialogMarkup()}</dialog>
-      <dialog id="canvas-dialog" aria-labelledby="canvas-title">${canvasDialogMarkup()}</dialog>
-      <section id="settings-popover" class="settings-popover" popover="auto" role="dialog" aria-labelledby="settings-title">
-        <div class="dialog-head"><h2 id="settings-title">Settings</h2><button class="close" popovertarget="settings-popover" popovertargetaction="hide" aria-label="Close settings">${icon("close")}</button></div>
-        <label class="settings-theme">Interface theme
-          <select class="theme-select" aria-label="Interface theme">${["system", "light", "dark"].map((value) => `<option value="${value}" ${theme.preference === value ? "selected" : ""}>${value[0]!.toUpperCase() + value.slice(1)}</option>`).join("")}</select>
-        </label>
-        <div class="nudge-preferences">${(['nudgeMm', 'shiftNudgeMm'] as const).map(key => `<label>${key === 'nudgeMm' ? 'Normal nudge' : 'Shift nudge'}<div class="unit-input"><input type="number" min="0" step="any" data-nudge-preference="${key}" value="${preferences.value[key]}"><span>mm</span></div><span class="field-error" data-nudge-error="${key}" role="alert" hidden></span></label>`).join('')}<button class="button" data-reset-nudges>Reset nudge defaults</button></div>
-      </section>
-      <div id="toast" class="toast" role="status"></div>
-    </div>`;
+  app.innerHTML = workspaceShell({ state, pan, canUndo:!!history.length, canRedo:!!future.length, inspectorSections, editor:views(),
+    progress:fillProgressMarkup(true), artwork:state.items.map(entry => renderItem(entry, entry.id === state.selectedId)).join(''), selection:item ? selectionMarkup(item) : '',
+    connectionStatus:plotter.connected ? `EBB connected · Firmware ${plotter.firmwareLabel}` : plotter.supported ? 'Web Serial ready' : 'Simulation available',
+    menu:mainMenu(state, theme.preference, preferences.value, deployment.hosted, !!installPrompt) });
   bindEvents();
+  overlays = new WorkspaceOverlays(app);
+  if (inspectorOpen) overlays.openInspector();
   plotterBackground = new PlotterBackground(app.querySelector<SVGSVGElement>('#paper')!, () => state.settings);
   applyPan();
-  if (settingsOpen) app.querySelector<HTMLElement>("#settings-popover")?.showPopover();
+  if (menuOpen) app.querySelector<HTMLElement>("#main-menu")?.showPopover();
   refreshCanvas();
   refreshInspector();
   restoreObjectListScroll(objectListScroll);
-  app.querySelector(".inspector")!.scrollTop = inspectorScroll;
+  app.querySelector('[data-ui="inspector"]')!.scrollTop = inspectorScroll;
   app.querySelector("#stage")!.scrollTop = scroll.top;
   app.querySelector("#stage")!.scrollLeft = scroll.left;
+  restoreCheckboxFocus();
 }
 
 function handleScale(): number {
@@ -307,45 +238,14 @@ function rotationHandle(x: number, y: number): string {
 function selectionMarkup(item: ArtworkItem): string {
   return `<g class="selection-ui" transform="translate(${item.x} ${item.y}) rotate(${item.rotation} ${item.width / 2} ${item.height / 2})"><rect class="selection-box" width="${item.width}" height="${item.height}"/>${editNodes ? '' : [['nw',0,0],['ne',1,0],['se',1,1],['sw',0,1]].map(([corner,x,y]) => `<circle class="handle ${corner}" data-handle="${corner}" cx="${Number(x)*item.width}" cy="${Number(y)*item.height}" r="${6 / handleScale()}"/>`).join('') + rotationHandle(item.width / 2, 0)}</g>`;
 }
-function inspectorMarkup(item: ArtworkItem): string {
-  if (selectedElement !== null && !item.text) return elementInspector(item);
-  return `<label>Name<input data-item-prop="name" value="${escapeHtml(item.name)}"></label>${item.text ? `<label>Text<textarea data-text-content rows="3">${escapeHtml(item.text.content)}</textarea></label><label>Cap height<div class="unit-input"><input type="number" min=".1" step=".1" data-text-size value="${Number((item.height / item.viewBox[3] * 1.4).toFixed(3))}"><span>mm</span></div></label>${typographyControls(textOptions(item))}` : ""}<div class="two-col"><label>X<div class="unit-input"><input type="number" step=".1" data-item-prop="x" value="${item.x.toFixed(3)}"><span>mm</span></div></label><label>Y<div class="unit-input"><input type="number" step=".1" data-item-prop="y" value="${item.y.toFixed(3)}"><span>mm</span></div></label><label>Width<div class="unit-input"><input type="number" min=".1" step=".1" data-item-prop="width" value="${item.width.toFixed(3)}"><span>mm</span></div></label><label>Height<div class="unit-input"><input type="number" min=".1" step=".1" data-item-prop="height" value="${item.height.toFixed(3)}"><span>mm</span></div></label></div><label>Rotation<div class="unit-input"><input type="number" step="1" data-item-prop="rotation" value="${item.rotation}"><span>°</span></div></label>${colorControl("Pen color", item.stroke, 'data-item-prop="stroke"')}${fillControls(item)}<div class="selection-actions"><button class="button" data-action="duplicate" title="Duplicate selection · Command/Ctrl+D · repeats the last copy transformation">${icon("copy")} Duplicate</button><button class="button" data-action="rotate">${icon("rotate")} 90°</button></div><button class="button danger" data-action="delete">${icon("trash")} Delete object</button>`;
-}
-function objectsMarkup(): string {
-  return `<summary class="panel-title object-panel-heading"><span>Objects</span><span class="object-count">${state.items.length}</span></summary><div class="panel-body">${state.items.length ? `<div class="object-list">${state.items.map((item) => `<button class="object-row ${item.id === state.selectedId ? "active" : ""}" data-select-item="${item.id}" aria-pressed="${item.id === state.selectedId}" title="${escapeHtml(item.name)} · Double-click or press F2 to rename"><span class="object-icon" aria-hidden="true">${icon(item.text ? "text" : "shape")}</span><span class="object-name">${escapeHtml(item.name)}</span></button>`).join("")}</div><p class="field-help">Option/Alt-drag copies · Shift constrains. Corners resize · Option/Alt resizes from center. Shift rotates in 15° steps · Space-drag pans · ⌘/Ctrl+D repeats copies. Double-click a name to rename.</p>` : `<p class="panel-empty">Import an SVG, add text or a shape, or draw a path.</p>`}</div>`;
-}
-function elementList(item: ArtworkItem): string {
-  return `<details class="element-list-section" data-item-elements="${item.id}" ${inspectorSection("elements")}><summary class="panel-title">SVG elements</summary><div class="panel-body"><div class="object-list">${elements(markupRoot(item.markup)).map((element, index) => `<button class="object-row ${selectedElement === index ? "active" : ""}" data-select-element="${index}" aria-pressed="${selectedElement === index}" title="Double-click or press F2 to rename · ${escapeHtml(`${index + 1}. ${elementName(element)}${element.id ? ` · ${element.id}` : ""}`)}"><span class="object-name">${index + 1}. ${escapeHtml(elementName(element))}${element.id ? ` · ${escapeHtml(element.id)}` : ""}</span></button>`).join("")}</div><p class="field-help">Double-click a name or press F2 to rename.</p></div></details>`;
-}
-function elementInspector(item: ArtworkItem): string {
-  const element = elements(markupRoot(item.markup))[selectedElement!];
-  if (!element) { selectedElement = null; return inspectorMarkup(item); }
-  const fields = SHAPE_FIELDS[element.localName] ?? [];
-  const bounds = elementBounds();
-  return `<button class="button" data-action="select-object">${icon("back")} Whole object</button><div class="panel-title">${escapeHtml(element.localName)} ${selectedElement! + 1}</div><label>Name<input data-element-name value="${escapeHtml(elementName(element))}"></label>${bounds ? `<div class="two-col">${["x", "y", "width", "height"].map((key) => `<label>${key === "x" || key === "y" ? key.toUpperCase() : key}<div class="unit-input"><input type="number" step=".1" ${key === "width" || key === "height" ? 'min=".1"' : ""} data-element-bounds="${key}" value="${bounds[key as keyof typeof bounds].toFixed(3)}"><span>mm</span></div></label>`).join("")}</div>` : ""}${fields.length ? `<details><summary>Shape geometry (SVG units)</summary><div class="two-col">${fields.map((field) => `<label>${field}<input type="number" step="any" data-element-attr="${field}" value="${escapeHtml(element.getAttribute(field) ?? (field === "font-size" ? "16" : "0"))}"></label>`).join("")}</div></details>` : ""}${element.localName === "text" ? `<label>Text<textarea data-element-content rows="3">${escapeHtml(element.textContent ?? "")}</textarea></label><p class="field-help">Imported SVG text must be converted to paths before pen plotting. Use the Text tool to create plottable font outlines.</p>` : ""}${element.localName === "path" ? `<button class="button ${editNodes ? "node-active" : ""}" data-action="edit-nodes">${editNodes ? "Finish node editing" : "Edit path nodes"}</button>${nodeInspector()}<label>Path data<textarea data-path-data rows="4" spellcheck="false">${escapeHtml(element.getAttribute("d") ?? "")}</textarea></label><p class="field-help">Drag square anchors or round curve handles. Path data uses the original SVG units.</p>` : ""}${element.localName === "polyline" || element.localName === "polygon" ? `<label>Points (SVG units)<textarea data-element-points rows="3">${escapeHtml(element.getAttribute("points") ?? "")}</textarea></label>` : ""}${colorControl("Element pen color", liveElement() ? getComputedStyle(liveElement()!).stroke : element.getAttribute("stroke") ?? item.stroke, "data-element-color")}${fillControls(item)}<div class="selection-actions"><button class="button" data-action="duplicate" title="Duplicate element · Command/Ctrl+D">${icon("copy")} Duplicate</button><button class="button" data-action="rotate" title="Rotate selected element 90°">${icon("rotate")} 90°</button></div><button class="button danger" data-action="delete-element">${icon("trash")} Delete element</button>`;
-}
-function nodeInspector(): string {
-  const element = liveElement(); if (!selectedNode || !element) return "";
-  try {
-    const node = pathNodes(parsePath(element.getAttribute("d") ?? "")).find((entry) => entry.command === selectedNode?.command && entry.pair === selectedNode.pair);
-    if (!node) return "";
-    const point = new DOMPoint(node.point.x, node.point.y).matrixTransform(elementMatrix(element));
-    return `<div class="two-col">${["x", "y"].map((axis) => `<label>Node ${axis.toUpperCase()}<div class="unit-input"><input type="number" step=".1" data-node-axis="${axis}" value="${point[axis as "x" | "y"].toFixed(3)}"><span>mm</span></div></label>`).join("")}</div>`;
-  } catch { return ""; }
-}
-function fontOptions(selectedId: string): string {
-  const groups = new Map<string, ReturnType<typeof loadedFonts>>();
-  for (const font of loadedFonts()) {
-    const group = font.group ?? 'Your fonts';
-    const list = groups.get(group) ?? []; list.push(font); groups.set(group, list);
-  }
-  return [...groups].map(([group, entries]) => `<optgroup label="${escapeHtml(group)}">${entries.map(font => `<option value="${escapeHtml(font.id)}" ${font.id === selectedId ? 'selected' : ''}>${escapeHtml(font.name)}${font.id === DEFAULT_FONT_ID ? ' · default' : ''}</option>`).join('')}</optgroup>`).join('');
-}
-function typographyControls(options: TextOptions): string {
-  const font = findFont(options.fontId), outline = options.fontId !== "plot-sans", advanced = outline && (!font?.plotfont || !!font.plotfont.layout);
-  const numeric = (key: "letterSpacing" | "wordSpacing" | "lineHeight", label: string, unit: string) => `<label>${label}<div class="unit-input"><input data-typography="${key}" type="number" step="any" ${key === "lineHeight" ? 'min=".01"' : ''} value="${options[key]}"><span>${unit}</span></div></label>`;
-  return `<label>Font<select data-typography="fontId" data-font-current="${escapeHtml(options.fontId)}"><option value="plot-sans" ${!outline ? 'selected' : ''}>Plot Sans · single line</option>${outline && !font ? `<option value="${escapeHtml(options.fontId)}" selected>Unavailable font · load original file</option>` : ''}${fontOptions(options.fontId)}</select></label><p class="field-help" data-font-status role="status" hidden></p><label class="font-load">Load a font<input type="file" data-font-file accept=".ttf,.otf,.plotfont.json,.json"></label><p class="field-help">${font?.plotfont ? `PlotFont ${font.plotfont.version} · original strokes and fill regions. ${font.plotfont.layout ? 'OpenType layout enabled.' : 'Simple Latin layout with stored spacing and kerning.'} ${font.bundled ? `Bundled with Plot-it. <a href="${font.noticeUrl}" target="_blank" rel="noopener">Font attribution</a>.` : 'Fonts are saved in this browser.'}${font.id === 'plotfont-layout-demo' ? ' Demo characters: A, f, i, n, u, 0, space and combining marks. Try fi AA or Á.' : ''}` : outline ? `Font outlines are plotted as resolved boundaries. ${font?.bundled ? `Bundled with Plot-it. <a href="${font.noticeUrl}" target="_blank" rel="noopener">Font attribution</a>.` : 'Fonts are saved in this browser.'}` : `Plot Sans supports ${supportedCharacters()}. Lowercase uses uppercase forms.`}${font?.coverageHint ? ` ${escapeHtml(font.coverageHint)}` : ''}</p><div class="two-col">${numeric("letterSpacing", "Letter spacing", "em")}${numeric("wordSpacing", "Word spacing", "em")}${numeric("lineHeight", "Line height", "× cap")}<label>Alignment<select data-typography="align">${['left', 'center', 'right'].map(v => `<option ${options.align === v ? 'selected' : ''}>${v}</option>`).join('')}</select></label></div>${font?.plotfont && !advanced ? `<label class="check"><input type="checkbox" data-typography="kerning" ${options.kerning ? 'checked' : ''}><span>Kerning</span></label>` : ''}${advanced ? `<div class="type-checks">${([['kerning', 'Kerning'], ['ligatures', 'Standard ligatures'], ['contextual', 'Contextual alternates']] as const).map(([key, label]) => `<label><input type="checkbox" data-typography="${key}" ${options[key] ? 'checked' : ''}>${label}</label>`).join('')}</div><details><summary>OpenType features and language</summary><div class="typography-advanced"><label>Features<input data-typography="features" value="${escapeHtml(options.features)}" placeholder="smcp=1, dlig=1, ss01=1, salt=2" spellcheck="false"></label><p class="field-help">${font ? `Available tags: ${escapeHtml(font.features.join(', ') || 'none')}` : 'Load the original font to edit.'} Features depend on the font, script, and language. Nonzero letter spacing suppresses optional ligatures unless explicitly enabled here.</p>${font && Object.keys(font.axes).length ? `<label>Variable axes<input data-typography="variations" value="${escapeHtml(options.variations)}" placeholder="wght=700, wdth=100" spellcheck="false"></label><p class="field-help">${Object.entries(font.axes).map(([tag, axis]) => `${tag}: ${axis.min}–${axis.max} (default ${axis.default})`).join(' · ')}</p>` : ''}<div class="two-col"><label>Direction<select data-typography="direction">${['auto', 'ltr', 'rtl'].map(v => `<option ${options.direction === v ? 'selected' : ''}>${v}</option>`).join('')}</select></label><label>Language<input data-typography="language" value="${escapeHtml(options.language)}" placeholder="auto / en / tr"></label><label>Script<input data-typography="script" value="${escapeHtml(options.script)}" placeholder="auto / Latn / Arab" maxlength="4"></label></div><p class="field-help">Use one script and direction per text object. Automatic detection uses each line. Tracking is suppressed for Arabic, Syriac, and Mongolian to preserve joining.</p></div></details>` : ''}`;
-}
+
+function objectsMarkup(): string { return views().objectsMarkup(); }
+
+
+
+
+function typographyControls(options: TextOptions): string { return views().typographyControls(options); }
+
 function readTypography(root: ParentNode, base = defaultTextOptions): TextOptions {
   const options = { ...base };
   root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-typography]').forEach(input => {
@@ -355,15 +255,9 @@ function readTypography(root: ParentNode, base = defaultTextOptions): TextOption
   });
   return options;
 }
-function textDialogMarkup(): string {
-  return `<form method="dialog" id="text-form"><div class="dialog-head"><div><span class="eyebrow">Typography</span><h2>Add plot text</h2></div><button class="close" value="cancel" formnovalidate aria-label="Close">${icon("close")}</button></div><label>Text<textarea id="text-value" rows="3" placeholder="PLOT SOMETHING" required></textarea></label><label>Cap height<div class="unit-input"><input id="text-size" type="number" value="12" min=".1" step=".1"><span>mm</span></div></label><div data-dialog-typography>${typographyControls(defaultTextOptions)}</div><p id="text-error" class="text-error" role="alert" hidden></p><div class="dialog-actions"><button class="button" value="cancel" formnovalidate>Cancel</button><button class="button primary" value="default">Add to canvas</button></div></form>`;
-}
-function paperOptions(index: number): string {
-  return `${PAPERS.map((paper, candidate) => `<option value="${candidate}" ${candidate === index ? "selected" : ""}>${paper.name}</option>`).join("")}<option value="custom" ${index < 0 ? "selected" : ""}>Custom size…</option>`;
-}
-function canvasDialogMarkup(): string {
-  return `<form id="canvas-form" method="dialog"><div class="dialog-head"><div><span class="eyebrow">Paper & canvas</span><h2 id="canvas-title">Canvas size</h2></div><button class="close" type="button" data-action="close-canvas" aria-label="Close canvas size">${icon("close")}</button></div><label>Paper format<select id="canvas-preset">${paperOptions(paperPresetIndex(state.paper))}</select></label><div class="two-col"><label>Canvas width<div class="unit-input"><input id="canvas-width" type="number" min="${MIN_CANVAS_MM}" max="${MAX_CANVAS_MM}" step="any" value="${state.paper.width}" required><span>mm</span></div></label><label>Canvas height<div class="unit-input"><input id="canvas-height" type="number" min="${MIN_CANVAS_MM}" max="${MAX_CANVAS_MM}" step="any" value="${state.paper.height}" required><span>mm</span></div></label></div><button class="button" type="button" data-action="swap-canvas">${icon("rotate")} Swap width and height</button><p class="dialog-note">Artwork keeps its size and position. The safe margin stays unchanged. A larger canvas does not increase your plotter’s physical travel.</p><p id="canvas-error" class="canvas-error" role="alert" hidden></p><div class="dialog-actions"><button class="button" type="button" data-action="close-canvas">Cancel</button><button class="button primary" value="apply">Apply size</button></div></form>`;
-}
+
+
+
 function openCanvasSize(custom = false): void {
   const dialog = app.querySelector<HTMLDialogElement>("#canvas-dialog")!;
   app.querySelector<HTMLInputElement>("#canvas-width")!.value = String(state.paper.width);
@@ -392,13 +286,6 @@ function applyCanvasSize(event: SubmitEvent): void {
     message.textContent = (error as Error).message; message.hidden = false;
   }
 }
-function plotControlsMarkup(): string {
-  return `<div class="mode-switch" role="group" aria-label="Workspace mode">
-    <button class="button" data-action="edit-mode" aria-pressed="true" title="Edit mode">Edit</button>
-    <button class="button" data-action="open-plot" aria-pressed="false" title="Plot mode">Plot</button>
-  </div>`;
-}
-
 function bindEvents(): void {
   app.querySelectorAll<HTMLInputElement>('[data-nudge-preference]').forEach(input => input.addEventListener('input', () => {
     const key = input.dataset.nudgePreference as keyof EditorPreferences;
@@ -416,41 +303,21 @@ function bindEvents(): void {
   const title = app.querySelector<HTMLElement>('[data-document-name]');
   title?.addEventListener('dblclick', beginDocumentRename);
   title?.addEventListener('keydown', event => { if (event.key === 'F2' || event.key === 'Enter') { event.preventDefault(); beginDocumentRename(); } });
-  app.querySelector<HTMLElement>('#shape-menu')?.addEventListener('toggle', event => {
-    const menu = event.target as HTMLElement, open = menu.matches(':popover-open');
-    const trigger = app.querySelector('[data-action="shapes"]');
-    trigger?.setAttribute('aria-expanded', String(open));
-    if (open && trigger) {
-      const anchor = trigger.getBoundingClientRect(); menu.style.left = `${anchor.right + 12}px`;
-      menu.style.top = `${Math.max(12, Math.min(anchor.top, window.innerHeight - menu.offsetHeight - 12))}px`;
-      menu.querySelector<HTMLButtonElement>('[data-add-shape]')?.focus();
-    }
-  });
+
   app.querySelectorAll<HTMLElement>('[data-add-shape]').forEach(button => button.addEventListener('click', () => {
     if (plotWorkspace) return;
     const item = shapeItem(button.dataset.addShape as ShapeKind, state.paper, selected()?.stroke);
     app.querySelector<HTMLElement>('#shape-menu')?.hidePopover();
     commit(() => { state.items.push(item); state.selectedId = item.id; selectedElement = null; selectedNode = null; editNodes = false; state.tool = 'select'; });
   }));
-  app.querySelector<HTMLElement>('#more-elements')?.addEventListener('toggle', event => {
-    const menu = event.target as HTMLElement, open = menu.matches(':popover-open');
-    const trigger = app.querySelector('[data-action="more-elements"]');
-    trigger?.setAttribute('aria-expanded', String(open));
-    if (open && trigger) {
-      const anchor = trigger.getBoundingClientRect(); menu.style.left = `${anchor.right + 12}px`;
-      menu.style.top = `${Math.max(12, Math.min(anchor.top, window.innerHeight - menu.offsetHeight - 12))}px`;
-      app.querySelector<HTMLInputElement>('#calibration-spacing')?.focus();
-    }
-  });
+
   app.querySelector<HTMLInputElement>('#calibration-spacing')?.addEventListener('input', () => {
     app.querySelector<HTMLElement>('#calibration-error')!.hidden = true;
   });
-  app.querySelector<HTMLSelectElement>(".theme-select")?.addEventListener("change", (event) => {
-    theme.setPreference((event.target as HTMLSelectElement).value);
+  bindWorkspaceCommands(app, {
+    theme:value=>theme.setPreference(value), action:name=>void action(name),
+    tool:name=>{ gestures.finish(); state.tool=name as AppState['tool']; render(); }, setting:updateSetting
   });
-  app.querySelectorAll<HTMLElement>("[data-action]").forEach((element) => element.addEventListener("click", () => void action(element.dataset.action!)));
-  app.querySelectorAll<HTMLElement>("[data-tool]").forEach((element) => element.addEventListener("click", () => { gestures.finish(); state.tool = element.dataset.tool as AppState["tool"]; render(); }));
-  app.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-setting]").forEach((input) => input.addEventListener("change", () => updateSetting(input)));
   bindEditorEvents(app);
   bindTypographyEvents(app);
   app.querySelector<HTMLInputElement>("#file-input")?.addEventListener("change", importFile);
@@ -498,7 +365,7 @@ function bindEvents(): void {
 }
 
 function bindEditorEvents(root: ParentNode): void {
-  bindColorControls(root);
+  bindColorControls(root, { locked:()=>!!plotWorkspace, finishEdit:()=>{fieldEditInput=null;} });
   root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-fill-setting]').forEach(input => input.addEventListener('change', () => {
     const item = selected(); if (!item) return;
     try {
@@ -579,34 +446,6 @@ function bindEditorEvents(root: ParentNode): void {
     });
 }
 
-function bindColorControls(root: ParentNode): void {
-  root.querySelectorAll<HTMLElement>('.color-field').forEach(field => {
-    const picker = field.querySelector<HTMLInputElement>('input[type=color]')!;
-    const hex = field.querySelector<HTMLInputElement>('[data-color-hex]')!;
-    const error = field.querySelector<HTMLElement>('[data-color-error]')!;
-    const clearError = () => { hex.removeAttribute('aria-invalid'); hex.setCustomValidity(''); error.hidden = true; };
-    const apply = () => {
-      if (plotWorkspace) return;
-      try {
-        const value = parseHexColor(hex.value); clearError(); hex.value = value;
-        if (picker.value.toUpperCase() === value) return;
-        picker.value = value;
-        picker.dispatchEvent(new Event('change', {bubbles:true}));
-      } catch (cause) {
-        hex.setAttribute('aria-invalid', 'true');
-        error.textContent = (cause as Error).message; error.hidden = false;
-      }
-    };
-    picker.addEventListener('input', () => { clearError(); hex.value = picker.value.toUpperCase(); });
-    picker.addEventListener('change', () => { clearError(); hex.value = picker.value.toUpperCase(); });
-    hex.addEventListener('change', apply);
-    hex.addEventListener('blur', () => { apply(); fieldEditInput = null; });
-    hex.addEventListener('keydown', event => {
-      if (event.key === 'Enter') { event.preventDefault(); apply(); }
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); hex.value = picker.value.toUpperCase(); clearError(); }
-    });
-  });
-}
 
 function syncElementNames(item: ArtworkItem): void {
   const source = elements(markupRoot(item.markup));
@@ -623,7 +462,7 @@ function beginDocumentRename(): void {
   if (plotWorkspace || app.querySelector('[data-document-rename]')) return;
   const title = app.querySelector<HTMLElement>('[data-document-name]'); if (!title) return;
   const original = state.documentName;
-  const input = document.createElement('input'); input.className = 'document-rename-input'; input.dataset.documentRename = '';
+  const input = document.createElement('input'); input.className = classes('document-rename-input', workspaceStyles['document-rename-input'], inputStyles.input); input.dataset.documentRename = '';
   input.value = original; input.setAttribute('aria-label', 'Plot name');
   title.replaceWith(input);
   let closed = false;
@@ -651,8 +490,8 @@ function startRowRename(sourceRow: HTMLElement): void {
   const row = app.querySelector<HTMLElement>(index === null ? `[data-select-item="${id}"]` : `[data-select-element="${index}"]`);
   if (!row) return;
   const original = index === null ? item.name : elementName(elements(markupRoot(item.markup))[index]!);
-  const container = document.createElement('div'); container.className = 'object-row active is-renaming';
-  const input = document.createElement('input'); input.className = 'object-rename-input'; input.dataset.rowRename = '';
+  const container = document.createElement('div'); container.className = classes('object-row active is-renaming', inspectorStyles['object-row']);
+  const input = document.createElement('input'); input.className = classes('object-rename-input', inspectorStyles['object-rename-input'], inputStyles.input); input.dataset.rowRename = '';
   input.value = original; input.setAttribute('aria-label', index === null ? 'Rename object' : 'Rename SVG element');
   container.append(input); row.replaceWith(container);
   let closed = false;
@@ -687,18 +526,22 @@ function selectObject(id: string | null, index: number | null = null): void {
   if (state.selectedId !== id || selectedElement !== index) { editNodes = false; selectedNode = null; }
   state.selectedId = id; selectedElement = selected()?.text ? null : index;
   state.tool = "select";
-  app.querySelectorAll<HTMLElement>("[data-tool]").forEach((button) => button.classList.toggle("active", button.dataset.tool === state.tool));
+  app.querySelectorAll<HTMLElement>("[data-tool]").forEach((button) => {
+    const active = button.dataset.tool === state.tool;
+    button.classList.toggle("active", active); button.setAttribute('aria-pressed', String(active));
+  });
   if(previousId)app.querySelector(`[data-item-id="${previousId}"]`)?.classList.remove('is-selected');
   if(id)app.querySelector(`[data-item-id="${id}"]`)?.classList.add('is-selected');
   refreshSelectionUI(); refreshInspector();
   if (row?.isConnected && anchor !== null) {
-    app.querySelector<HTMLElement>('.inspector')!.scrollTop += row.getBoundingClientRect().top - anchor;
+    app.querySelector<HTMLElement>('[data-ui="inspector"]')!.scrollTop += row.getBoundingClientRect().top - anchor;
     if (restoreFocus) row.focus({preventScroll:true});
   }
 }
 function refreshInspector(): void {
+  const restoreCheckboxFocus = captureCheckboxFocus(app);
   rememberInspectorSections();
-  const panel = app.querySelector(".selection-panel"), objects = app.querySelector(".objects-panel");
+  const panel = app.querySelector('[data-ui="selection-panel"]'), objects = app.querySelector('[data-ui="objects-panel"]');
   if (panel) {
     const list = panel.querySelector('.element-list-section');
     const preserveList = list?.getAttribute('data-item-elements') === state.selectedId;
@@ -715,12 +558,16 @@ function refreshInspector(): void {
     bindTypographyEvents(panel);
   }
   if (objects) {
-    const scroll = objects.querySelector(".object-list")?.scrollTop ?? 0;
+    const scroll = objects.querySelector('[data-object-list]')?.scrollTop ?? 0;
     objects.innerHTML = objectsMarkup(); bindEditorEvents(objects); restoreObjectListScroll(scroll);
   }
+  restoreCheckboxFocus();
 }
 
 async function action(name: string): Promise<void> {
+  if (name === 'open-inspector') { overlays?.openInspector(); return; }
+  if (name === 'rename-document') { beginDocumentRename(); return; }
+  if (['import', 'export', 'save-document', 'load-document', 'add-text', 'canvas-size', 'open-plot'].includes(name)) overlays?.closeMenu();
   gestures.finish();
   finishNudge();
   if (name === 'cancel-fill-task') {
@@ -735,11 +582,11 @@ async function action(name: string): Promise<void> {
     if (name === "edit-mode") { plotWorkspace.destroy(); return; }
     if (name === "zoom-in") state.zoom = Math.min(2, state.zoom + .1);
     else if (name === "zoom-out") state.zoom = Math.max(.5, state.zoom - .1);
-    else if (name === "zoom-fit") state.zoom = 1;
+    else if (name === "zoom-fit") { state.zoom = 1; pan = { x: 0, y: 0 }; applyPan(); const stage = app.querySelector('#stage')!; stage.scrollTop = 0; stage.scrollLeft = 0; }
     else if (name === "open-plot") app.querySelector<HTMLElement>('.plot-sidebar h2')?.focus();
     else return;
-    app.querySelector<HTMLElement>('.paper-shadow')?.style.setProperty('--zoom', String(state.zoom));
-    const zoom = app.querySelector('.zoom-control span'); if (zoom) zoom.textContent = `${Math.round(state.zoom * 100)}%`;
+    app.querySelector<HTMLElement>('[data-ui="paper-frame"]')?.style.setProperty('--zoom', String(state.zoom));
+    const zoom = app.querySelector('[data-zoom-label]'); if (zoom) zoom.textContent = `${Math.round(state.zoom * 100)}%`;
     return;
   }
   if (name === "canvas-size") openCanvasSize();
@@ -783,6 +630,7 @@ async function action(name: string): Promise<void> {
       plotWorkspace = null; render();
       app.querySelector<HTMLButtonElement>('[data-action="edit-mode"]')?.focus({ preventScroll: true });
     });
+    overlays?.openInspector();
   }
 
 }
@@ -972,7 +820,7 @@ function gesture(svg: SVGSVGElement, event: PointerEvent, preview: ArtworkGestur
         refreshSelectionUI(); refreshFills(svg); refreshInspector();
         app.querySelector<HTMLButtonElement>('[data-action="undo"]')!.disabled = !history.length;
         app.querySelector<HTMLButtonElement>('[data-action="redo"]')!.disabled = !future.length;
-        const count = app.querySelector('.statusbar')?.lastElementChild; if (count) count.innerHTML = `<a href="/plot-it-source.tar.gz" download>Source · AGPL-3.0</a> · ${state.items.length} object${state.items.length === 1 ? '' : 's'}`;
+        const count = app.querySelector('[data-object-count]'); if (count) count.textContent = `${state.items.length} object${state.items.length === 1 ? '' : 's'}`;
       }
       if (restoredOutlineUpgradePending) queueMicrotask(upgradeRestoredOutlines);
     },
@@ -1371,8 +1219,8 @@ function toast(message: string, error = false): void {
 window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); installPrompt = event as typeof installPrompt; render(); });
 function editingContext(event: KeyboardEvent): boolean {
   const target = event.target;
-  return !event.isComposing && !plotWorkspace && document.hasFocus() && target instanceof Element &&
-    !target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),dialog,[role="menu"],[role="dialog"]') &&
+  return !event.defaultPrevented && !event.isComposing && !plotWorkspace && document.hasFocus() && target instanceof Element &&
+    !target.closest('button,a[href],input,textarea,select,[role="radio"],[contenteditable]:not([contenteditable="false"]),dialog,[role="menu"],[role="dialog"]') &&
     !app.querySelector('dialog[open],:popover-open') && (target === document.body || app.contains(target));
 }
 function finishNudge(): void {
@@ -1398,7 +1246,7 @@ function nudge(key: string, delta: Point, shift: boolean): void {
   app.querySelector<HTMLButtonElement>('[data-action="redo"]')!.disabled = true;
 }
 function applyPan(): void {
-  const wrapper = app.querySelector<HTMLElement>('.paper-shadow');
+  const wrapper = app.querySelector<HTMLElement>('[data-ui="paper-frame"]');
   if (wrapper) wrapper.style.translate = `${pan.x}px ${pan.y}px`;
   app.querySelector('#stage')?.classList.toggle('space-pan',spaceHeld);
 }
@@ -1459,6 +1307,10 @@ render();
 
 const typographyRevisions = new WeakMap<Element, number>();
 function bindTypographyEvents(root: ParentNode): void {
+  for (const picker of fontPickers) if (!picker.root.isConnected) { picker.destroy(); fontPickers.delete(picker); }
+  root.querySelectorAll<HTMLElement>('[data-font-picker]').forEach(wrapper => {
+    if (![...fontPickers].some(picker => picker.root === wrapper)) fontPickers.add(new FontPicker(wrapper, fontChoices, id => customFontPreviews.get(id)));
+  });
   root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-typography]').forEach(input => input.addEventListener('change', async () => {
     const form = input.closest('#text-form');
     // Form settings are read when adding text; they must not cancel a pending font selection.
@@ -1485,12 +1337,14 @@ function bindTypographyEvents(root: ParentNode): void {
         if (input.dataset.typography === "fontId") { const font = findFont(options.fontId); if (font) Object.assign(options, fontTextOptions(font, options)); else { options.features = ""; options.variations = ""; } }
         const controls = form.querySelector('[data-dialog-typography]')!;
         controls.innerHTML = typographyControls(options); bindTypographyEvents(controls);
+        controls.querySelector<HTMLElement>('[data-font-picker-trigger]')?.focus({ preventScroll: true });
       } else {
         if (!item?.text) return;
         const inspector = input.closest('.panel') ?? root;
         const options = readTypography(inspector, textOptions(item));
         if (input.dataset.typography === "fontId") { const font = findFont(options.fontId); if (font) Object.assign(options, fontTextOptions(font, options)); else { options.features = ""; options.variations = ""; } }
         editTypographyPreview(item, options);
+        if (input.dataset.typography === "fontId") app.querySelector<HTMLElement>('[data-ui="selection-panel"] [data-font-picker-trigger], .panel [data-font-picker-trigger]')?.focus({ preventScroll: true });
       }
     } catch (error) {
       if (!current()) return;
@@ -1502,6 +1356,7 @@ function bindTypographyEvents(root: ParentNode): void {
         if (add) add.disabled = false;
         fontSettings.forEach(control => { control.disabled = false; });
         const status = scope.querySelector<HTMLElement>('[data-font-status]'); if (status) status.hidden = true;
+        for (const picker of fontPickers) picker.refreshCurrent();
       }
     }
   }));
@@ -1567,23 +1422,7 @@ function saveFill(item: ArtworkItem, settings: FillSettings): void {
   if (selectedElement === null) item.fillSettings = settings;
   else editElement(item, selectedElement, e => e.setAttribute(ELEMENT_FILL_ATTRIBUTE, JSON.stringify(settings)));
 }
-function fillControls(item: ArtworkItem): string {
-  const s = currentFill(item);
-  const blocked=selectedElement!==null && item.fillSettings?.mode==='none';
-  const mixed=selectedElement===null && hasElementFills(item,markupRoot(item.markup));
-  const disabledParameters=blocked||mixed;
-  const numeric = (key: keyof FillSettings, label: string, unit: string, min: number, max: number, step: number, value: number) => `<label>${label}<div class="unit-input"><input type="number" aria-label="${label} ${unit}" data-fill-setting="${key}" min="${min}" max="${max}" step="${step}" value="${value}" ${disabledParameters?'disabled':''}><span>${unit}</span></div></label>`;
-  let spacing = ''; try { spacing = fillSpacing(s).toFixed(3); } catch { /* Invalid saved settings are reported by generation. */ }
-  return `<details class="fill-controls" ${inspectorSection("fill")}><summary class="panel-title">Plot fill</summary><div class="panel-body"><label>Fill mode<select data-fill-setting="mode" ${blocked?'disabled':''}>${mixed?'<option value="elements" selected disabled>Element fills</option>':''}${['none','solid','hatch','crosshatch'].map(mode => `<option value="${mode}" ${!mixed && s.mode === mode ? 'selected' : ''}>${{none:'None',solid:'Solid',hatch:'Hatch stripes',crosshatch:'Crosshatch'}[mode]}</option>`).join('')}</select></label>
-    ${numeric('width','Drawn line width','mm',.05,20,.05,s.width)}
-    <div class="two-col">${numeric('angle','Angle','°',-360,360,1,s.angle)}${s.mode === 'solid' || s.mode === 'none' ? numeric('overlap','Overlap','%',0,80,1,s.overlap*100) : numeric('gap','Clear gap','mm',0,100,.1,s.gap)}</div>
-    <label class="check"><input type="checkbox" data-fill-setting="outline" ${s.outline?'checked':''} ${disabledParameters?'disabled':''}><span>Draw boundary</span></label>
-    <label class="check"><input type="checkbox" data-fill-setting="connect" ${s.connect?'checked':''} ${disabledParameters?'disabled':''}><span>Connect strokes for faster plotting</span></label>
-    <p class="field-help">${blocked?'Object fill is None. Enable a fill mode on the object to use element fill settings.':mixed?'Individual SVG elements have fill settings. Choose None to disable all fills in this object.':s.mode === 'none' ? (s.outline ? 'Draw boundary removes overlap seams within each element and draws outer and hole boundaries, without interior fill.' : item.text?.format === 'plotfont' ? 'Enable Draw boundary or choose a fill mode for filled PlotFont regions. Centerline strokes retain their original paths.' : 'None draws original outlines. Enable Draw boundary for cleaned perimeters without interior fill.') : `Stroke spacing: ${spacing} mm. Interior marks stay inside the shape.`} An outline extends half its stroke width outside the boundary.</p>
-    <button class="button" data-action="fill-calibration" ${disabledParameters?'disabled':''}>Add calibration swatch</button>
-    <p class="field-help">Compare swatches on your paper, then choose overlap:</p><div class="fill-calibration-options">${[0,.1,.15,.2].map(v=>`<button class="button" data-fill-overlap="${v}" ${disabledParameters?'disabled':''}>Use ${v*100}%</button>`).join('')}</div>
-    <p class="field-help" data-fill-status role="status">${escapeHtml(fillStatus === 'Generating fill…' ? '' : fillStatus)}</p><p class="field-help" data-fill-stats>${escapeHtml(fillStats)}</p></div></details>`;
-}
+
 function updateFillMessage(): void {
   app.querySelectorAll<HTMLElement>('[data-fill-status]').forEach(e => { e.textContent = fillStatus === 'Generating fill…' ? '' : fillStatus; e.classList.toggle('fill-error', fillError); });
   app.querySelectorAll<HTMLElement>('[data-fill-stats]').forEach(e => { e.textContent = fillStats; });
@@ -1628,15 +1467,8 @@ function restoreObjectListScroll(scroll: number): void {
   else if (active.offsetTop + active.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = active.offsetTop + active.offsetHeight - list.clientHeight;
 }
 
-function fillProgressMarkup(floating = false): string {
-  const task = fillTask;
-  const percent = task?.fraction === undefined ? undefined : Math.round(task.fraction * 100);
-  return `<div class="fill-task-progress ${floating ? 'fill-task-floating' : ''}" data-fill-progress ${task ? '' : 'hidden'}>
-    <div class="fill-task-heading"><span data-fill-task-label aria-live="polite">${escapeHtml(task?.label ?? '')}</span><span data-fill-task-percent aria-hidden="true">${percent === undefined ? '' : `${percent}%`}</span></div>
-    <progress max="100" ${percent === undefined ? '' : `value="${percent}"`} aria-label="${escapeHtml(task?.label ?? 'Fill task progress')}"></progress>
-    ${floating ? '<button class="button" data-action="cancel-fill-task">Cancel task</button>' : ''}
-  </div>`;
-}
+function fillProgressMarkup(floating = false): string { return views().fillProgressMarkup(floating); }
+
 function setFillTask(task?: TaskProgress): void {
   fillTask = task;
   const percent = task?.fraction === undefined ? undefined : Math.max(0, Math.min(100, Math.round(task.fraction * 100)));
@@ -1648,4 +1480,10 @@ function setFillTask(task?: TaskProgress): void {
     progress.setAttribute('aria-label', task?.label ?? 'Fill task progress');
     if (percent === undefined) progress.removeAttribute('value'); else progress.value = percent;
   });
+}
+
+function views() {
+  const item = selected();
+  if (selectedElement !== null && item && !item.text && !elements(markupRoot(item.markup))[selectedElement]) selectedElement = null;
+  return editorViews({ state, selectedElement, editNodes, selectedNode, inspectorSections, fillStatus, fillStats, fillTask, currentFill, liveElement, elementBounds, elementMatrix });
 }

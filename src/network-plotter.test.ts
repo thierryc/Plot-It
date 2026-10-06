@@ -4,6 +4,9 @@ import { NetworkPlotter } from './network-plotter';
 import type { NetworkSnapshot } from './network-protocol';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
+import { buildMotionPlan } from './motion-plan';
+import { initialState } from './model';
+import { eventSignal, indexPenCounts } from './plot-signals';
 
 const snapshot: NetworkSnapshot = { epoch: 'test-runner', revision: 1, timestamp: 1, connected: true, connecting: false, firmware: '2.8.1', jobId: null, status: 'idle', progress: { completed: 0, total: 0, state: 'idle' }, position: null, positionTimestamp: null, origin: 'unset', originProfile: null, motorsOn: false, canAdjustPen: true };
 class FakeSocket {
@@ -17,6 +20,16 @@ class FakeSocket {
 }
 afterEach(() => { vi.unstubAllGlobals(); });
 describe('network destination', () => {
+  it('forwards changed execution signals and ignores repeated snapshots', async () => {
+    vi.stubGlobal('WebSocket', FakeSocket); const plotter = new NetworkPlotter(snapshot); await plotter.watch();
+    const observe = vi.fn(); plotter.onSignal = observe;
+    const plan = buildMotionPlan([{ tool: '#000000', points: [{ x: 10, y: 10 }, { x: 20, y: 10 }] }], initialState.settings);
+    const signal = eventSignal(plan, indexPenCounts(plan), 0, 'started', 0);
+    for (const revision of [2, 3]) FakeSocket.current.receive({ type: 'snapshot', snapshot: { ...snapshot, revision, signal } });
+    expect(observe).toHaveBeenCalledOnce();
+    FakeSocket.current.receive({ type: 'snapshot', snapshot: { ...snapshot, revision: 4, signal: { ...signal, phase: 'settled' } } });
+    expect(observe).toHaveBeenCalledTimes(2); await plotter.disconnect();
+  });
   it('claims control separately from opening USB and releases USB separately from viewing', async () => {
     vi.stubGlobal('WebSocket', FakeSocket);
     const plotter = new NetworkPlotter(snapshot); await plotter.connect();
