@@ -30,7 +30,7 @@ The file is UTF-8 JSON, with a versioned envelope:
 `viewBox`, placement (`x`, `y`, `width`, `height`, `rotation`), original pen color
 (`stroke`), optional `fillSettings`, and optional `text`. Text stores the full
 `content`, `options` (font ID, spacing, alignment, layout features and variable
-coordinates), and `format: "plotfont"` for protected PlotFont operations.
+coordinates), and `format: "openplotfont"` for protected OpenPlotFont operations.
 Coordinates and dimensions are millimetres except local SVG viewBox coordinates.
 Rotation is in degrees. SVG markup preserves imported source colors and per-shape
 fill settings; generated preview/fill overlays are regenerated after loading.
@@ -43,9 +43,9 @@ the application's defaults. Legacy orientation values are migrated, and differen
 pens always pause regardless of a legacy `pauseOnToolChange: false` value.
 
 `fonts` embeds only custom fonts used by the document. Each record has `id`,
-`name`, `format` (`opentype` or `plotfont`), `encoding: "base64"` and `data`.
-IDs are SHA-256 digests of the original bytes, prefixed with `plotfont-` for
-PlotFont JSON. Loading verifies the digest, registers the fonts and saves them in
+`name`, `format` (`opentype` or `openplotfont`), `encoding: "base64"` and `data`.
+IDs are SHA-256 digests of the original bytes, prefixed with `openplotfont-` for
+OpenPlotFont JSON. Loading verifies the digest, registers the fonts and saves them in
 local font storage. Bundled fonts and Plot Sans are referenced by ID and are not
 embedded. SVG outlines remain in the document alongside editable text.
 

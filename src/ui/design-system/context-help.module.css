@@ -1,0 +1,7 @@
+button.trigger { min-height:24px; width:24px; height:24px; padding:0; flex:none; }
+.popover { position:fixed; inset:auto; margin:0; width:min(320px,calc(100vw - 24px)); max-height:70dvh; overflow:auto; padding:12px; border:1px solid var(--line); border-radius:var(--radius-surface); background:var(--surface); color:var(--ink); box-shadow:var(--island-shadow); font:400 var(--font-size-ui)/1.5 var(--font-ui); }
+.heading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.heading h3 { margin:0; font-size:var(--font-size-ui); font-weight:600; }
+.body { display:grid; gap:8px; }
+.body p { margin:0; }
+@media(max-width:639px), (pointer:coarse) { button.trigger { min-height:44px; width:44px; height:44px; } }

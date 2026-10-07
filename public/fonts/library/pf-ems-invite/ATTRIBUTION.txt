@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Invite
+OpenPlotFont conversion of PF EMS Invite
 
 Font name:               EMS Invite
 License:                 SIL Open Font License http://scripts.sil.org/OFL

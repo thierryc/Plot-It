@@ -15,7 +15,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-simplex-8cb5492bc460332a.svg",
+    "preview": "/fonts/previews/hershey-roman-simplex-f7adc9d8edcf6624.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/HERSHEY_NOTICE.txt"
@@ -26,7 +26,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-duplex-2a313005f1aa94bb.svg",
+    "preview": "/fonts/previews/hershey-roman-duplex-0ec1945af25ddc77.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/HERSHEY_NOTICE.txt"
@@ -37,7 +37,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-triplex-89d47e8e4d8353d8.svg",
+    "preview": "/fonts/previews/hershey-roman-triplex-e1bdcea73bdc900b.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/HERSHEY_NOTICE.txt"
@@ -48,21 +48,21 @@
     "collection": "Hershey",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-script-simplex-b38174f17aef3613.svg",
+    "preview": "/fonts/previews/hershey-script-simplex-f8199e4234b8f97d.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/HERSHEY_NOTICE.txt"
   },
   {
-    "id": "plotfont-layout-demo",
-    "name": "PlotFont Layout Demo Regular",
+    "id": "openplotfont-layout-demo",
+    "name": "OpenPlotFont Layout Demo Regular",
     "collection": "Other stroke fonts",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/plotfont-layout-demo-8ab252e1421cc187.svg",
+    "preview": "/fonts/previews/openplotfont-layout-demo-141cae85bf2c4ae8.svg",
     "sample": "A fi 0",
     "coverageHint": "",
-    "noticeUrl": "/fonts/PLOTFONT_LICENSE.txt"
+    "noticeUrl": "/fonts/OPENPLOTFONT_LICENSE.txt"
   },
   {
     "id": "pf-ems-spacerocks",
@@ -70,7 +70,7 @@
     "collection": "EMS",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-spacerocks-32ed1e62eb44d64c.svg",
+    "preview": "/fonts/previews/pf-ems-spacerocks-56123220cc056b6e.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/ems-spacerocks/ATTRIBUTION.txt"
@@ -81,7 +81,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-astrology-5d5f20da3ec2080b.svg",
+    "preview": "/fonts/previews/hershey-astrology-61c24b1cd009a88f.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-astrology/ATTRIBUTION.txt"
@@ -92,7 +92,7 @@
     "collection": "Hershey",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-cursive-8e09e6b1b3b18672.svg",
+    "preview": "/fonts/previews/hershey-cursive-73ea5a8dad2bb4c6.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-cursive/ATTRIBUTION.txt"
@@ -103,7 +103,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-cyrilc-1-d36b1468fe5f269f.svg",
+    "preview": "/fonts/previews/hershey-cyrilc-1-bb958aa80a01a876.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-cyrilc-1/ATTRIBUTION.txt"
@@ -114,7 +114,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-cyrillic-0b03b9f501564377.svg",
+    "preview": "/fonts/previews/hershey-cyrillic-2d617c97d37ec4b5.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-cyrillic/ATTRIBUTION.txt"
@@ -125,7 +125,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-futural-5a9fb7c34f3f64a8.svg",
+    "preview": "/fonts/previews/hershey-futural-a1d4081dde669f4e.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-futural/ATTRIBUTION.txt"
@@ -136,7 +136,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-futuram-6983b3c14f09ee36.svg",
+    "preview": "/fonts/previews/hershey-futuram-92366d2faf2bf2b1.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-futuram/ATTRIBUTION.txt"
@@ -147,7 +147,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothgbt-a0a1ae753ddf55fa.svg",
+    "preview": "/fonts/previews/hershey-gothgbt-08ba84e6d27d6643.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothgbt/ATTRIBUTION.txt"
@@ -158,7 +158,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothgrt-15daf79848773cd8.svg",
+    "preview": "/fonts/previews/hershey-gothgrt-e7654fe04b2d5619.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothgrt/ATTRIBUTION.txt"
@@ -169,7 +169,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothiceng-a0a1ae753ddf55fa.svg",
+    "preview": "/fonts/previews/hershey-gothiceng-08ba84e6d27d6643.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothiceng/ATTRIBUTION.txt"
@@ -180,7 +180,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothicger-15daf79848773cd8.svg",
+    "preview": "/fonts/previews/hershey-gothicger-e7654fe04b2d5619.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothicger/ATTRIBUTION.txt"
@@ -191,7 +191,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothicita-a781f0543f6d272d.svg",
+    "preview": "/fonts/previews/hershey-gothicita-19d48a763e453a3a.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothicita/ATTRIBUTION.txt"
@@ -202,7 +202,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-gothitt-a781f0543f6d272d.svg",
+    "preview": "/fonts/previews/hershey-gothitt-19d48a763e453a3a.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-gothitt/ATTRIBUTION.txt"
@@ -213,7 +213,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-greek-2e574ad77a2260ab.svg",
+    "preview": "/fonts/previews/hershey-greek-96b41e3416a5290b.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-greek/ATTRIBUTION.txt"
@@ -224,7 +224,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-greekc-09753d4eb2952b9e.svg",
+    "preview": "/fonts/previews/hershey-greekc-cb8fb817a54259ad.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-greekc/ATTRIBUTION.txt"
@@ -235,7 +235,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-greeks-2e574ad77a2260ab.svg",
+    "preview": "/fonts/previews/hershey-greeks-96b41e3416a5290b.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-greeks/ATTRIBUTION.txt"
@@ -246,7 +246,7 @@
     "collection": "Hershey",
     "style": "other",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-japanese-5912892814536f56.svg",
+    "preview": "/fonts/previews/hershey-japanese-dc2f386078640403.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-japanese/ATTRIBUTION.txt"
@@ -257,7 +257,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-markers-b9e105a881528e2f.svg",
+    "preview": "/fonts/previews/hershey-markers-0ab20c2b2d88328d.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-markers/ATTRIBUTION.txt"
@@ -268,7 +268,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-mathlow-edf2531e757ad5eb.svg",
+    "preview": "/fonts/previews/hershey-mathlow-9cf61b419a852c43.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-mathlow/ATTRIBUTION.txt"
@@ -279,7 +279,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-mathupp-edf2531e757ad5eb.svg",
+    "preview": "/fonts/previews/hershey-mathupp-9cf61b419a852c43.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-mathupp/ATTRIBUTION.txt"
@@ -290,7 +290,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-meteorology-7401c93724c921a6.svg",
+    "preview": "/fonts/previews/hershey-meteorology-d7f73f1f817b03f0.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-meteorology/ATTRIBUTION.txt"
@@ -301,7 +301,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-music-cf65a1605f591a09.svg",
+    "preview": "/fonts/previews/hershey-music-98c96ebd75266ef4.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-music/ATTRIBUTION.txt"
@@ -312,7 +312,7 @@
     "collection": "Hershey",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-script-complex-672b03a7b16428d7.svg",
+    "preview": "/fonts/previews/hershey-script-complex-5c3ee5551b2ba0ab.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-script-complex/ATTRIBUTION.txt"
@@ -323,7 +323,7 @@
     "collection": "Hershey",
     "style": "symbols",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-symbolic-6532eb9f97b7a7a9.svg",
+    "preview": "/fonts/previews/hershey-symbolic-af6abf971119c71e.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-symbolic/ATTRIBUTION.txt"
@@ -334,7 +334,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-timesg-37b4368ea4412b36.svg",
+    "preview": "/fonts/previews/hershey-timesg-236e5035cf82b217.svg",
     "sample": "   ",
     "coverageHint": "Symbol/non-Latin drawings use temporary private-use codes (U+E000 + source row); standard text mappings are not available.",
     "noticeUrl": "/fonts/library/hershey-timesg/ATTRIBUTION.txt"
@@ -345,7 +345,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-italic-0d5cb19a25a49de3.svg",
+    "preview": "/fonts/previews/hershey-roman-italic-492635931ae40519.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-roman-italic/ATTRIBUTION.txt"
@@ -356,7 +356,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-bold-italic-3f77fc8d4b0c885d.svg",
+    "preview": "/fonts/previews/hershey-roman-bold-italic-bb24a76007e739f1.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-roman-bold-italic/ATTRIBUTION.txt"
@@ -367,7 +367,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-complex-2ca39ce8e2bc9145.svg",
+    "preview": "/fonts/previews/hershey-roman-complex-f45fccddf67074ea.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-roman-complex/ATTRIBUTION.txt"
@@ -378,7 +378,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/hershey-roman-bold-59481cf659e24a40.svg",
+    "preview": "/fonts/previews/hershey-roman-bold-a78d24035a9ecbb6.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/hershey-roman-bold/ATTRIBUTION.txt"
@@ -389,7 +389,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-allure-2d2e0efcc7296ee2.svg",
+    "preview": "/fonts/previews/pf-ems-allure-2ce718ebb66339c3.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-allure/ATTRIBUTION.txt"
@@ -400,7 +400,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-bird-6991ae6566328125.svg",
+    "preview": "/fonts/previews/pf-ems-bird-a7264395293ac390.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-bird/ATTRIBUTION.txt"
@@ -411,7 +411,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-bird-swash-caps-9851764d5faf19d8.svg",
+    "preview": "/fonts/previews/pf-ems-bird-swash-caps-654e87eb22797709.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-bird-swash-caps/ATTRIBUTION.txt"
@@ -422,7 +422,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-brush-4ea4890f32523254.svg",
+    "preview": "/fonts/previews/pf-ems-brush-f35e882aa2328d1b.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-brush/ATTRIBUTION.txt"
@@ -433,7 +433,7 @@
     "collection": "EMS",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-capitol-29ed7d71e51fcb28.svg",
+    "preview": "/fonts/previews/pf-ems-capitol-58bbd6127f62e7fb.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-capitol/ATTRIBUTION.txt"
@@ -444,7 +444,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-casual-hand-df2241055ed3b317.svg",
+    "preview": "/fonts/previews/pf-ems-casual-hand-e41f9cc4831b953e.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-casual-hand/ATTRIBUTION.txt"
@@ -455,7 +455,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-decorous-script-c94de00a2736f6b8.svg",
+    "preview": "/fonts/previews/pf-ems-decorous-script-68faf14d68bcf0a1.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-decorous-script/ATTRIBUTION.txt"
@@ -466,7 +466,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-delight-e3e008dfed746289.svg",
+    "preview": "/fonts/previews/pf-ems-delight-2b0ea04f4973d0fe.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-delight/ATTRIBUTION.txt"
@@ -477,7 +477,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-delight-swash-caps-61b9c624dc18b13c.svg",
+    "preview": "/fonts/previews/pf-ems-delight-swash-caps-d0d426a140c86451.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-delight-swash-caps/ATTRIBUTION.txt"
@@ -488,7 +488,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-elfin-1b3a670700307a54.svg",
+    "preview": "/fonts/previews/pf-ems-elfin-77d0b79a0a6b02db.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-elfin/ATTRIBUTION.txt"
@@ -499,7 +499,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-felix-72e9dc96c3d5e7bf.svg",
+    "preview": "/fonts/previews/pf-ems-felix-687960968c2a1bc2.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-felix/ATTRIBUTION.txt"
@@ -510,7 +510,7 @@
     "collection": "EMS",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-herculean-a5ff838859527072.svg",
+    "preview": "/fonts/previews/pf-ems-herculean-d2e4ead6f2804780.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-herculean/ATTRIBUTION.txt"
@@ -521,7 +521,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-invite-d8743cdc26dfdeed.svg",
+    "preview": "/fonts/previews/pf-ems-invite-4c40879efbb8c1cc.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-invite/ATTRIBUTION.txt"
@@ -532,7 +532,7 @@
     "collection": "EMS",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-league-37f926d474219deb.svg",
+    "preview": "/fonts/previews/pf-ems-league-47ed61c2431be36b.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-league/ATTRIBUTION.txt"
@@ -543,7 +543,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-little-princess-84b9f82a090239d0.svg",
+    "preview": "/fonts/previews/pf-ems-little-princess-bed82c8d6796badc.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-little-princess/ATTRIBUTION.txt"
@@ -554,7 +554,7 @@
     "collection": "EMS",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-misty-night-54c0e74063139b07.svg",
+    "preview": "/fonts/previews/pf-ems-misty-night-79ed883baeea0791.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-misty-night/ATTRIBUTION.txt"
@@ -565,7 +565,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-neato-2d46ac9db10ff493.svg",
+    "preview": "/fonts/previews/pf-ems-neato-99339bf76cdcb997.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-neato/ATTRIBUTION.txt"
@@ -576,7 +576,7 @@
     "collection": "EMS",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-nixish-ba421ad3ee826717.svg",
+    "preview": "/fonts/previews/pf-ems-nixish-a43d3e845ffb146b.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-nixish/ATTRIBUTION.txt"
@@ -587,7 +587,7 @@
     "collection": "EMS",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-nixish-italic-38ad5a84d21c4a36.svg",
+    "preview": "/fonts/previews/pf-ems-nixish-italic-ce7e02c308d17fad.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-nixish-italic/ATTRIBUTION.txt"
@@ -598,7 +598,7 @@
     "collection": "EMS",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-osmotron-8f54651bd51e2e26.svg",
+    "preview": "/fonts/previews/pf-ems-osmotron-b85bf98f7d9c5767.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-osmotron/ATTRIBUTION.txt"
@@ -609,7 +609,7 @@
     "collection": "EMS",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-pancakes-d1ad0698b9d33f52.svg",
+    "preview": "/fonts/previews/pf-ems-pancakes-6d73b8373c7f7e45.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-pancakes/ATTRIBUTION.txt"
@@ -620,7 +620,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-pepita-5cdce31c015ace90.svg",
+    "preview": "/fonts/previews/pf-ems-pepita-799885eb02d73fb1.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-pepita/ATTRIBUTION.txt"
@@ -631,7 +631,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-qwandry-3d5fafb71fbb2f6c.svg",
+    "preview": "/fonts/previews/pf-ems-qwandry-ee86c668d0673451.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-qwandry/ATTRIBUTION.txt"
@@ -642,7 +642,7 @@
     "collection": "EMS",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-readability-c1da6dd2bc96678d.svg",
+    "preview": "/fonts/previews/pf-ems-readability-93005fdc3814d7c6.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-readability/ATTRIBUTION.txt"
@@ -653,7 +653,7 @@
     "collection": "EMS",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-readability-italic-d53d5577d193fb0c.svg",
+    "preview": "/fonts/previews/pf-ems-readability-italic-5163cf13c0847015.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-readability-italic/ATTRIBUTION.txt"
@@ -664,7 +664,7 @@
     "collection": "EMS",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-society-040e0994add89bf7.svg",
+    "preview": "/fonts/previews/pf-ems-society-b20887ca7d669e19.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-society/ATTRIBUTION.txt"
@@ -675,7 +675,7 @@
     "collection": "EMS",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-swiss-3efec9ddf0e725b8.svg",
+    "preview": "/fonts/previews/pf-ems-swiss-8a756e391f07c270.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-swiss/ATTRIBUTION.txt"
@@ -686,7 +686,7 @@
     "collection": "EMS",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-ems-tech-9f8667d0e36b8d3a.svg",
+    "preview": "/fonts/previews/pf-ems-tech-618e7e966d4f5997.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-ems-tech/ATTRIBUTION.txt"
@@ -697,7 +697,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-gothic-english-2d9d5001b9a815a3.svg",
+    "preview": "/fonts/previews/pf-hershey-gothic-english-6a2b181d52b7ccb2.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-gothic-english/ATTRIBUTION.txt"
@@ -708,7 +708,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-gothic-german-23f7ec8af7c7d8b9.svg",
+    "preview": "/fonts/previews/pf-hershey-gothic-german-41dc9df0c0125cbf.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-gothic-german/ATTRIBUTION.txt"
@@ -719,7 +719,7 @@
     "collection": "Hershey",
     "style": "blackletter",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-gothic-italian-dfdccef7a49f9824.svg",
+    "preview": "/fonts/previews/pf-hershey-gothic-italian-ebf90622f656a918.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-gothic-italian/ATTRIBUTION.txt"
@@ -730,7 +730,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-sans-1-stroke-72d0b59775124ffc.svg",
+    "preview": "/fonts/previews/pf-hershey-sans-1-stroke-52344ada97df1c9d.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-sans-1-stroke/ATTRIBUTION.txt"
@@ -741,7 +741,7 @@
     "collection": "Hershey",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-sans-medium-5ffefecc8e255b00.svg",
+    "preview": "/fonts/previews/pf-hershey-sans-medium-277a46835de66474.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-sans-medium/ATTRIBUTION.txt"
@@ -752,7 +752,7 @@
     "collection": "Hershey",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-script-1-stroke-ec725a4bfeeaefc1.svg",
+    "preview": "/fonts/previews/pf-hershey-script-1-stroke-b095d0c71ee267e3.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-script-1-stroke/ATTRIBUTION.txt"
@@ -763,7 +763,7 @@
     "collection": "Hershey",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-script-medium-fbf479914f5f207e.svg",
+    "preview": "/fonts/previews/pf-hershey-script-medium-4c9a16bbcab08454.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-script-medium/ATTRIBUTION.txt"
@@ -774,7 +774,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-serif-bold-15f95adb1125b3e5.svg",
+    "preview": "/fonts/previews/pf-hershey-serif-bold-dda8c7e43622e397.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-serif-bold/ATTRIBUTION.txt"
@@ -785,7 +785,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-serif-bold-italic-d4fb8fa680bec166.svg",
+    "preview": "/fonts/previews/pf-hershey-serif-bold-italic-62e898cee32abb9f.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-serif-bold-italic/ATTRIBUTION.txt"
@@ -796,7 +796,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-serif-medium-2fd964601b6ded15.svg",
+    "preview": "/fonts/previews/pf-hershey-serif-medium-a2b996554aff2695.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-serif-medium/ATTRIBUTION.txt"
@@ -807,7 +807,7 @@
     "collection": "Hershey",
     "style": "serif",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-hershey-serif-medium-italic-729bf87d6cd3e466.svg",
+    "preview": "/fonts/previews/pf-hershey-serif-medium-italic-ae9fca6fa5f5643c.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-hershey-serif-medium-italic/ATTRIBUTION.txt"
@@ -818,7 +818,7 @@
     "collection": "Other stroke fonts",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-twin-sans-0dc6e11136579e1b.svg",
+    "preview": "/fonts/previews/pf-twin-sans-5946127d4afc5f80.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-twin-sans/ATTRIBUTION.txt"
@@ -829,7 +829,7 @@
     "collection": "Other stroke fonts",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-relief-singleline-ornament-7afddc0ed352a6e3.svg",
+    "preview": "/fonts/previews/pf-relief-singleline-ornament-078a5ac91ac050e7.svg",
     "sample": "A fi ",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-relief-singleline-ornament/ATTRIBUTION.txt"
@@ -840,7 +840,7 @@
     "collection": "Other stroke fonts",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-relief-singleline-svg-b96ff02d6d904024.svg",
+    "preview": "/fonts/previews/pf-relief-singleline-svg-081e73f444a8ab28.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-relief-singleline-svg/ATTRIBUTION.txt"
@@ -851,7 +851,7 @@
     "collection": "Other stroke fonts",
     "style": "technical",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-norm-stroke-eef489a839224242.svg",
+    "preview": "/fonts/previews/pf-norm-stroke-91ec86154ff4f6c3.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-norm-stroke/ATTRIBUTION.txt"
@@ -862,7 +862,7 @@
     "collection": "Other stroke fonts",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-custom-script-c15b5ca92117cd2e.svg",
+    "preview": "/fonts/previews/pf-custom-script-02580579742bb3f7.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-custom-script/ATTRIBUTION.txt"
@@ -873,7 +873,7 @@
     "collection": "Other stroke fonts",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-custom-square-italic-c2cf345325392aba.svg",
+    "preview": "/fonts/previews/pf-custom-square-italic-8921f188a68d23a8.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-custom-square-italic/ATTRIBUTION.txt"
@@ -884,7 +884,7 @@
     "collection": "Other stroke fonts",
     "style": "sans",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-custom-square-normal-b330e9b7c329487a.svg",
+    "preview": "/fonts/previews/pf-custom-square-normal-40985a354b216ec0.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-custom-square-normal/ATTRIBUTION.txt"
@@ -895,7 +895,7 @@
     "collection": "Other stroke fonts",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cutlingsdualis-ae8b00ce42f522eb.svg",
+    "preview": "/fonts/previews/pf-cutlingsdualis-f59e5d52098ce9f9.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cutlingsdualis/ATTRIBUTION.txt"
@@ -906,7 +906,7 @@
     "collection": "Other stroke fonts",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cutlingspluralis-02dd38581c422bf0.svg",
+    "preview": "/fonts/previews/pf-cutlingspluralis-ea83ac80d3ba6e36.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cutlingspluralis/ATTRIBUTION.txt"
@@ -917,7 +917,7 @@
     "collection": "Other stroke fonts",
     "style": "decorative",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cutlingssingularis-44258452a345aa55.svg",
+    "preview": "/fonts/previews/pf-cutlingssingularis-671b974be5b3b980.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cutlingssingularis/ATTRIBUTION.txt"
@@ -928,7 +928,7 @@
     "collection": "Other stroke fonts",
     "style": "script",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-dearplotter-bb5202913c1187a1.svg",
+    "preview": "/fonts/previews/pf-dearplotter-587765bd274af521.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-dearplotter/ATTRIBUTION.txt"
@@ -939,7 +939,7 @@
     "collection": "Other stroke fonts",
     "style": "technical",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cad-iso3098-b7f19dbe22f02071.svg",
+    "preview": "/fonts/previews/pf-cad-iso3098-0e800ab8b2603b33.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cad-iso3098/ATTRIBUTION.txt"
@@ -950,7 +950,7 @@
     "collection": "Other stroke fonts",
     "style": "technical",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cad-iso3098-i-7d3ab1e858783e95.svg",
+    "preview": "/fonts/previews/pf-cad-iso3098-i-e9a41bffe809f523.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cad-iso3098-i/ATTRIBUTION.txt"
@@ -961,7 +961,7 @@
     "collection": "Other stroke fonts",
     "style": "technical",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cad-lc-opengost-ar-6ea275370f926865.svg",
+    "preview": "/fonts/previews/pf-cad-lc-opengost-ar-5efd40f522b922fd.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cad-lc-opengost-ar/ATTRIBUTION.txt"
@@ -972,7 +972,7 @@
     "collection": "Other stroke fonts",
     "style": "technical",
     "drawing": "stroke",
-    "preview": "/fonts/previews/pf-cad-lc-opengost-br-9cfc798ccd7b24dc.svg",
+    "preview": "/fonts/previews/pf-cad-lc-opengost-br-cee5bdb977302d21.svg",
     "sample": "Aa 012",
     "coverageHint": "",
     "noticeUrl": "/fonts/library/pf-cad-lc-opengost-br/ATTRIBUTION.txt"

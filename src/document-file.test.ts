@@ -26,6 +26,12 @@ describe('.plit.json documents', () => {
       const bad=structuredClone(data); bad.document.settings[key as string]=value; expect(()=>parsePlotIt(JSON.stringify(bad))).toThrow('Invalid');
     }
   });
+  it('round-trips NextDraw profiles and model choices', () => {
+    for (const nextdrawModel of ['8511','1117','2234'] as const) {
+      const state = document(); Object.assign(state.settings,{profile:'nextdraw',nextdrawModel});
+      expect(parsePlotIt(serializePlotIt(state)).state.settings).toMatchObject({profile:'nextdraw',nextdrawModel});
+    }
+  });
   it('restores setup models without changing saved orientation or older documents', () => {
     const data = file(); data.document.settings.axidrawModel = 'v3-a3'; data.document.settings.machineRotation = 270;
     expect(parsePlotIt(JSON.stringify(data)).state.settings).toMatchObject({ axidrawModel: 'v3-a3', machineRotation: 270 });
@@ -50,7 +56,7 @@ describe('.plit.json documents', () => {
   });
   it('round-trips editable geometry, custom paper, fills, preferences and text settings', () => {
     const state = document(); state.paper = {name:'Custom',width:223,height:311}; state.paperColor = '#c0ffee';
-    state.items[0]!.text = {content:'Full text\nwith "quotes"', format:'plotfont', options:{...defaultTextOptions, features:'liga=0',variations:'wght=700'}};
+    state.items[0]!.text = {content:'Full text\nwith "quotes"', format:'openplotfont', options:{...defaultTextOptions, features:'liga=0',variations:'wght=700'}};
     const restored = parsePlotIt(serializePlotIt(state)).state;
     expect(restored.paper).toEqual(state.paper); expect(restored.paperColor).toBe(state.paperColor);
     expect(restored.items[0]!.text).toEqual(state.items[0]!.text); expect(restored.items[0]!.fillSettings).toEqual(state.items[0]!.fillSettings);
@@ -78,9 +84,9 @@ describe('.plit.json documents', () => {
     expect(settings.machineRotation).toBe(90); expect(settings.pauseOnToolChange).toBe(true);
   });
   it('sanitizes executable geometry while preserving imported colors and protected ordering', () => {
-    const data = file(); data.document.items[0].markup = '<g data-plotfont-order="true"><script>alert(1)</script><foreignObject/><path onload="bad()" stroke="red" data-plotfont-kind="stroke" d="M0 0L10 10"/><use href="https://example.com/remote.svg"/></g>';
+    const data = file(); data.document.items[0].markup = '<g data-openplotfont-order="true"><script>alert(1)</script><foreignObject/><path onload="bad()" stroke="red" data-openplotfont-kind="stroke" d="M0 0L10 10"/><use href="https://example.com/remote.svg"/></g>';
     const markup = parsePlotIt(JSON.stringify(data)).state.items[0]!.markup;
-    expect(markup).not.toMatch(/script|foreignObject|onload|https:/); expect(markup).toContain('stroke="red"'); expect(markup).toContain('data-plotfont-kind="stroke"');
+    expect(markup).not.toMatch(/script|foreignObject|onload|https:/); expect(markup).toContain('stroke="red"'); expect(markup).toContain('data-openplotfont-kind="stroke"');
   });
   it.each(['not json', '{', '[]', '{}'])('rejects invalid files without changing the existing state (%s)', source => {
     const state = document(), before = structuredClone(state);

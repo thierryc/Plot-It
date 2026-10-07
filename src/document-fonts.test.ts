@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash, webcrypto } from 'node:crypto';
-import { exportDocumentFonts, importDocumentFonts, findFont, typographyToItem, defaultTextOptions } from './typography';
+import { exportDocumentFonts, importDocumentFonts, loadFontFile, findFont, typographyToItem, defaultTextOptions } from './typography';
 import type { EmbeddedFont } from './document-file';
 
 // Exercise real font parsing/geometry; only IndexedDB storage is replaced.
-let records: Map<string, {id:string;name:string;bytes:ArrayBuffer;format?:'plotfont'}>;
+let records: Map<string, {id:string;name:string;bytes:ArrayBuffer;format?:'openplotfont'}>;
 beforeEach(() => {
   records = new Map(); vi.stubGlobal('crypto',webcrypto);
   const db = {close:vi.fn(),transaction: () => {
@@ -20,13 +20,31 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 function fixture(path: string, format: EmbeddedFont['format']): EmbeddedFont {
   const bytes = readFileSync(new URL(path,import.meta.url));
-  return {id:`${format === 'plotfont' ? 'plotfont-' : ''}${createHash('sha256').update(bytes).digest('hex')}`,
+  return {id:`${format === 'openplotfont' ? 'openplotfont-' : ''}${createHash('sha256').update(bytes).digest('hex')}`,
     name:path.split('/').at(-1)!, format, encoding:'base64',data:bytes.toString('base64')};
 }
 describe('portable document fonts', () => {
+  it.each(['.opf', '.opf.json', '.OPF', '.OPF.JSON'])('loads and persists an OpenPlotFont file with extension %s', async extension => {
+    const bytes = readFileSync(new URL('./test-fonts/openplotfont/mixed.opf.json', import.meta.url));
+    const file = { name: 'mixed' + extension, size: bytes.length, arrayBuffer: async () => Uint8Array.from(bytes).buffer } as File;
+    const font = await loadFontFile(file);
+    expect(font.openplotfont?.format).toBe('OpenPlotFont');
+    const item = typographyToItem('i', 8, {...defaultTextOptions, fontId: font.id});
+    expect(item.markup).toContain('data-openplotfont-kind="fill"');
+    expect(item.markup).toContain('fill-rule="evenodd"');
+    expect((await exportDocumentFonts([font.id]))[0]?.format).toBe('openplotfont');
+  });
+  it('requires the new file extensions and format identity', async () => {
+    const bytes = readFileSync(new URL('./test-fonts/openplotfont/minimal.opf.json', import.meta.url));
+    const file = {name: 'minimal.json', size: bytes.length, arrayBuffer: async () => Uint8Array.from(bytes).buffer} as File;
+    await expect(loadFontFile(file)).rejects.toThrow(/\.opf/);
+    const oldBytes = Buffer.from(bytes.toString().replace('OpenPlotFont', 'PlotFont'));
+    const oldFile = {...file, name: 'minimal.opf', arrayBuffer: async () => Uint8Array.from(oldBytes).buffer} as File;
+    await expect(loadFontFile(oldFile)).rejects.toThrow(/expected format OpenPlotFont/);
+  });
   it.each([
     ['./test-fonts/Roboto.ttf','opentype'],
-    ['./fonts/hershey-roman-simplex.plotfont.json','plotfont']
+    ['./fonts/hershey-roman-simplex.opf.json','openplotfont']
   ] as const)('loads and re-embeds the original bytes and editable text (%s)', async (path,format) => {
     const font = fixture(path,format);
     await importDocumentFonts([font]);

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { segmentedControl, SegmentedControl } from './segmented';
+import { segmentedControl, SegmentedControl, mountSegmentedControls } from './segmented';
 const mounted: SegmentedControl[] = [];
 afterEach(() => { mounted.splice(0).forEach(control => control.destroy()); document.body.replaceChildren(); });
 function setup() {
@@ -39,6 +39,11 @@ describe('accessible segmented control', () => {
     const tab = new KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true});
     buttons[0]!.dispatchEvent(tab); expect(tab.defaultPrevented).toBe(false);
   });
+  it('focuses the destination before activation can synchronously replace the view',()=>{
+    const {buttons}=setup(); let focusedAtActivation:Element|null=null;
+    buttons[2]!.addEventListener('click',()=>{focusedAtActivation=document.activeElement;});
+    key(buttons[0]!,'ArrowRight'); expect(focusedAtActivation).toBe(buttons[2]);
+  });
   it('supports RTL arrow direction and native click activation', () => {
     const {group,buttons} = setup(); group.style.direction='rtl';
     key(buttons[0]!, 'ArrowLeft'); expect(document.activeElement).toBe(buttons[2]);
@@ -62,5 +67,22 @@ describe('accessible segmented control', () => {
     host.innerHTML=segmentedControl('Disabled',[{label:'A',selected:true,attributes:{disabled:true}}]);
     expect(host.querySelector('button')?.tabIndex).toBe(-1);
     expect(host.querySelector('button')?.getAttribute('aria-checked')).toBe('false');
+  });
+});
+
+
+describe('dynamic icon-only groups',()=>{
+  it('provides names and keyboard behavior after a controller replaces a group',async()=>{
+    const host=document.createElement('div'); document.body.append(host);
+    const markup=()=>segmentedControl('Text alignment',['left','center','right'].map(value=>({label:`Align ${value}`,selected:value==='left',icon:'<svg aria-hidden="true"></svg>',iconOnly:true,attributes:{}})));
+    const release=mountSegmentedControls(host);
+    for(let replacement=0;replacement<2;replacement++){
+      host.innerHTML=markup(); await new Promise<void>(resolve=>queueMicrotask(resolve));
+      const buttons=[...host.querySelectorAll('button')];
+      expect(buttons[0]?.getAttribute('aria-label')).toBe('Align left');
+      key(buttons[0]!, 'End'); expect(document.activeElement).toBe(buttons[2]);
+      expect(buttons.map(button=>button.tabIndex)).toEqual([-1,-1,0]);
+    }
+    release();
   });
 });

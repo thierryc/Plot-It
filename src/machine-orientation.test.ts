@@ -25,8 +25,8 @@ describe('standard machine orientation', () => {
       let cursor = {x:0,y:0}, motor1 = 0, motor2 = 0;
       for (const event of plan.events) for (const move of compileMotion(event,settings,cursor)) {
         const values = move.command.split(',').map(Number);
-        motor1 += values[2]! + values[3]!;
-        motor2 += values[2]! - values[3]!;
+        motor1 += values[2]!;
+        motor2 += values[3]!;
         cursor = move.targetSteps;
       }
       expect(cursor).toEqual(expected);

@@ -1,15 +1,13 @@
 # Plotter Core architecture decision
 
-Reviewed 2026-10-06. Status: proposed architecture and migration plan, not a
-completed package extraction or driver implementation. “Nextflow” in the request
-refers to NextDraw. No firmware was flashed and no hardware commands were sent.
+Reviewed 2026-10-06. Status: implemented offline candidate; see [the implementation checkpoint](CORE_REWRITE_STATUS.md). Hardware acceptance remains pending. “Nextflow” refers to NextDraw. No firmware was flashed
+and no physical hardware commands were sent during this rewrite.
 
 ## Decision
 
 Build one reusable TypeScript **Plotter Core**, with NextDraw-like separation of
 path planning, motor compilation, pen handling, homing and command feeding. Use
-that core from the browser and existing Node runner; add thin CLI and desktop
-clients later. Keep two motion backends inside it: native SM for compatibility,
+that core from the browser and existing Node runner; use the thin CLI and client entry point. A desktop shell can reuse that API. Keep two motion backends inside it: native SM for compatibility,
 and jerk-controlled T3/TD for validated modern firmware.
 
 The support target is **EBB firmware 2.8.1 through the current 3.1.7**, across
@@ -17,6 +15,12 @@ recent AxiDraw, Xylodraw and NextDraw profiles. This is broader than current
 NextDraw software, which requires 3.0.2. No upgrade is required to use the planned
 SM backend on the user's current 2.8.1 machine. Hardware marked EBB 2.7 and firmware
 2.8.1 are different version numbers; neither identifies the machine's mechanics.
+
+The migration also includes the remaining core plotting features identified in the
+[NextDraw feature-gap review](research/NEXTDRAW_FEATURE_GAP_REVIEW_2026-10-06.md):
+constant drawing speed, handling presets/resolution, repeats with inter-copy timers,
+layers and recovered resume, placement/occlusion and public utilities. Those features
+use the same package and scheduler; they do not become separate browser-only engines.
 
 Use the generic name Plotter Core rather than implying this is Bantam Tools'
 NextDraw core. Source-derived code retains its actual license/provenance. The app
@@ -69,14 +73,16 @@ The missing boundary is a supported library contract:
   sampler must use compiled motor records; the browser keeps only rendering/clock
   control. Network version 1 also assumes the current linear-acceleration plan.
 
-This is an extraction and extension of existing working components. Keep the
-current XM backend temporarily as a migration reference; avoid replacing the UI,
-runner and motor engine in one change.
+The user subsequently requested a fresh start rather than preserving old driver
+logic. The current first stage keeps the editor/runner interfaces through thin
+adapters, but replaces the active motion planner/compiler and pen/device executor.
+The old XM implementation is preserved only in the verified archive. Later sections
+describe the complete target, including features not yet implemented.
 
 ## Package and dependency boundaries
 
 Start with **one workspace package**, proposed as `packages/plotter-core` with
-name `@thierryc/plotter-core`, following the existing plotfont workspace pattern.
+name `@thierryc/plotter-core`, following the existing openplotfont workspace pattern.
 Its public root is platform-neutral; explicit subpath exports provide adapters.
 Do not create a separate package for every internal module.
 
@@ -105,6 +111,7 @@ Programmatic drawing API ────┘             │
 | `@thierryc/plotter-core/browser` | Web Serial opening/discovery and browser clock adapter | Browser APIs isolated here; port permission stays in a user action |
 | `@thierryc/plotter-core/node` | `serialport` discovery/opening and Node clock adapter | Node dependency loaded only by this entry point |
 | `@thierryc/plotter-core/client` | Versioned job/control DTOs and remote client facade | High-level runner operations, not serial byte forwarding |
+| `@thierryc/plotter-core/virtual` | Stateful virtual EBB, byte transport, deterministic clock and fault scenarios | Optional development/test entry point; excluded from production root imports |
 
 Make the Node dependency optional or a peer dependency so using the pure/browser
 entry point does not require native serial bindings. Build ESM with declarations;
@@ -138,6 +145,8 @@ unchanged in Node.
 | EBB protocol | Framed replies, negotiation, firmware-specific commands/errors and one status decoder |
 | Session | Public lifecycle, validation, job handles and structured events; composes the above |
 | Sampler/statistics | Command-derived preview, pen counters, drawing/travel distances and predicted duration |
+| Handling/layer settings | Typed model-aware recipes, sampling accuracy and resolved immutable layer overrides |
+| Sequence/checkpoints | Lazy repeat scheduling, cancellable timers, layer events and verified recovered resume |
 
 The transport accepts an already-open channel: asynchronous byte reads, ordered
 `write(bytes)`, `close()` and disconnect notification. Stream conversions and
@@ -150,6 +159,35 @@ Separate four inputs: **MachineProfile**, **FirmwareCapabilities**, **PlotSettin
 and **Transport**. Changing the USB transport does not change mechanics; changing
 firmware does not turn an AxiDraw/Xylodraw into a NextDraw. Existing AxiDraw model
 decoration is not an authoritative travel bound.
+
+## Virtual EBB
+
+Add a stateful firmware emulator as another opened byte transport. The production
+session sends the same serialized commands to it as to a real board; it independently
+parses those bytes and advances motor, pen and FIFO state. It must not consume the
+ExecutablePlan directly or return the compiler's predicted position as its own result.
+This exercises framing, command encoding, feeding, startup and pen restoration as
+well as motion math.
+
+Start with explicit 2.8.1 and 3.1.7 models, expanding version-specific behavior as
+the corresponding backends are implemented. Model finite queues, accepted versus
+completed commands, native step counters, servo settings and waits, emergency-stop
+side effects, status/power responses and T3/TD accumulator state. Keep board state
+across jobs/reconnects so bounds -> first normal plot and cancel -> next plot can
+expose stale state. Unknown commands must not be silently acknowledged.
+
+Use an injected deterministic clock for reproducible fast tests and an optional
+real-time mode for browser/CLI inspection. Script reply fragmentation/latency, full
+queues, disconnects, pause inputs and supply faults. The virtual destination is
+explicitly selected and never opens physical USB. Export bounded virtual traces and
+compare their observed state with preview records and pinned firmware/reference
+fixtures. Keep emulator execution independent of the production compiler/sampler;
+otherwise matching results could simply repeat the same bug.
+
+The current fixed-response fake remains useful for focused parser tests. The new
+virtual EBB is the full-session integration target, not a PIC CPU emulator or proof
+of mechanical pen contact, missed steps or physical line quality. Its staged work
+and acceptance cases are in Milestone 1B of the motor plan; hardware gates remain.
 
 ## Firmware and machine scope
 
@@ -173,8 +211,45 @@ NextDraw 8511/1117/2234. Confirm real scales, travel bounds, orientation and res
 individually. Preserve Xylodraw's inverse servo calibration. Standard and brushless
 pen configurations are separate profile data. Automatic homing requires the
 machine's actual hardware and supported procedure; firmware 3.x alone cannot enable
-it. The initial release keeps the explicit/manual-origin workflow. Capability-based
-NextDraw homing comes later through the same origin service.
+it. Implement the explicit/manual-origin workflow first. Capability-based NextDraw
+homing uses the same service within the feature milestones and remains gated on
+its virtual and physical acceptance.
+
+## Drawing policies and job sequences
+
+Motion backend, drawing policy and handling preset are independent settings.
+Profiled drawing uses acceleration/corner look-ahead on SM or jerk-controlled
+planning on T3/TD. Constant drawing deliberately bypasses drawing ramps and ordinary
+corner slowing; pen-up travel still uses the smooth planner. Account for that
+exception in rate/acceleration assertions and preserve stationary pen/reload/control
+barriers. Handling recipes resolve model-aware speed, jerk, resolution and source
+curve tolerance; Custom preserves explicit physical-unit settings.
+
+Add an immutable job-sequence specification above individual ExecutablePlans.
+It contains a prepared template, finite copy count or explicit continuous mode,
+inter-copy delay, optional paper-change Continue gate, layer events and checkpoint
+policy. The scheduler lazily compiles/executes immutable segments and never fills
+memory/FIFO with an infinite command list. No UI timer owns execution.
+
+Between copies finish settled Up at origin, then start the countdown; apply the
+startup/pen-restoration service again before drawing. Pause freezes the remaining
+timer, Resume continues it, and Stop/Cancel prevents another copy. No delay follows
+the last finite copy. Same geometry/seed is the default; optional per-copy closed
+starts use derived deterministic seeds recorded with each copy. Show count/countdown
+and per-copy/aggregate statistics; continuous mode has no total ETA.
+
+Layer settings and empty delay/pause layers are structured input, not incidental
+SVG text retained after flattening. Resolve overrides before affected compilation;
+restore settings outside the layer and prohibit optimization across control barriers.
+Optional occlusion/clipping needs source paint-order/fill/clip metadata in geometry
+adapters before normal tool ordering. Preset changes can require source resampling
+and resolution/origin recovery, not just changing a number in an existing plan.
+
+Recovered checkpoints store source cursor, completed drawing distance, execution
+identity, copy/layer/seed, origin confidence and timer state. Offsets slice drawing
+geometry; they are not XY translations. Recover position, travel raised to the
+splice and compile the remainder from rest. Runner restart marks interruption and
+requires recovery rather than automatically starting the next scheduled copy.
 
 ## Preparation, execution and preview contracts
 
@@ -326,18 +401,24 @@ contract reusable by CLI and desktop clients. No second planner in Swift or serv
 1. Archive the baseline; document known physical uncertainties and exact fixtures.
 2. Extract pure types/geometry and the package entry points. Move current execution
    behind injected transport/clock without changing motor behavior. Preserve adapters.
+   Add the virtual EBB's legacy byte transport, clock and state model at this boundary.
 3. Introduce the native executable model, SM compiler and command-derived sampler.
 4. Separate EBB session/feeder/pen/origin services and pass startup/bounds/cancel cases.
 5. Implement and validate S-curves, T3, then TD; activate modern Auto on 3.1.7 only
-   after physical acceptance. Broaden the firmware matrix with actual evidence.
-6. Migrate browser/runner to versioned shared jobs, then deliver the thin CLI.
-7. Add hardware-capable NextDraw homing and persistent resume separately; implement
-   a Swift shell only when requested, reusing the runner contract.
+   after independent virtual-board fixtures and physical acceptance. Extend virtual
+   modern execution alongside the compiler; broaden the firmware matrix with evidence.
+6. Complete handling/constant modes, layer controls, repeats/timers, recovered resume,
+   geometry options and capability-gated homing in their feature milestones; validate
+   them through both backends, shared schedules and the virtual board.
+7. Migrate browser/runner to versioned shared jobs, then deliver the thin CLI and its
+   geometry adapter. Implement a Swift shell only when requested, reusing the runner
+   contract.
 
 Verification must cover pure-root Node imports without DOM types, browser bundles
 without Node dependencies, identical Node/browser compiled digests, portable schema
 round-trips, firmware-aware framing/queue fixtures, clock-controlled startup/pen
-tests, and profile-specific hardware acceptance. If Swift is delivered, test its
+tests, independent virtual EBB state/trace comparisons and profile-specific hardware
+acceptance. If Swift is delivered, test its
 actual host runtime and UI reload behavior. Mathematical/mocked agreement alone
 does not establish physical quality or a working pen transition.
 
@@ -355,3 +436,12 @@ claim all NextDraw features have already been implemented.
 - [Plotink](https://github.com/evil-mad/plotink), exact revision and numerical fixtures in the motor review
 - [Web Serial specification](https://serial.spec.whatwg.org/)
 - [Apple JavaScript-to-Swift message/reply interface](https://developer.apple.com/documentation/webkit/wkscriptmessagehandlerwithreply)
+
+## Implemented candidate
+
+See `CORE_REWRITE_STATUS.md` for the module/API inventory, virtual monitor, reference
+provenance, measured benchmark and numerical/control differences. Browser serial
+streams transfer to a dedicated execution worker; the shared core never imports the
+editor, DOM or Node USB bindings. Native SM and 3.1.7 T3/TD, schedules/layers/resume,
+profiles/homing and prepared-job admission are active. Swift/WKWebView remains a
+possible shell over the same runner contract, not another motor implementation.

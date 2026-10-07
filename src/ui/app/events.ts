@@ -27,3 +27,35 @@ export function captureCheckboxFocus(root: ParentNode): () => void {
     target?.focus({ preventScroll: true });
   };
 }
+
+/** Keep native keyboard selection in place when an editor setting rebuilds the view. */
+export function captureSettingSelectFocus(root: ParentNode): () => void {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLSelectElement) || !(root instanceof Node) || !root.contains(active)) return () => {};
+  const key = active.dataset.setting;
+  if (!key) return () => {};
+  return () => {
+    const target = [...root.querySelectorAll<HTMLSelectElement>('select[data-setting]')].find(node => node.dataset.setting === key && !node.disabled);
+    target?.focus({preventScroll:true});
+  };
+}
+
+/** Adapter for the native text option consumed by the editor and Add Text form. */
+export function bindTextAlignment(root: ParentNode): void {
+  root.querySelectorAll<HTMLButtonElement>('[data-alignment]').forEach(button => button.addEventListener('click', () => {
+    const input = button.parentElement?.parentElement?.querySelector<HTMLInputElement>('[data-typography="align"]');
+    if (!input || input.disabled) return;
+    input.value = button.dataset.alignment!;
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+  }));
+}
+
+/** Rebuilt icon groups restore focus to the same semantic option. */
+export function captureAlignmentFocus(root: ParentNode): () => void {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLButtonElement) || !active.dataset.alignment || !(root instanceof Node) || !root.contains(active)) return () => {};
+  const value = active.dataset.alignment;
+  return () => {
+    [...root.querySelectorAll<HTMLButtonElement>('[data-alignment]')].find(button => button.dataset.alignment === value && !button.disabled && button.getClientRects().length)?.focus({preventScroll:true});
+  };
+}

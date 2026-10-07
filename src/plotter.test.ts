@@ -15,7 +15,7 @@ const fast = { sleep: async () => {} };
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe('EBB protocol plotter', () => {
-  it.each(['2.4.6','2.8.1'])('executes configured SP and timed XM, and releases only after completion (%s)', async version => {
+  it.each(['3.1.7','2.8.1'])('executes configured SP and timed SM, and releases only after completion (%s)', async version => {
     const fixture = fakeTransport(version), core = new PlotterCore(fixture.transport, fast);
     core.onProgress = progress => { if (progress.state === 'tool-change') core.resume(); };
     await core.connect(); await core.setPen(44); const before = fixture.commands.length;
@@ -25,7 +25,7 @@ describe('EBB protocol plotter', () => {
     expect(commands).toContain('SC,11,1845'); expect(commands).toContain('SC,12,1230');
     expect(commands.find(c=>c.startsWith('SP,'))).toMatch(/^SP,1,\d+,1$/);
     expect(commands.filter(c=>c.startsWith('SP,')).at(-1)).toMatch(/^SP,1,\d+,1$/);
-    expect(commands.some(c=>c.startsWith('XM,'))).toBe(true);
+    expect(commands.some(c=>c.startsWith('SM,'))).toBe(true);
     expect(commands.some(c=>/^(S2|TP|LM),|^SC,1,/.test(c))).toBe(false);
     expect(commands.at(-1)).toBe('EM,0,0'); expect(core.progress.state).toBe('finished');
     expect(core.motorsOn).toBe(false); expect(core.originStatus).toBe('unset');
@@ -33,7 +33,7 @@ describe('EBB protocol plotter', () => {
     await core.disconnect();
   });
 
-  it.each(['2.4.6','2.8.1'])('waits for pen dwell and drained XY on an asynchronous firmware queue (%s)', async version => {
+  it.each(['3.1.7','2.8.1'])('waits for pen dwell and drained XY on an asynchronous firmware queue (%s)', async version => {
     vi.useFakeTimers({toFake:['setTimeout','clearTimeout','performance']});
     let busyUntil=0, upPulse=0, downPulse=0, target=0, penUp=true, xy=0;
     let core!: PlotterCore;
@@ -46,7 +46,7 @@ describe('EBB protocol plotter', () => {
         penUp=values[1]===1; target=penUp?upPulse:downPulse;
         busyUntil=performance.now()+values[2]!;
       }
-      if(parts[0]==='XM') {
+      if(parts[0]==='SM') {
         if(!xy || core.executionSignal?.kind==='xy' && core.executionSignal.phase==='started' && core.executionSignal.eventIndex!==lastEvent) {
           expect(performance.now(),'XY cannot start during a pen dwell').toBeGreaterThanOrEqual(penReadyAt);
         }
@@ -72,7 +72,7 @@ describe('EBB protocol plotter', () => {
     let core!: PlotterCore, readyAt=0;
     const fixture=fakeTransport('2.8.1',command=>{
       if(command.startsWith('SP,')) { const duration=Number(command.split(',')[2]); readyAt=performance.now()+duration; }
-      if(command.startsWith('XM,')) expect(performance.now()).toBeGreaterThanOrEqual(readyAt);
+      if(command.startsWith('SM,')) expect(performance.now()).toBeGreaterThanOrEqual(readyAt);
     });
     core=new PlotterCore(fixture.transport); await core.connect();
     const run=core.plot(buildMotionPlan([{tool:'#000000',points:[{x:10,y:10},{x:20,y:10}]}],settings));
@@ -92,7 +92,7 @@ describe('EBB protocol plotter', () => {
     };
     await core.connect(); await core.plot(buildMotionPlan([{tool:'#000000',points:[{x:10,y:10},{x:20,y:10}]}],settings));
     expect(paused).toBe(true);const tail=fixture.commands.slice(adjusted);
-    const down=tail.findIndex(c=>c.startsWith('SP,0,')),motion=tail.findIndex(c=>c.startsWith('XM,'));
+    const down=tail.findIndex(c=>c.startsWith('SP,0,')),motion=tail.findIndex(c=>c.startsWith('SM,'));
     expect(tail).toContain('SC,5,18980');expect(down).toBeGreaterThanOrEqual(0);expect(down).toBeLessThan(motion);
     await core.disconnect();
   });
@@ -110,20 +110,20 @@ describe('EBB protocol plotter', () => {
     await core.connect();await core.plot(drawing());expect(tools).toEqual(['#FF0000']);await core.disconnect();
   });
 
-  it.each(['2.4.6','2.8.1'])('Stop drains, raises, returns without resetting origin, and releases (%s)',async version=>{
+  it.each(['3.1.7','2.8.1'])('Stop drains, raises, returns without resetting origin, and releases (%s)',async version=>{
     let core!:PlotterCore,requested=false;
-    const fixture=fakeTransport(version,command=>{if(command.startsWith('XM,')&&core.executionSignal?.penDown&&!requested){requested=true;core.stop();}});
+    const fixture=fakeTransport(version,command=>{if(command.startsWith('SM,')&&core.executionSignal?.penDown&&!requested){requested=true;core.stop();}});
     core=new PlotterCore(fixture.transport,fast);await core.connect();await core.plot(drawing());
     expect(core.progress.state).toBe('stopped');expect(fixture.commands).not.toContain('ES,1');
     expect(fixture.commands.filter(c=>c==='CS')).toHaveLength(1);
     const lastUp=fixture.commands.map((c,i)=>c.startsWith('SP,1,')?i:-1).filter(i=>i>=0).at(-1)!;
-    expect(fixture.commands.slice(lastUp+1).some(c=>/^(HM|XM),/.test(c))).toBe(true);
+    expect(fixture.commands.slice(lastUp+1).some(c=>/^(HM|SM),/.test(c))).toBe(true);
     expect(fixture.commands.at(-1)).toBe('EM,0,0');await core.disconnect();
   });
 
   it('emergency cancellation flushes motion, lifts, and never initiates a home move',async()=>{
     let core!:PlotterCore,requested=false;
-    const fixture=fakeTransport('2.8.1',command=>{if(command.startsWith('XM,')&&core.executionSignal?.penDown&&!requested){requested=true;core.cancel();}});
+    const fixture=fakeTransport('2.8.1',command=>{if(command.startsWith('SM,')&&core.executionSignal?.penDown&&!requested){requested=true;core.cancel();}});
     core=new PlotterCore(fixture.transport,fast);await core.connect();await core.plot(drawing());
     const stop=fixture.commands.indexOf('ES,1');expect(stop).toBeGreaterThan(0);
     expect(fixture.commands.slice(stop).some(c=>c.startsWith('HM,'))).toBe(false);
@@ -141,7 +141,7 @@ describe('EBB protocol plotter', () => {
     core=new PlotterCore(fixture.transport,fast);await core.connect();await core.setPen(30);
     core.onProgress=progress=>{if(progress.state==='paused'){paused=true;expect(counter).toBe(0);core.resume();}if(progress.state==='tool-change')core.resume();};
     await core.plot(drawing());expect(paused).toBe(true);expect(fixture.commands).toContain('SR,0,1');
-    expect(fixture.commands.slice(-2)).toEqual(['SR,60000,0','EM,0,0']);await core.disconnect();
+    expect(fixture.commands.slice(-2)).toEqual(['SR,60000','EM,0,0']);await core.disconnect();
   });
 
   it('reissues the startup lift and recaptures origin for every fresh job',async()=>{
@@ -158,12 +158,12 @@ describe('EBB protocol plotter', () => {
     const core=new PlotterCore(fixture.transport,fast);await core.connect();await expect(core.setPen(50)).rejects.toThrow('rejected');
     const written=core.diagnosticTrace.find(e=>e.phase==='written'&&e.command.startsWith('SP,'))!;
     expect(core.diagnosticTrace.filter(e=>e.commandId===written.commandId).map(e=>e.phase)).toEqual(['requested','written','received','failed']);
-    await core.setPen(50);expect(fixture.commands.filter(c=>c.startsWith('SP,1,'))).toHaveLength(2);await core.disconnect();
+    expect(fixture.commands).toContain('ES,1');const beforeRetry=fixture.commands.filter(c=>c.startsWith('SP,1,')).length;await core.setPen(50);expect(fixture.commands.filter(c=>c.startsWith('SP,1,'))).toHaveLength(beforeRetry+1);await core.disconnect();
   });
 
   it('consumes legacy QS terminators and future responses without shifting the next acknowledgement',async()=>{
     for(const future of [false,true]) {
-      const fixture=fakeTransport('3.0.1',undefined,command=>future ? command==='V'?'V,EBB Firmware Version 3.0.1':command==='QS'?'QS,0,0':command==='QG'?'QG,10':command==='QC'?'QC,0394,0300':command.split(',')[0] : undefined);
+      let m1=0,m2=0;const fixture=fakeTransport('3.0.1',command=>{if(command==='CS')m1=m2=0;else if(command.startsWith('SM,')){const p=command.split(',').map(Number);m1+=p[2]!;m2+=p[3]!;}},command=>future ? command==='V'?'V,EBB Firmware Version 3.0.1':command==='QS'?`QS,${m1},${m2}`:command==='QG'?'QG,10':command==='QC'?'QC,0394,0300':command.split(',')[0] : undefined);
       const core=new PlotterCore(fixture.transport,fast);core.onPosition=()=>{};core.onProgress=p=>{if(p.state==='tool-change')core.resume();};
       await core.connect();await core.plot(drawing());expect(core.progress.state).toBe('finished');
       const replies=core.diagnosticJobTrace!.entries.filter(e=>e.command==='QS'&&e.phase==='received').map(e=>e.response);
@@ -176,7 +176,7 @@ describe('EBB protocol plotter', () => {
     await core.connect();await core.plot(drawing());const signals=core.diagnosticJobTrace!.signals;
     for(let i=0;i<7000;i++)await core.firmwareVersion();
     const job=core.diagnosticJobTrace!;expect(job.entries.length).toBeLessThanOrEqual(20000);expect(job.droppedEntries).toBeGreaterThan(0);
-    expect(job.protocol).toBe('ebb-timed-sp-v1');
+    expect(job.protocol).toBe('ebb-native-sm-v1');
     expect(job.entries.some(e=>e.command==='SC,4,21850'&&e.phase==='written')).toBe(true);
     expect(job.signals).toEqual(signals);expect(job.plan).toEqual(drawing());expect(core.diagnosticPenTrace.some(e=>e.command.startsWith('SP,0,'))).toBe(true);
     job.signals.length=0;expect(core.diagnosticJobTrace!.signals.length).toBeGreaterThan(0);await core.disconnect();

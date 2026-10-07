@@ -8,14 +8,15 @@ Plot-it intentionally has no runtime framework dependencies. The small TypeScrip
 | `svg.ts` | SVG sanitization, import/export, DOM curve sampling, and path ordering |
 | `plot-font.ts` | Original single-line Plot Sans glyph geometry |
 | `typography.ts` | Local font storage, HarfBuzz shaping, OpenType settings and contour extraction |
-| `trajectory.ts` / `motion-plan.ts` | Shared physical-mm acceleration plan, sampling and EBB command compilation |
+| `packages/plotter-core` | Fresh platform-neutral native SM planner/compiler, EBB session, pen/origin services and virtual board |
+| `trajectory.ts` / `motion-plan.ts` | Editor compatibility types and command-derived preview; planning delegates to the package |
 | `motion.ts` / `motion-command.ts` | Reachable step geometry, coordinate mapping, native motor rate and command bounds |
 | `plot-job.ts` / `planner.worker.ts` | Immutable job preparation and worker planning |
 | `pens.ts` | Physical pen palette, assignments, selection, and ordered path blocks |
 | `path-optimization.ts` | Endpoint joining, bounded polyline reduction, closed-start selection and reproducible random starts |
 | `plot-workspace.ts` | Plot session, sidebar, connection, preparation, and shared player |
 | `simulation.ts` / `live-plot.ts` | Simulation clock and hardware position visualization |
-| `plotter.ts` | Web Serial connection and EBB command queue |
+| `plotter.ts` / `plotter-core.ts` | Browser selection and editor/runner facade over the package's byte-transport session |
 | `main.ts` | Editor state, interactions, dialogs, persistence, and orchestration |
 
 The plot pipeline is:
@@ -26,7 +27,8 @@ SVG objects → transformed browser SVG → sampled millimetre paths
             → pen ranking → endpoint joining → vertex reduction → closed starts
             → within-pen path ordering → continuous-line splitting
             → reachable step geometry → worker acceleration/short-move plan
-            → shared integer timing → simulator / EBB timed XM + SP queue
+            → native motor SM records with shared integer timing
+            → simulator / fresh EBB SM + SP session
 ```
 
 ## Deliberate MVP constraints
@@ -46,9 +48,10 @@ the current status and remaining work are tracked in [AXIDRAW_PARITY.md](AXIDRAW
 The proposed reusable browser/Node/CLI architecture is documented in
 [Plotter Core architecture](PLOTTER_CORE_ARCHITECTURE.md), with the pending migration
 checklist in [the motor implementation plan](MOTOR_IMPLEMENTATION_PLAN.md). That
-design adds a platform-neutral package, native SM and modern T3/TD backends, and
-an explicit firmware target of 2.8.1 through current 3.1.7. It is a planned evolution
-of the shared browser/server executor, not the current shipped implementation.
+design targets native SM and modern T3/TD backends, with firmware 2.8.1 through
+current 3.1.7. The shared package/session, browser execution worker, SM/T3/TD backends and
+CLI/client/virtual adapters are active. Hardware acceptance remains pending. See the
+[implementation checkpoint](CORE_REWRITE_STATUS.md) for implemented scope and limits.
 
 Pen tuning and reload waits are shared by `pen-control.ts`, planning and SP execution.
 `plot-statistics.ts` derives executable distances; `bounds-preview.ts` creates raised

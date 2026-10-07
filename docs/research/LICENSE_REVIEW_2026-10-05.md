@@ -81,7 +81,7 @@ require the reference implementation's license. Conversely, translating protecte
 Python implementation into TypeScript does not make it MIT.
 
 The lockfile declares no GPL/AGPL/LGPL third-party package dependency. The root
-application is the AGPL entry; the local PlotFont package is already MIT. Other
+application is the AGPL entry; the local OpenPlotFont package is already MIT. Other
 declared package licenses are permissive (MIT, MIT-0, ISC, BSD, Apache, Boost).
 This metadata scan is not a file-by-file audit of every transitive package.
 

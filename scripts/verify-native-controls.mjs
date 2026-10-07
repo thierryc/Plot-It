@@ -45,6 +45,22 @@ async (page) => {
     }
     await page.setViewportSize({width:1440,height:960});
     await page.getByRole('radio',{name:'Plot',exact:true}).click();
+    assert(!(await page.locator('.plot-sidebar-head').count()), 'Redundant Plot header remains');
+    const plotSettings = page.locator('[data-section="plot-settings"] > summary');
+    await plotSettings.press('Enter');
+    assert(!(await page.locator('[data-section="plot-settings"]').evaluate(node=>node.open)), 'Enter did not collapse Plot settings');
+    await plotSettings.press('Tab');
+    assert(await page.locator('[data-section="pens"] > summary').evaluate(node=>node===document.activeElement), 'Tab entered a collapsed section');
+    await plotSettings.press('Space');
+    assert(await page.locator('[data-section="plot-settings"]').evaluate(node=>node.open), 'Space did not expand Plot settings');
+    assert(!(await page.locator('[data-section="pens"] details').count()), 'Pens & passes still has nested disclosure');
+    assert(!(await page.locator('[data-section="diagnostics"]').evaluate(node=>node.open)), 'Diagnostics should start collapsed');
+    await page.getByRole('combobox',{name:'Destination',exact:true}).selectOption('machine');
+    await page.locator('[data-section="pen"]').waitFor({state:'visible'});
+    assert(!(await page.locator('[data-section="pen"] details').count()), 'Pen controls still have nested disclosure');
+    assert(!(await page.getByRole('button',{name:'Pen up',exact:true}).isEnabled()), 'Disconnected pen control is enabled');
+    assert(!(await page.locator('[data-section="pen"] [data-plot-action="machine-log"]').count()), 'Machine log remains in Pen controls');
+    await page.getByRole('combobox',{name:'Destination',exact:true}).selectOption('');
     await page.locator('summary').filter({hasText:/^Advanced$/}).click();
     await dimensions();
     await page.getByRole('button',{name:'Simulate',exact:true}).click();
@@ -52,7 +68,7 @@ async (page) => {
     assert(await page.locator('[data-edit-control]').first().evaluate(n=>n.inert), 'Plot failed to lock editing');
     await page.getByRole('button',{name:'Stop',exact:true}).click();
     await page.getByRole('status').filter({hasText:'Stopped'}).waitFor();
-    await page.getByRole('button',{name:'Back to editing',exact:true}).click();
+    await page.getByRole('radio',{name:'Edit',exact:true}).click();
   }
   assert(!errors.length,errors.join('\n'));
   return {passed:true,themes:['light','dark'],widths:[1440,768,640,390,320]};

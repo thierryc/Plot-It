@@ -10,7 +10,7 @@ const settings = { ...initialState.settings, profile:'xylodraw' as const, penUp:
 const plan = () => buildMotionPlan([{ tool:'#000000', points:[{x:10,y:10},{x:22,y:10}] }], settings);
 
 describe('fresh physical plot setup', () => {
-  it.each(['2.4.6','2.8.1','3.0.1'])('drains legacy pen commands and settles calibration on first and later jobs (%s)', async version => {
+  it.each(['3.1.7','2.8.1','3.0.1'])('drains legacy pen commands and settles calibration on first and later jobs (%s)', async version => {
     let now=0, pendingLower=true, oldPenReadyAt=80, target=0, penReadyAt=0;
     const setup=new Map<number,number>();
     let core!:PlotterCore;
@@ -28,7 +28,7 @@ describe('fresh physical plot setup', () => {
         target=setup.get(args[0]===1?4:5)!;
         penReadyAt=now+args[1]!;
       }
-      if(name==='XM') {
+      if(name==='SM') {
         // A stale queued lowering command would fire during the travel block.
         if(pendingLower) target=servoPosition(settings.penDown);
         expect(pendingLower).toBe(false);
@@ -49,10 +49,10 @@ describe('fresh physical plot setup', () => {
         const start=fixture.commands.length;
         await core.plot(job);
         const commands=fixture.commands.slice(start);
-        const purge=version==='2.4.6'?'ES':'ES,0';
+        const purge='ES,0';
         expect(commands.filter(c=>/^(R|RB)$/.test(c))).toEqual([]);
         expect(commands.indexOf(purge)).toBeLessThan(commands.indexOf('SC,2,0'));
-        expect(commands.slice(commands.indexOf(purge)+1,commands.indexOf('SC,2,0'))).toContain(version==='2.4.6'?'QM':'QG');
+        expect(commands.slice(commands.indexOf(purge)+1,commands.indexOf('SC,2,0'))).toContain('QG');
         expect(commands.indexOf('SC,5,17340')).toBeGreaterThan(commands.indexOf(purge));
         expect(commands.indexOf('SC,5,17340')).toBeLessThan(commands.findIndex(c=>c.startsWith('SP,')));
         expect(commands.find(c=>c.startsWith('SP,'))).toMatch(/^SP,1,/);
@@ -83,7 +83,7 @@ describe('fresh physical plot setup', () => {
     const fixture=fakeTransport('2.8.1',undefined,c=>c==='ES,0'?'OK':undefined);
     const core=new PlotterCore(fixture.transport,{sleep:async()=>{}});
     await core.connect(); await expect(core.plot(plan())).rejects.toThrow('Unexpected emergency-stop response');
-    expect(fixture.commands.some(c=>/^(XM|HM),/.test(c))).toBe(false);
+    expect(fixture.commands.some(c=>/^(SM|HM),/.test(c))).toBe(false);
     await core.disconnect();
   });
 
@@ -91,7 +91,7 @@ describe('fresh physical plot setup', () => {
     const fixture=fakeTransport('2.8.1',undefined,c=>c===rejected?'!setup rejected':undefined);
     const core=new PlotterCore(fixture.transport,{sleep:async()=>{}});
     await core.connect(); await expect(core.plot(plan())).rejects.toThrow('setup rejected');
-    expect(fixture.commands.some(c=>/^(XM|HM),/.test(c))).toBe(false);
+    expect(fixture.commands.some(c=>/^(SM|HM),/.test(c))).toBe(false);
     expect(core.originStatus).toBe('unset'); expect(core.active).toBe(false);
     await core.disconnect();
   });

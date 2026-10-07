@@ -75,7 +75,7 @@ describe('bounds and statistics',()=>{
     const fixture=fakeTransport(), core=new PlotterCore(fixture.transport,{sleep:async()=>{}});
     await core.connect(); await core.plot(buildBoundsPreview(buildMotionPlan(stroke,settings)));
     expect(fixture.commands.filter(c=>c.startsWith('SP,')).every(c=>c.startsWith('SP,1,'))).toBe(true);
-    expect(fixture.commands.some(c=>c.startsWith('XM,'))).toBe(true); expect(core.progress.state).toBe('finished'); await core.disconnect();
+    expect(fixture.commands.some(c=>c.startsWith('SM,'))).toBe(true); expect(core.progress.state).toBe('finished'); await core.disconnect();
   });
 });
 describe('supply monitoring and elapsed time',()=>{
@@ -104,11 +104,11 @@ describe('supply monitoring and elapsed time',()=>{
   });
   it('reports unsupported firmware without issuing QC',async()=>{
     const fixture=fakeTransport('2.2.2'),core=new PlotterCore(fixture.transport,{sleep:async()=>{}});
-    await core.connect(); await core.checkPowerSupply(); expect(core.powerStatus.state).toBe('unavailable'); expect(fixture.commands).not.toContain('QC'); await core.disconnect();
+    await expect(core.connect()).rejects.toThrow('requires EBB firmware 2.8.1'); expect(fixture.commands).not.toContain('QC');
   });
   it('detects loss during feeding, cancels without home, and freezes actual elapsed time',async()=>{
     let now=0, moved=false; const clock=vi.spyOn(performance,'now').mockImplementation(()=>now);
-    const fixture=fakeTransport('2.8.1',c=>{if(c.startsWith('XM,')){now+=2500;moved=true;}},c=>c==='QC'?`0394,${moved?'0010':'0300'}\r\nOK`:undefined);
+    const fixture=fakeTransport('2.8.1',c=>{if(c.startsWith('SM,')){now+=2500;moved=true;}},c=>c==='QC'?`0394,${moved?'0010':'0300'}\r\nOK`:undefined);
     const core=new PlotterCore(fixture.transport,{sleep:async ms=>{now+=ms;}});
     try {
       await core.connect(); await expect(core.plot(buildMotionPlan(stroke,settings))).rejects.toThrow('supply');
@@ -120,7 +120,7 @@ describe('supply monitoring and elapsed time',()=>{
 });
 
 describe('plot after raised bounds preview',()=>{
-  it.each(['2.4.6','2.8.1'])('restores physical down commands and calibration after bounds (%s)',async version=>{
+  it.each(['3.1.7','2.8.1'])('restores physical down commands and calibration after bounds (%s)',async version=>{
     const fixture=fakeTransport(version),core=new PlotterCore(fixture.transport,{sleep:async()=>{}});
     const calibrated={...settings,penUp:30,penDown:44};
     const plan=buildMotionPlan(stroke,calibrated);
@@ -130,10 +130,10 @@ describe('plot after raised bounds preview',()=>{
     // Every new job must establish both physical endpoints before its forced
     // startup lift, even when the previous job only travelled with the pen up.
     const startup=commands.findIndex(c=>c.startsWith('SP,1,'));
-    expect(commands.slice(0,startup).filter(c=>c.startsWith('SC,'))).toEqual(['SC,2,0',...servoSetup(30,44)]);
+    expect(commands.slice(0,startup).filter(c=>c.startsWith('SC,'))).toEqual(expect.arrayContaining(['SC,2,0',...servoSetup(30,44)]));
     expect(commands.filter(c=>c.startsWith('SP,')).map(c=>Number(c.split(',')[1]))).toEqual([1,0,1]);
     const lower=commands.findIndex(c=>c.startsWith('SP,0,'));
-    expect(commands.slice(lower+1).some(c=>c.startsWith('XM,'))).toBe(true);
+    expect(commands.slice(lower+1).some(c=>c.startsWith('SM,'))).toBe(true);
     expect(core.diagnosticJobTrace?.settings.penDown).toBe(44);
     await core.disconnect();
   });

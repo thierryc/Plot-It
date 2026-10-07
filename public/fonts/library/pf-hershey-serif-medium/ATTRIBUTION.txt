@@ -1,4 +1,4 @@
-PlotFont conversion of PF Hershey Serif medium
+OpenPlotFont conversion of PF Hershey Serif medium
 
 Font name: Hershey Serif medium
 

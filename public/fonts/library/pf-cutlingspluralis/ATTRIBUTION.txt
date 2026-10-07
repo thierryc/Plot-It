@@ -1,4 +1,4 @@
-PlotFont conversion of PF CutlingsPluralis
+OpenPlotFont conversion of PF CutlingsPluralis
 
 Font name:               Cutlings Pluralis
 License:                 SIL Open Font License http://scripts.sil.org/OFL

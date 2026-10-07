@@ -17,7 +17,7 @@ export interface ArtworkItem {
   rotation: number;
   stroke: string;
   fillSettings?: FillSettings;
-  text?: { content: string; options?: TextOptions; format?: 'plotfont' };
+  text?: { content: string; options?: TextOptions; format?: 'openplotfont' };
 }
 
 export interface Paper {
@@ -27,7 +27,9 @@ export interface Paper {
 }
 
 export interface PlotSettings {
-  profile: "axidraw" | "xylodraw";
+  profile: "axidraw" | "nextdraw" | "xylodraw";
+  /** NextDraw setup selection; hardware support is separate from preview. */
+  nextdrawModel?: '8511' | '1117' | '2234';
   /** Physical size of the decorative AxiDraw setup; never changes travel limits. */
   axidrawModel?: 'v3-a4' | 'v3-a3';
   /** Rotation from canvas coordinates into the machine's mixed axes. */
@@ -38,6 +40,24 @@ export interface PlotSettings {
   travelSpeed: number;
   drawAcceleration: number;
   travelAcceleration: number;
+  /** Fresh core motion settings. Omitted legacy values retain 8x/profiled drawing. */
+  resolution?: 8 | 16;
+  drawingMode?: 'profiled' | 'constant';
+  motionPreference?: 'auto' | 'compatibility' | 'scurve';
+  motionFirmware?: string;
+  drawingJerk?: number;
+  travelJerk?: number;
+  handling?: 'custom' | 'technical' | 'handwriting' | 'sketching';
+  curveToleranceMm?: number;
+  servoTimeoutMs?:number;jogStepMm?:number;axidrawHardwareModel?:'v3-a4'|'v3-a3';
+  nextdrawServo?: 'standard'|'brushless';
+  automaticPlacement?:boolean;pageClipping?:boolean;hiddenLineRemoval?:boolean;strictOrder?:boolean;
+  previewFilter?:'draw'|'travel'|'all';synchronizedB3?:boolean;startAtMm?:number;
+  varyClosedStarts?:boolean;
+  layerOverrides?:Record<string,{included?:boolean;speedPercent?:number;penDown?:number;delayMs?:number;pause?:boolean}>;
+  copies?: number | 'continuous';
+  repeatIntervalMs?: number;
+  repeatRequireContinue?: boolean;
   cornering: number;
   penUp: number;
   penDown: number;
@@ -113,7 +133,19 @@ export const initialState: AppState = {
   tool: "select",
   zoom: 1,
   settings: {
+    servoTimeoutMs:60000,jogStepMm:1,axidrawHardwareModel:'v3-a4',nextdrawServo:'brushless',automaticPlacement:false,pageClipping:true,hiddenLineRemoval:false,strictOrder:false,previewFilter:'all',synchronizedB3:false,startAtMm:0,varyClosedStarts:false,layerOverrides:{},
+    motionPreference: 'auto',
+    handling: 'custom',
+    copies: 1,
+    repeatIntervalMs: 0,
+    repeatRequireContinue: false,
+    curveToleranceMm: .05,
+    drawingJerk: undefined,
+    travelJerk: undefined,
+    resolution: 8,
+    drawingMode: 'profiled',
     profile: "axidraw",
+    nextdrawModel: '8511',
     axidrawModel: 'v3-a4',
     machineRotation: DEFAULT_MACHINE_ROTATION,
     machineOrientationVersion: MACHINE_ORIENTATION_VERSION,

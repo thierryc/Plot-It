@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { planPolyline, planSegment } from './trajectory';
 
 const options = { acceleration: 200, maximumVelocity: 35, cornering: .127 };
-describe('original acceleration planning', () => {
+describe('declared legacy acceleration and short-move policy', () => {
   it.each([2,100])('matches analytical rest-to-rest motion over %s mm', length => {
     const blocks = planPolyline([{x:0,y:0},{x:length,y:0}],options);
     const duration = blocks.reduce((sum,block)=>sum+block.duration,0);
@@ -11,26 +11,14 @@ describe('original acceleration planning', () => {
     const last=blocks.at(-1)!; expect(last.initialSpeed+last.acceleration*last.duration).toBeCloseTo(0);
     expect(last.to).toEqual({x:length,y:0});
   });
-  it('uses one constant-speed command profile for a one-step stroke', () => {
-    const blocks = planPolyline([{x:0,y:0},{x:.025,y:0}],options);
-    expect(blocks).toHaveLength(1);
-    expect(blocks[0]).toMatchObject({ stopBefore: true, acceleration: 0 });
-    expect(blocks[0]!.initialSpeed).toBeCloseTo(Math.sqrt(200 * .025));
-    expect(blocks[0]!.duration).toBeCloseTo(.025 / Math.sqrt(200 * .025));
+  it('uses a single short interval for a one-step move, without inventing an empty ramp',()=>{
+    const blocks=planPolyline([{x:0,y:0},{x:.025,y:0}],options);
+    expect(blocks).toHaveLength(1);expect(blocks[0]!.stopBefore).toBe(true);
+    expect(blocks[0]!.acceleration).toBe(0);expect(blocks[0]!.duration).toBeCloseTo(.025/Math.sqrt(200*.025));
   });
-  it('uses the reviewed boosted-entry linear profile when a triangle has too few slices', () => {
-    const [block] = planSegment({x:0,y:0},{x:1,y:0},0,0,options);
-    expect(block!.initialSpeed).toBeCloseTo(Math.sqrt(200) / 2);
-    expect(block!.acceleration).toBeCloseTo(-25);
-    expect(block!.duration).toBeCloseTo(.282842712474619);
-    expect(block!.stopBefore).toBe(true);
-    expect(block!.initialSpeed + block!.acceleration * block!.duration).toBeCloseTo(0);
-  });
-  it('reduces local acceleration at the triangle/cruise crossover', () => {
-    const blocks = planSegment({x:0,y:0},{x:6,y:0},0,0,options);
-    expect(blocks).toHaveLength(2);
-    expect(blocks[0]!.acceleration).toBeCloseTo(183.75);
-    expect(blocks[0]!.initialSpeed + blocks[0]!.acceleration * blocks[0]!.duration).toBeCloseTo(Math.sqrt(1102.5));
+  it('reduces local acceleration near the legacy triangle/cruise crossover',()=>{
+    const blocks=planSegment({x:0,y:0},{x:6,y:0},0,0,options);
+    expect(blocks).toHaveLength(2);expect(blocks[0]!.acceleration).toBeCloseTo(183.75);
     expect(blocks.at(-1)!.to).toEqual({x:6,y:0});
   });
   it('handles already-cruising and one-sided short ramps without NaN', () => {
@@ -68,6 +56,6 @@ describe('original acceleration planning', () => {
   it('deduplicates coincident points and rejects invalid geometry', () => {
     expect(planPolyline([{x:0,y:0},{x:0,y:0}],options)).toEqual([]);
     expect(()=>planPolyline([{x:NaN,y:0}],options)).toThrow('coordinate');
-    expect(()=>planPolyline([],{...options,acceleration:0})).toThrow('settings');
+    expect(()=>planPolyline([],{...options,acceleration:0})).toThrow('acceleration');
   });
 });

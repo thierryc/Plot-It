@@ -1,6 +1,6 @@
-"""Bundle reviewed PlotFont exports and original outline fonts for lazy loading.
+"""Bundle reviewed OpenPlotFont exports and original outline fonts for lazy loading.
 
-Usage: python3 scripts/bundle-font-library.py --library /path/to/PlotFont/output/font-library/fonts
+Usage: python3 scripts/bundle-font-library.py --library /path/to/OpenPlotFont/output/font-library/fonts
   --inter /path/to/Inter.ttf --inter-italic /path/to/Inter-Italic.ttf
   --inter-license /path/to/OFL.txt --squarebot /path/to/squarebot-2.009.zip
 """
@@ -32,7 +32,7 @@ def main():
     for row in json.loads((args.library / 'catalog.json').read_text())['fonts']:
         key = row['id']
         folder = args.library / key
-        source = folder / f'{key}.plotfont.json'
+        source = folder / f'{key}.opf.json'
         original = source.read_bytes()
         font = json.loads(original)
         target = destination / key
@@ -45,7 +45,7 @@ def main():
                 shutil.copyfile(item, target / item.name)
         mapping = str(font['metadata'].get('mapping', ''))
         group = 'Hershey' if 'hershey' in key else 'EMS' if key.startswith('pf-ems-') else 'Other stroke fonts'
-        entries.append(dict(id=key, name=f"{font['familyName']} {font['styleName']}", kind='plotfont', group=group,
+        entries.append(dict(id=key, name=f"{font['familyName']} {font['styleName']}", kind='openplotfont', group=group,
                             url=f'/fonts/library/{key}/{source.name}', noticeUrl=f'/fonts/library/{key}/ATTRIBUTION.txt',
                             sourceUrl=row['sourceUrl'], license=row['license'], sha256=digest(data),
                             originalSha256=digest(original), glyphCount=len(font['glyphs']),

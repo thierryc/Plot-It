@@ -3,6 +3,7 @@ import { EventTarget, Event } from '../transport-events';
 export function fakeTransport(version = '2.8.1', onCommand?: (command: string) => Promise<void> | void, replyFor?: (command: string) => string | undefined): { transport: SerialTransport; commands: string[]; disconnect(): void } {
   const commands: string[] = [];
   let disconnected = false;
+  let m1=0,m2=0;
   let input!: ReadableStreamDefaultController<Uint8Array>;
   const port = {
     readable: new ReadableStream<Uint8Array>({ start(c) { input = c; } }),
@@ -10,7 +11,8 @@ export function fakeTransport(version = '2.8.1', onCommand?: (command: string) =
       const command = new TextDecoder().decode(bytes).trim(); commands.push(command);
       await onCommand?.(command);
       if (disconnected) throw new Error('USB disconnected');
-      const response = replyFor?.(command) ?? (command === 'V' ? `EBB Firmware Version ${version}` : command === 'QC' ? '0394,0300\r\nOK' : command === 'QS' ? '0,0\r\nOK' : command === 'QG' ? '00' : command === 'QM' ? 'QM,0,0,0,0' : command === 'ES,1' ? '1\r\nOK' : /^(ES|ES,0)$/.test(command) ? '0\r\nOK' : 'OK');
+      if(command==='CS'){m1=m2=0;}if(command.startsWith('SM,')){const parts=command.split(',').map(Number);m1+=parts[2]!;m2+=parts[3]!;}
+      const response = replyFor?.(command) ?? (command === 'V' ? `EBB Firmware Version ${version}` : command === 'QC' ? '0394,0300\r\nOK' : command === 'QS' ? `${m1},${m2}\r\nOK` : command === 'QG' ? '00' : command === 'QM' ? 'QM,0,0,0,0' : command === 'ES,1' ? '1\r\nOK' : /^(ES|ES,0)$/.test(command) ? '0\r\nOK' : 'OK');
       // Every reply is fragmented, including its CR/LF terminator.
       for (const chunk of [response, '\r', '\n']) input.enqueue(new TextEncoder().encode(chunk));
     } }),

@@ -11,8 +11,8 @@
     "test:ebb": "node scripts/test-ebb.mjs",
     "prebuild": "node scripts/check-runtime.mjs && npm run build:font-previews && node scripts/source-archive.mjs",
     "predev": "node scripts/check-runtime.mjs && npm run build:lib && npm run build:font-previews && node scripts/source-archive.mjs",
-    "build:lib": "npm run build --workspace=@thierryc/plotfont",
-    "dev:lib": "npm run dev --workspace=@thierryc/plotfont",
+    "build:lib": "npm run build --workspace=@thierryc/openplotfont && npm run build --workspace=@thierryc/plotter-core",
+    "dev:lib": "npm run dev --workspace=@thierryc/openplotfont",
     "build:server": "node scripts/check-runtime.mjs && tsc -p tsconfig.server.json && node scripts/build-server.mjs",
     "pretest": "node scripts/check-runtime.mjs",
     "server:api": "node dist-server/main.js api",
@@ -26,7 +26,10 @@
     "preview:site": "node scripts/check-runtime.mjs && vite preview --mode site --outDir ../dist-site --host 127.0.0.1 --port 8789 --strictPort",
     "test:site-build": "node scripts/check-runtime.mjs && PLOT_SITE_BUILD_DIR=dist-site vitest run server/site-build.test.ts",
     "publish:site": "node scripts/publish-site.mjs",
-    "build:font-previews": "npm run build:lib && node scripts/build-font-previews.mjs"
+    "build:font-previews": "npm run build:lib && node scripts/build-font-previews.mjs",
+    "plot:virtual": "npm run build:lib && node scripts/plot-virtual.mjs",
+    "build:cli": "npm run build:lib && node scripts/build-cli.mjs",
+    "plot:cli": "npm run build:cli && node dist-cli/plot-cli.js"
   },
   "devDependencies": {
     "@types/clipper-lib": "^6.4.0",
@@ -40,16 +43,18 @@
   },
   "dependencies": {
     "@ap.cx/gl-marquee": "0.1.0",
-    "@thierryc/plotfont": "0.1.0",
+    "@thierryc/openplotfont": "0.1.0",
     "clipper-lib": "^6.4.2",
     "harfbuzzjs": "^1.6.2",
     "lucide": "^1.49.0",
     "serialport": "^13.0.0",
-    "ws": "^8.22.0"
+    "ws": "^8.22.0",
+    "@thierryc/plotter-core": "0.1.0"
   },
   "license": "AGPL-3.0-only",
   "workspaces": [
-    "packages/plotfont"
+    "packages/openplotfont",
+    "packages/plotter-core"
   ],
   "engines": {
     "node": "^24.21.0"

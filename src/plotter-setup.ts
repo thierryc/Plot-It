@@ -30,3 +30,9 @@ export function setupAngle(settings: PlotSettings): number {
 export function setupPen(point: Point, settings: PlotSettings): Point {
   return machinePoint(point, ((360 - setupAngle(settings)) % 360) as PlotSettings['machineRotation']);
 }
+
+/** The paper's top-left origin sits next to the carriage in these placements. */
+export function setupArmRetracted(settings: PlotSettings): boolean {
+  const rotation = settings.machineRotation ?? DEFAULT_MACHINE_ROTATION;
+  return rotation === 180 || rotation === 270;
+}

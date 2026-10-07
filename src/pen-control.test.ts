@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PenState, penTransition, servoPosition, servoSetup, PEN_UP_SETTLE_MS, PEN_DOWN_SETTLE_MS } from './pen-control';
+import { penTransition, servoPosition, servoSetup, PEN_UP_SETTLE_MS, PEN_DOWN_SETTLE_MS } from './pen-control';
 
 describe('calibrated standard servo', () => {
   it('preserves existing physical positions and rejects invalid heights', () => {
@@ -39,25 +39,5 @@ describe('calibrated standard servo', () => {
     const down=penTransition(20,42,false);
     expect(down.duration).toBe(116 + PEN_DOWN_SETTLE_MS);
     expect(penTransition(20,42,false,down.duration).duration).toBe(down.duration);
-  });
-  it('keeps requested, acknowledged and settled targets distinct', () => {
-    const state = new PenState(); state.requested = 60;
-    expect(state.current(0)).toBeNull(); state.accept(60,0);
-    expect(state.current(0)).toBe(60); expect(state.settled).toBeNull();
-    state.settle(); expect(state.settled).toBe(60);
-    state.invalidate(); expect([state.requested,state.acknowledged,state.settled]).toEqual([null,null,null]);
-  });
-  it('expires idle knowledge after servo power-off and preserves it while job power is held', () => {
-    const state = new PenState(); state.accept(50,1000);
-    expect(state.current(60_999)).toBe(50); expect(state.current(61_000)).toBeNull();
-    state.accept(50,1000); state.powerHeld = true;
-    expect(state.current(121_000)).toBe(50);
-    state.powerHeld = false; expect(state.current(121_000)).toBeNull();
-  });
-  it('invalidates knowledge only when valid calibration changes', () => {
-    const state = new PenState(); state.accept(50,0);
-    expect(state.configure({penUp:50,penDown:60})).toBe(false); expect(state.current(1)).toBe(50);
-    expect(() => state.configure({penUp:101,penDown:60})).toThrow(); expect(state.up).toBe(50);
-    expect(state.configure({penUp:30,penDown:60})).toBe(true); expect(state.current(1)).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 .canvas-error { margin:0; font-size:var(--font-size-ui); color:var(--ink); }
 :global(.node-active) { border-color:var(--accent); color:var(--ink); }
-.two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
 .progress-track { height:6px; background:var(--progress-track); border-radius:5px; overflow:hidden; }
 .progress-track i { display:block; height:100%; background:var(--accent); transition:width .2s; }
 .progress-label { font:400 9px var(--font-ui); color:var(--muted); }
@@ -24,3 +24,7 @@
 .settings-theme { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:var(--font-size-ui); padding:0 8px; }
 .nudge-preferences { display:grid; gap:12px; padding-top:16px; border-top:1px solid var(--line); margin:16px 8px 0; }
 .theme-select { width:112px; }
+
+.type-actions { display:flex; align-items:center; gap:10px; min-width:0; }
+.type-alignment { flex:1; min-width:0; }
+.type-actions > label { flex:none; }

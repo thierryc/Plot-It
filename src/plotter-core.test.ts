@@ -19,12 +19,12 @@ describe('transport-independent execution', () => {
     expect(core.connected).toBe(false);
   });
   it('feeds a simulated one-slot motion FIFO equally with a blocked telemetry consumer', async () => {
-    const points = Array.from({ length: 33 }, (_, i) => ({ x: 20 * Math.cos(i * Math.PI / 16), y: 20 * Math.sin(i * Math.PI / 16) }));
+    const points = Array.from({ length: 33 }, (_, i) => ({ x: 30+20 * Math.cos(i * Math.PI / 16), y: 30+20 * Math.sin(i * Math.PI / 16) }));
     const plan = buildMotionPlan([{ tool: '#000000', points }], initialState.settings);
     async function execute(blocked: boolean) {
       let clock = 0, activeEnd = 0, queuedEnd = 0, index = 0, gaps = 0;
       const fixture = fakeTransport('2.8.1', command => {
-        if (!command.startsWith('XM,')) return;
+        if (!command.startsWith('SM,')) return;
         // One active move and one queued move: full FIFO delays its next ACK.
         if (queuedEnd > clock) { clock = Math.max(clock, activeEnd); activeEnd = queuedEnd; }
         if (index && clock > activeEnd) gaps++;
@@ -48,7 +48,7 @@ describe('transport-independent execution', () => {
     core = new PlotterCore(fixture.transport);
     await core.connect();
     await core.plot(buildMotionPlan([{ tool: '#000000', points: [{ x: 0, y: 0 }, { x: 10, y: 0 }] }], initialState.settings));
-    expect(fixture.commands.some(c => c.startsWith('XM,'))).toBe(false);
+    expect(fixture.commands.some(c => c.startsWith('SM,'))).toBe(false);
     expect(core.progress.state).toBe('stopped'); await core.disconnect();
   });
 });

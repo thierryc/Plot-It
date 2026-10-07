@@ -158,17 +158,17 @@ describe('isolated runner and API', () => {
   it('marks USB loss as interrupted and invalidates origin without replay', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'plot-usb-loss-')); cleanup.push(() => rm(dir, { recursive: true, force: true }));
     let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
-    const fixture = fakeTransport('2.8.1', async command => { if (command.startsWith('XM,')) await gate; });
+    const fixture = fakeTransport('2.8.1', async command => { if (command.startsWith('SM,')) await gate; });
     const core = new PlotterCore(fixture.transport);
     const runner = await startRunner({ connectionPolicy: 'auto', directory: dir, socketDirectory: dir, core }); cleanup.push(() => runner.close());
     const api = await startApi({ directory: dir, socketDirectory: dir, port: 0, allowLoopback: true }); cleanup.push(() => api.close()); cleanup.push(async () => release());
     const record = await new JobStore(dir).accept(job()); const client = await connect(api.url); await client.request('claim'); await client.request('start', { jobId: record.id });
-    await wait(() => fixture.commands.some(c => c.startsWith('XM,'))); fixture.disconnect(); release();
+    await wait(() => fixture.commands.some(c => c.startsWith('SM,'))); fixture.disconnect(); release();
     await wait(() => !core.active);
     expect(runner.snapshot().status).toBe('interrupted'); expect(core.originStatus).toBe('unset');
-    const moves = fixture.commands.filter(c => c.startsWith('XM,')).length;
+    const moves = fixture.commands.filter(c => c.startsWith('SM,')).length;
     expect((await client.request('start', { jobId: record.id })).ok).toBe(true);
-    expect(fixture.commands.filter(c => c.startsWith('XM,'))).toHaveLength(moves);
+    expect(fixture.commands.filter(c => c.startsWith('SM,'))).toHaveLength(moves);
   });
   it('keeps motors engaged at each pen change until explicit Continue', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'plot-pens-')); cleanup.push(() => rm(dir, { recursive: true, force: true }));
@@ -210,7 +210,7 @@ describe('isolated runner and API', () => {
   it('owns controls, survives API restart, deduplicates Start, and settles before completion', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'plot-network-')); cleanup.push(() => rm(dir, { recursive: true, force: true }));
     let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
-    const fixture = fakeTransport('2.8.1', async command => { if (command.startsWith('XM,')) await gate; });
+    const fixture = fakeTransport('2.8.1', async command => { if (command.startsWith('SM,')) await gate; });
     const core = new PlotterCore(fixture.transport);
     const runner = await startRunner({ connectionPolicy: 'auto', directory: dir, socketDirectory: dir, core }); cleanup.push(() => runner.close());
     let api = await startApi({ directory: dir, socketDirectory: dir, port: 0, host: '127.0.0.1', allowLoopback: true });
@@ -223,7 +223,7 @@ describe('isolated runner and API', () => {
     expect(upload.status).toBe(201); const accepted = await upload.json() as { id: string };
     expect((await b.request('start', { jobId: accepted.id })).ok).toBe(false);
     expect((await a.request('start', { jobId: accepted.id })).ok).toBe(true);
-    await wait(() => fixture.commands.some(c => c.startsWith('XM,')));
+    await wait(() => fixture.commands.some(c => c.startsWith('SM,')));
     expect(core.active).toBe(true);
     expect((await a.request('return-origin', { settings: envelope.plan.settings })).ok).toBe(false);
     expect((await a.request('invalidate-origin')).ok).toBe(false);

@@ -18,12 +18,12 @@ const entries = [];
 for (const id of ['plot-sans', ...loadedFonts().map(f => f.id)]) {
     if (id !== 'plot-sans')
         await ensureFontLoaded(id);
-    const font = findFont(id), sample = id === 'plot-sans' ? 'PLOT 012' : specimenText(font?.plotfont);
+    const font = findFont(id), sample = id === 'plot-sans' ? 'PLOT 012' : specimenText(font?.openplotfont);
     const options = font ? fontTextOptions(font, defaultTextOptions) : { ...defaultTextOptions, fontId: id };
     const svg = previewSVG(typographyToItem(sample, 8, options));
     const digest = hash(svg), file = `${id}-${digest.slice(0, 16)}.svg`;
     writeFileSync(`${folder}/${file}`, svg);
-    entries.push({ id, name: font?.name ?? 'Plot Sans · single line', collection: font?.group ?? 'Built-in', style: fontStyles[id] ?? 'other', drawing: id === 'plot-sans' ? 'stroke' : drawingType(font?.plotfont), preview: `/fonts/previews/${file}`, sample, coverageHint: font?.coverageHint ?? '', noticeUrl: font?.noticeUrl });
+    entries.push({ id, name: font?.name ?? 'Plot Sans · single line', collection: font?.group ?? 'Built-in', style: fontStyles[id] ?? 'other', drawing: id === 'plot-sans' ? 'stroke' : drawingType(font?.openplotfont), preview: `/fonts/previews/${file}`, sample, coverageHint: font?.coverageHint ?? '', noticeUrl: font?.noticeUrl });
 }
 const keep = new Set(entries.map(e => e.preview.split('/').at(-1)));
 for (const file of readdirSync(folder))

@@ -1,4 +1,4 @@
-PlotFont conversion of PF CAD iso3098_i
+OpenPlotFont conversion of PF CAD iso3098_i
 
 # Author:            AZO <typesylph@gmail.com> (convert)
 # Author:            User:K7 (ISO3098.svg, Wikimedia Commons)

@@ -227,3 +227,19 @@ ordered pen changes, Stop and origin handling. Exercise uploads and live preview
 during motion. Record request-to-runner/acceptance latency separately from board
 settling and the next safe pause boundary; no physical timing guarantee is implied
 by a passing mock test.
+
+## Shared-core prepared jobs
+
+Schema-2 jobs carry normalized geometry, layers, compiler `native-v3`, profile and
+firmware target, executable records, repeats and optional drawing-distance start.
+The runner recompiles and compares the digest before admitting/starting them;
+firmware must match the prepared target. The portable SDK client can submit a
+prepared job without editor data. Version-1 SM jobs retain their validated timed
+compatibility adapter and diagnostic readability; started/interrupted identities
+are never automatically reinterpreted or resumed.
+
+Snapshots advertise capabilities, copy/countdown and settled checkpoints. Tiny
+sidecars persist progress roughly once per second without rewriting the program.
+A restart marks active work interrupted and requires explicit origin recovery.
+Optional completion delivery is a host callback; it cannot affect feeding or
+trigger another plot. CLI `--runner URL` uses the existing claim/control API.

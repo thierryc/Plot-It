@@ -120,3 +120,94 @@ The editor ignores keyboard shortcuts while buttons and other form controls are 
 
 Action buttons and segmented labels use regular weight (400). Selection is conveyed
 by the checked state, background and outline, rather than bold text.
+
+`PlotCanvasStatus` owns the canvas-side process summary while PlotWorkspace supplies
+formatted state and metrics. Numeric updates are silent and unchanged text is preserved;
+process and supply-state changes use polite live regions. Destroy it on leaving Plot.
+Connection selection is independent of simulation playback. Shared Plot views supply
+the same connection area and footer action layout to local and hosted builds.
+
+Plot's top-level Destination, Plot settings, Pens & passes, Motors, Pen and Diagnostics use
+the shared native disclosure primitive, composed by `plotSection` in the app view.
+Main sections start expanded; Diagnostics and nested advanced options start collapsed. Both states and
+summary focus survive preparation and settings refreshes. Native summary activation
+supports Enter/Space and Tab skips collapsed content. Playback opens the pen/pass
+section to expose progress; Edit/Plot is identified by the workspace mode control.
+
+Pens & passes has one disclosure level. Its count and pass order are direct contents;
+a single pass is shown during playback, without repeating the idle pen assignment.
+Motors and Pen have separate sections. Up/Down actions share a row, with the two
+height fields directly below. Short visual labels retain explicit accessible names.
+Diagnostics contains the app version, firmware, device/paper details and log download.
+All actions use existing controller adapters and connection/ownership/busy guards.
+
+The decorative plotter rig uses a retracted rest position with the main rail above
+or to the left of the paper, and the existing extended position on the right/below.
+The arm and chassis anchor share the rest offset, keeping the pen at the paper origin
+and preserving live pen tracking. This affects the diagram only, never motion plans.
+
+## Machine profile fields
+
+`src/machine-profiles.ts` owns profile labels, NextDraw model choices and hardware
+capability flags. `src/ui/app/machine-profile.ts` composes native fields/selects once
+for Edit and Plot, with typed event hooks supplied by their adapters. NextDraw's
+8511/A4, 1117/A3 and 2234/A1 models follow the
+[manufacturer's model listing](https://support.bantamtools.com/hc/en-us/articles/28809219814547-Bantam-Tools-NextDraw-Documentation-Resources).
+
+NextDraw is currently a setup/simulation profile. Its model is saved and survives
+reload and document import/export. Preview uses the shared CoreXY XY calibration
+and existing generic pen timing, not a hardware-verified NextDraw time estimate.
+The AxiDraw decorative illustration is hidden for NextDraw; its physical envelope
+and automatic homing are not represented. Model selection does not resize paper
+or enforce hardware travel bounds.
+
+Hardware capabilities control destination/connection, motor/pen actions and Start.
+The adapter also rejects NextDraw physical configurations and plans; network job
+validation continues to accept only supported hardware profiles. The NextDraw
+brushless pen lift needs a separate adapter configuration (pin 2, narrow-band PWM,
+channel count and rate/timing model), rather than the current legacy servo setup.
+The inspected official source is recorded in the NextDraw API research notes.
+
+`fieldWithAction(label, control, action)` composes a native field and a separately
+labelled trailing icon button. Its CSS Module aligns the action with the control
+at 30px on desktop and 44px on touch layouts. The action stays outside the field
+label, so selecting a preset and opening advanced options remain distinct actions.
+Paper Size uses it for Canvas dimensions; the ellipsis opens the existing modal
+directly with dialog popup semantics and native focus restoration.
+
+## Contextual section help and floating modes
+
+`contextualHelp(id, label, content)` renders a named native info button and an auto
+popover. `mountContextualHelp(root)` owns positioning, expanded state and focus
+cleanup through delegated events, so help added by later inspector refreshes works
+without per-view listener setup. `WorkspaceOverlays` mounts it once and releases it
+on teardown. Help opens with Enter/Space, closes with Escape or its close button,
+and returns focus to its invoker (or the summary if the section closes).
+
+Expanded section headings expose separate help controls; buttons are outside the
+summary, so reading help does not toggle a disclosure. Paper/setup, objects, selection,
+SVG elements, fill, font details and Plot sections keep instructional text in these
+popovers. Loading/errors, unavailable controls and live state stay inline. Help uses
+24px desktop buttons, 44px touch buttons, 14px text and viewport-clamped positioning.
+
+Edit and Plot reserve 72px inside their scrolling surface for the floating workspace
+modes. That space scrolls away while the mode control remains over the inspector.
+On phones, the same segmented group moves into the modal drawer below its close
+header, then returns to the app header on dismissal. There is one live group and
+one inspector instance. The Plot player remains independently pinned.
+
+For left-side placement, the stationary base/rail assembly is reflected around the
+pen's resting axis. This places the base above the origin and the rail along the
+paper while keeping the secondary arm retracted and pen tracking unchanged.
+
+### Compact property rows
+
+`propertyField` is the inspector primitive for numeric properties and short native selects. Use a quiet prefix (`X`, `Y`, `W`, `H`, `Cap`, `Track`, `Deg`) and a full `label` for its accessible name. Units have a fixed trailing slot; values use right alignment and tabular figures. Prefixes and units are not separately announced. Controls retain native validation, disabled states, and typed, escaped event attributes. The entire field gets the existing focus outline. Do not add internal prefix dividers or apply generic input height rules to checkboxes.
+
+Pair rows with the app's shared `two-col` composition so geometry, typography, fill and speeds have matching edges. Keep names and multiline content left aligned. Desktop fields are 30px, text is 14px, panel padding is 12px and row gaps are 6px; touch controls retain 44px targets. The workspace mode switch and 288px desktop sidebar width are unchanged.
+
+The text alignment composition uses the design system's icon-only radio options and a native text-options adapter. It supplies full accessible names, one Tab stop, arrow/Home/End selection and focus restoration when the editor rerenders. `mountSegmentedControls` mounts newly inserted groups and releases removed groups automatically. Font upload is a native file control beside the picker, with its own accessible name and focus outline. App controllers continue owning typography, undo and persistence.
+
+The development showcase includes property rows, icon groups, disabled fields and invalid fields. Extend these shared components rather than adding panel-specific numeric control CSS. Do not apply these tokens or compositions to the website.
+
+Use `align:'left'` for the Profile, Model and Rail property selects. This gives their quiet labels a shared 42px slot and their values a common left edge. Native select padding centers the text in the field; numeric property values retain right alignment.

@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Elfin
+OpenPlotFont conversion of PF EMS Elfin
 
 Font name:               EMS Elfin
 License:                 SIL Open Font License http://scripts.sil.org/OFL

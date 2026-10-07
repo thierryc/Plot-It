@@ -36,7 +36,7 @@
 .paper :global(.rotation-hit):focus-visible { stroke:#1976d2; stroke-width:2; vector-effect:non-scaling-stroke; outline:none; }
 .paper :global(.rotation-hit) { fill:transparent; stroke:none; cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M24 14a9 9 0 1 0-3 9M24 7v7h-7' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M24 14a9 9 0 1 0-3 9M24 7v7h-7' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") 16 16,crosshair; }
 .stage-wrap { min-width:0; min-height:0; display:block; grid-template-rows:48px 1fr 29px; background:var(--stage); position:relative; }
-.stage { min-height:0; overflow:auto; position:relative; display:flex; padding:92px 40px 80px; background-color:var(--stage); background-image:radial-gradient(var(--stage-dot) .65px,transparent .65px); background-size:20px 20px; width:100%; height:100%; }
+.stage { min-height:0; overflow:auto; position:relative; display:flex; padding:92px 40px max(80px,var(--status-reserve,0px)); background-color:var(--stage); background-image:radial-gradient(var(--stage-dot) .65px,transparent .65px); background-size:20px 20px; width:100%; height:100%; }
 .plotter-background { position:absolute; inset:0; overflow:clip; pointer-events:none; user-select:none; z-index:1; }
 .plotter-rig { position:absolute; left:0; top:0; width:1051px; height:1178px; transform-origin:0 0; filter:brightness(0); opacity:.025; }
 :global([data-theme="dark"]) .plotter-rig { filter:brightness(0) invert(1); opacity:.045; }
@@ -62,10 +62,10 @@
 .paper :global(.path-node.active) { fill:#0B99FF; }
 .paper :global(.path-node.control) { fill:#e1f2ff; }
 .fill-task-floating { position:absolute; left:50%; bottom:80px; transform:translateX(-50%); z-index:var(--layer-progress); width:min(360px,calc(100% - 32px)); box-shadow:0 5px 20px #00000020; }
-@media (min-width:640px) and (max-width:950px) { .stage { padding:86px 24px 102px; }  .canvas-size-button>span:not(.canvas-size-chevron) { display:none; } }
+@media (min-width:640px) and (max-width:950px) { .stage { padding:86px 24px max(102px,var(--status-reserve,0px)); }  .canvas-size-button>span:not(.canvas-size-chevron) { display:none; } }
 @media(max-width:639px) {
   .drawing-toolbar { top:72px; }
-  .stage { padding:140px 20px 132px; }
+  .stage { padding:140px 20px max(132px,var(--status-reserve,0px)); }
 
   .viewport-controls { bottom:12px; right:12px; left:12px; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
   .canvas-size-button { height:44px; }

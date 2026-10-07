@@ -32,7 +32,7 @@ export function eventSignal(plan: MotionPlan, counts: PenCounts[], eventIndex: n
     source: 'plotter', phase, eventIndex, kind: event.kind,
     planTime: event.start + (phase === 'settled' ? event.duration : 0), elapsedMs,
     position: { ...(phase === 'settled' ? event.to : event.from) }, target: { ...event.to },
-    penDown: event.penDown, penHeight: event.penDown ? plan.settings.penDown : plan.settings.penUp,
+    penDown: event.penDown, penHeight: event.penHeight??(event.penDown ? plan.settings.penDown : plan.settings.penUp),
     tool: event.tool, penCounts: { ...counts[eventIndex]! },
   };
 }
@@ -45,7 +45,7 @@ export function simulationSignal(plan: MotionPlan, counts: PenCounts[], time: nu
     source: 'simulation', phase: time >= event.start + event.duration ? 'settled' : 'started',
     eventIndex: sample.index, kind: event.kind, planTime: time, elapsedMs: time * 1000,
     position: { ...sample.position }, target: { ...event.to }, penDown: sample.penDown,
-    penHeight: sample.penDown ? plan.settings.penDown : plan.settings.penUp,
+    penHeight: event.penHeight??(sample.penDown ? plan.settings.penDown : plan.settings.penUp),
     tool: sample.tool, penCounts: { ...counts[sample.index]! },
   };
 }

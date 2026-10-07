@@ -1,3 +1,5 @@
+import {validateExtendedSettings} from './extended-settings';
+import {restoreNextDrawModel} from './machine-profiles';
 import { penTimingSettings } from './pen-control';
 import { initialState, defaultFillSettings, type AppState, type ArtworkItem, type PlotSettings, type TextOptions } from './model';
 import { canvasPaper } from './paper';
@@ -9,6 +11,7 @@ import { validateFill } from './fill';
 import { sanitizeArtworkMarkup } from './svg';
 import { documentName } from './document-name';
 import { pathOptimizationSettings } from './path-optimization';
+import {validateRepeat} from '@thierryc/plotter-core';
 
 export const DOCUMENT_EXTENSION = '.plit.json';
 export const DOCUMENT_ACCEPT = '.plit,.plit.json,application/json';
@@ -16,7 +19,7 @@ export function isPlotItDocumentFile(name: string): boolean {
   return /\.plit(?:\.json)?$/i.test(name);
 }
 export const MAX_DOCUMENT_BYTES = 100 * 1024 * 1024;
-export interface EmbeddedFont { id: string; name: string; format: 'plotfont' | 'opentype'; encoding: 'base64'; data: string }
+export interface EmbeddedFont { id: string; name: string; format: 'openplotfont' | 'opentype'; encoding: 'base64'; data: string }
 export interface PlotItDocument {
   format: 'plot-it'; version: 1; units: 'mm';
   document: Pick<AppState, 'items' | 'paper' | 'paperColor' | 'settings' | 'pens'> & { documentName?: string };
@@ -38,12 +41,19 @@ function settingsFrom(value: unknown): PlotSettings {
   const source = object(value ?? {}, 'plot settings');
   const result = {...initialState.settings, ...source, ...restoreMachineOrientation(source), pauseOnToolChange: true} as PlotSettings;
   result.axidrawModel = setupModel(source.axidrawModel);
+  result.nextdrawModel = restoreNextDrawModel(source.nextdrawModel);
   Object.assign(result,pathOptimizationSettings(result),penTimingSettings(result));
-  if (!['axidraw','xylodraw'].includes(result.profile) || !['preserve','nearest','reversible'].includes(result.reorderMode)) throw new Error('Invalid machine profile or path order.');
+  if (!['axidraw','nextdraw','xylodraw'].includes(result.profile) || !['preserve','nearest','reversible'].includes(result.reorderMode)) throw new Error('Invalid machine profile or path order.');
   for (const key of ['speed','travelSpeed','drawAcceleration','travelAcceleration'] as const) number(result[key], key, .000001);
   for (const key of ['cornering','margin','maxPenDownMm'] as const) number(result[key], key, 0);
   for (const key of ['penUp','penDown'] as const) number(result[key], key, 0, 100);
   if (typeof result.returnToOrigin !== 'boolean') throw new Error('Invalid final-return preference.');
+  if(![8,16].includes(result.resolution!)||!['profiled','constant'].includes(result.drawingMode!))throw new Error('Invalid resolution or drawing mode.');
+  if(!['auto','compatibility','scurve'].includes(result.motionPreference??'auto')||!['custom','technical','handwriting','sketching'].includes(result.handling??'custom'))throw new Error('Invalid motion mode or handling.');
+  for(const key of ['drawingJerk','travelJerk'] as const)if(result[key]!==undefined)number(result[key],key,1,1e9);
+  if(result.curveToleranceMm!==undefined)number(result.curveToleranceMm,'Curve accuracy',.001,10);
+  validateExtendedSettings(result);
+  validateRepeat({copies:result.copies??1,intervalMs:result.repeatIntervalMs??0,requireContinue:result.repeatRequireContinue??false});
   // Keep only documented settings, never arbitrary file properties.
   return Object.fromEntries(Object.keys(initialState.settings).map(key => [key, result[key as keyof PlotSettings]])) as unknown as PlotSettings;
 }
@@ -65,7 +75,7 @@ function itemFrom(value: unknown): ArtworkItem {
   if (source.text !== undefined) {
     const text = object(source.text, 'text');
     result.text = {content: string(text.content, 'text content')};
-    if (text.format !== undefined) { if (text.format !== 'plotfont') throw new Error('Unsupported text format.'); result.text.format = text.format; }
+    if (text.format !== undefined) { if (text.format !== 'openplotfont') throw new Error('Unsupported text format.'); result.text.format = text.format; }
     if (text.options !== undefined) {
       const options = object(text.options, 'text options');
       for (const key of ['fontId','features','variations','language','script'] as const) string(options[key], `text ${key}`);
@@ -109,7 +119,7 @@ export function parsePlotIt(source: string): {state: AppState; fonts: EmbeddedFo
   const fonts = (file.fonts as unknown[] ?? []).map(value => {
     const font = object(value, 'embedded font');
     const id = string(font.id, 'font ID'), name = string(font.name, 'font name'), data = string(font.data, 'font data');
-    if (!used.has(id) || !/^(?:plotfont-)?[a-f0-9]{64}$/.test(id) || !['plotfont','opentype'].includes(String(font.format)) || font.encoding !== 'base64'
+    if (!used.has(id) || !/^(?:openplotfont-)?[a-f0-9]{64}$/.test(id) || !['openplotfont','opentype'].includes(String(font.format)) || font.encoding !== 'base64'
       || data.length > Math.ceil(20 * 1024 * 1024 / 3) * 4 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(data) || !data) throw new Error('Invalid embedded font data.');
     return {id, name, data, format: font.format as EmbeddedFont['format'], encoding: 'base64' as const};
   });

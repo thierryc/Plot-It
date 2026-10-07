@@ -24,7 +24,7 @@ preserved path/source order, only consecutive forward strokes can join. Exact
 touching ordinary paths retain the existing motion planner's joining behavior.
 Existing closed contours remain separate from open strokes.
 
-Protected PlotFont operation blocks retain their internal order and geometry.
+Protected OpenPlotFont operation blocks retain their internal order and geometry.
 Generated fill paths retain their geometry so optimization cannot draw a new
 connector across a hole or replace a contained fill route with a chord. Joining
 does not cross either kind of protected operation or an existing closed contour.

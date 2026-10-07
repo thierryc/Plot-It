@@ -1,4 +1,4 @@
-PlotFont conversion of Hershey Gothiceng
+OpenPlotFont conversion of Hershey Gothiceng
 
 Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
 

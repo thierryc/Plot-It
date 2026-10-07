@@ -49,7 +49,7 @@ describe('small A3 pen-synchronization comparison fixture', () => {
     expect(a.document.document.settings.speed).toBe(50);
     expect(a.document.document.settings.travelSpeed).toBe(200);
   });
-  it('produces valid complete jobs and bounded XM commands before hardware use', () => {
+  it('produces valid complete jobs and bounded SM commands before hardware use', () => {
     const zone = a3Zone(90, 10, 'server', 30, 40);
     expect(validateJob({ version: 1, requestId: 'a3-server', plan: zone.plan }).plan).toBe(zone.plan);
     {

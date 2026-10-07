@@ -1,4 +1,4 @@
-.font-picker { display:grid; gap:var(--field-gap); min-width:0; }
+.font-picker { display:grid; grid-template-columns:minmax(0,1fr) var(--control-height); gap:var(--field-gap); min-width:0; }
 .font-field-label { color:var(--text-secondary); font-size:var(--font-size-ui); }
 .font-picker-trigger { width:100%; min-width:0; min-height:var(--control-height); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 8px; border:1px solid var(--control-border); border-radius:7px; background:var(--control); color:var(--ink); text-align:left; font-size:var(--font-size-ui); cursor:pointer; }
 .font-picker-trigger>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -34,3 +34,15 @@
 @media(max-width:639px), (pointer:coarse) { .font-picker-close { width:44px; height:44px; } .font-picker-trigger { min-height:44px; } .font-picker-summary button { min-height:44px; } }
 
 @media(max-width:639px), (pointer:coarse) { .font-search { height:44px; } }
+
+.font-caption { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:24px; }
+
+.font-caption { grid-column:1/-1; border-top:1px solid var(--line); padding-top:8px; margin-top:2px; font-weight:600; }
+.font-picker-trigger { grid-column:1; grid-row:2; }
+.font-import { grid-column:2; grid-row:2; position:relative; display:grid; place-items:center; height:var(--control-height); border:1px solid var(--control-border); border-radius:var(--radius-control); color:var(--text-secondary); background:var(--control); cursor:pointer; }
+.font-import svg { width:16px; height:16px; }
+.font-import input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.font-import:focus-within { outline:2px solid var(--focus); outline-offset:1px; }
+@media(max-width:639px),(pointer:coarse) { .font-picker { grid-template-columns:minmax(0,1fr) var(--touch-target); } .font-import { height:var(--touch-target); } }
+
+.font-picker:not(:has(.font-caption)) .font-picker-trigger,.font-picker:not(:has(.font-caption)) .font-import { grid-row:1; }

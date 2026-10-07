@@ -24,7 +24,7 @@ export class JobStore {
       const id = createHash('sha256').update(envelope.requestId).digest('hex');
       try {
         const existing = await this.get(id);
-        if (JSON.stringify(existing.plan) !== JSON.stringify(envelope.plan)) throw new Error('Request ID already belongs to another job');
+        if (JSON.stringify(existing.plan) !== JSON.stringify(envelope.plan)||existing.version!==envelope.version||existing.prepared?.digest!==envelope.prepared?.digest) throw new Error('Request ID already belongs to another job');
         return existing;
       } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
       const record: JobRecord = { ...envelope, id, status: 'pending', createdAt: new Date().toISOString() };
@@ -32,7 +32,7 @@ export class JobStore {
     });
     this.queue = result.then(() => undefined, () => undefined); return result;
   }
-  async update(id: string, fields: Partial<Pick<JobRecord, 'status' | 'startRequestId' | 'error'>>) {
+  async update(id: string, fields: Partial<Pick<JobRecord, 'status' | 'startRequestId' | 'error' | 'copy' | 'remainingMs' | 'checkpoint'>>) {
     // State is a tiny sidecar. Never parse/stringify the immutable plan during motion.
     const path = this.path(id); await access(path);
     let previous: object = { status: 'pending' };

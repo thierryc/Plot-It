@@ -1,4 +1,4 @@
-PlotFont conversion of PF Hershey Gothic Italian
+OpenPlotFont conversion of PF Hershey Gothic Italian
 
 Font name: Hershey Gothic Italian
 

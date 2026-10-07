@@ -42,7 +42,7 @@ describe('actual planner worker entry', () => {
     expect(worker.postMessage.mock.calls.some(([data]) => data.progress)).toBe(true);
   });
   it('returns explicit validation errors and can process another request afterward', () => {
-    expect(run({ settings: { ...initialState.settings, speed: 0 } }).error).toContain('must be positive');
+    expect(run({ settings: { ...initialState.settings, speed: 0 } }).error).toContain('Invalid speed');
     expect(run().plan?.passes).toHaveLength(2);
   });
   it('returns a zero-motion plan when artwork is genuinely empty or clipped away', () => {

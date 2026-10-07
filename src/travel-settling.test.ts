@@ -20,7 +20,7 @@ describe('carriage and pen settling',()=>{
       expect(dwell).toMatchObject({kind:'xy',duration:.1,penDown:false,initialSpeed:0,acceleration:0,stopBefore:true});
       expect(dwell.from).toEqual(dwell.to);
       expect(samplePlan(plan,dwell.start+.05)).toMatchObject({position:dwell.to,penDown:false});
-      expect(compilePlotProcess(plan).steps[lower-1]!.moves.map(m=>m.command)).toEqual(['XM,100,0,0']);
+      expect(compilePlotProcess(plan).steps[lower-1]!.moves.map(m=>m.command)).toEqual(['SM,100,0,0']);
     } else expect(dwell.kind!=='xy'||dwell.from.x!==dwell.to.x).toBe(true);
     expect(plan.events[lower]!.duration*1000).toBe(penTransition(30,52,false).duration);
     expect(penTransition(30,52,false).duration).toBe(166);
@@ -33,10 +33,10 @@ describe('carriage and pen settling',()=>{
     const clock=vi.spyOn(performance,'now').mockImplementation(()=>now);
     let core!:PlotterCore;
     const fixture=fakeTransport('2.8.1',command=>{
-      if(command==='XM,100,0,0') { expect(core.executionSignal?.penDown).toBe(false); readyToLower=now+100; sawWait=true; }
+      if(command==='SM,100,0,0') { expect(core.executionSignal?.penDown).toBe(false); readyToLower=now+100; sawWait=true; }
       if(command==='QG') now=Math.max(now,readyToLower);
       if(command.startsWith('SP,0,')) { expect(sawWait).toBe(true); expect(now).toBeGreaterThanOrEqual(readyToLower); readyToDraw=now+Number(command.split(',')[2]); }
-      if(command.startsWith('XM,')&&core.executionSignal?.penDown) expect(now).toBeGreaterThanOrEqual(readyToDraw);
+      if(command.startsWith('SM,')&&core.executionSignal?.penDown) expect(now).toBeGreaterThanOrEqual(readyToDraw);
     });
     core=new PlotterCore(fixture.transport,{sleep:async ms=>{now+=ms;}});
     try {await core.connect(); await core.plot(buildMotionPlan(path(100),settings)); expect(sawWait).toBe(true); await core.disconnect();}

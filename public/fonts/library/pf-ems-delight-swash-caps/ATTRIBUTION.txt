@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Delight Swash Caps
+OpenPlotFont conversion of PF EMS Delight Swash Caps
 
 Font name:               EMS Delight Swash Caps
 License:                 SIL Open Font License http://scripts.sil.org/OFL

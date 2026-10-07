@@ -20,11 +20,9 @@
 :global(.plot-mode) #artwork-layer { opacity:.12; pointer-events:none; }
 :global(.plot-mode) :global(.empty-state) { pointer-events:none; }
 :global(.plot-mode) :global(.inspector):global(.plot-sidebar) { display:flex; flex-direction:column; overflow:hidden; padding:0; min-height:0; }
-.plot-sidebar-head :global(.button) { padding:0; height:26px; color:var(--text-secondary); }
-.plot-scroll { flex:1; overscroll-behavior:contain; min-height:0; overflow:auto; scrollbar-gutter:stable; }
-.plot-section h3 { font-size:var(--font-size-ui); margin:0; font-weight:750; }
-.plot-section-title { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.plot-section-title :global(.button) { height:24px; padding:0 4px; font-size:var(--font-size-ui); }
+.plot-scroll { padding-top:72px; scroll-padding-top:72px; flex:1; overscroll-behavior:contain; min-height:0; overflow:auto; scrollbar-gutter:stable; }
+.plot-section-title { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.plot-section-title :global(.button) { flex:none; height:24px; padding:0 4px; font-size:var(--font-size-ui); }
 :global(.plot-sidebar) input[aria-invalid=true] { border-color:var(--ink) !important; outline:2px solid var(--focus-ring); }
 :global(.plot-sidebar) :global(.field-help) { margin:0; line-height:1.5; font-size:var(--font-size-secondary); }
 :global(.plot-sidebar) details summary { font-size:var(--font-size-ui); cursor:pointer; color:var(--text-secondary); padding:3px 0; }
@@ -33,15 +31,15 @@
 .plot-connection { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:var(--font-size-ui); }
 .plot-connection :global(.button) { height:26px; padding:0 5px; font-size:var(--font-size-ui); }
 .plot-pens { display:grid; gap:10px; }
-.plot-pen-row { padding:10px; border:1px solid var(--line); border-radius:8px; display:grid; gap:8px; background:var(--surface); }
+.plot-pen-row { padding:0; display:grid; gap:6px; }
 .plot-pen-main { display:flex; align-items:center; gap:8px; }
-.plot-pen-main .pen-hex { font-family:ui-monospace,monospace; flex:1; min-width:0; }
+.plot-pen-main .pen-hex { font-variant-numeric:tabular-nums; text-align:right; flex:1; min-width:0; }
 .pen-order { display:flex; flex:none; }
 .pen-order :global(.button) { width:24px; height:28px; padding:0; }
 .plot-pen-name { display:flex; gap:8px; align-items:center; }
 .plot-pen-name input { flex:1;  font-size:var(--font-size-ui); }
 .plot-pen-name :global(.button) { flex:none; padding:0 5px; height:26px; font-size:var(--font-size-ui); }
-.plot-pass-list { display:grid; gap:8px; margin:10px 0 0; padding-left:20px; font-size:var(--font-size-ui); }
+.plot-pass-list { display:grid; gap:8px; margin:0; padding-left:20px; font-size:var(--font-size-ui); }
 .plot-pass-list li { padding:4px 0; }
 .plot-pass-list small { display:block; margin-left:20px; color:var(--text-quiet); font-size:10px; }
 .plot-pass-list li[data-state=current] { font-weight:750; }
@@ -67,14 +65,14 @@
 @media (max-width:760px) { .plot-section,.plot-player { padding:12px; } }
 :global(.plot-origin-marker) circle { stroke:var(--text-secondary); stroke-width:.4; fill:var(--control); }
 :global(.plot-origin-marker) text { fill:var(--text-secondary); stroke:none; font:3px var(--font-ui); }
-:global(.plot-playing) .plot-pens,:global(.plot-playing) .plot-assignment-help,:global(.plot-playing) [data-plot-action=all],:global(.plot-playing) .plot-settings-section { display:none; }
-:global(.plot-playing) .plot-machine-section .machine-actions,:global(.plot-playing) .plot-machine-section [data-section=heights],:global(.plot-playing) .origin-reminder { display:none; }
-:global(.plot-playing):not(:global(.plot-paused)) .plot-machine-section { display:none; }
+:global(.plot-playing) .plot-pens,:global(.plot-playing) [data-plot-action=all],:global(.plot-playing) .plot-settings-section { display:none; }
+:global(.plot-playing) .plot-motor-section,:global(.plot-playing) [data-pen-heights] { display:none; }
+:global(.plot-playing):not(:global(.plot-paused)) .plot-pen-section { display:none; }
 :global([data-plot-mode]) :global([data-edit-control][inert]) { opacity:.35; }
 :global([data-plot-mode]) :global([data-ui="inspector"]) { display:flex; flex-direction:column; overflow:hidden; }
-.plot-sidebar-head { flex:none; padding:var(--panel-padding); border-bottom:1px solid var(--line); }
-.plot-sidebar-head h2 { margin:8px 0 0; font-size:18px; font-weight:750; letter-spacing:-.04em; margin-top:10px; }
-.plot-section { padding:var(--panel-padding); display:grid; gap:var(--panel-gap); border-bottom:1px solid var(--line); }
+.plot-section { padding:var(--panel-padding); display:block; border-bottom:1px solid var(--line); }
+.plot-section-body { display:grid; gap:var(--panel-gap); }
+:global(.plot-sidebar) .plot-section > summary { color:var(--ink); }
 .plot-player { flex:none; padding:var(--panel-padding); display:grid; gap:8px; border-top:1px solid var(--line); background:var(--surface); box-shadow:none; max-height:55%; overflow:auto; }
 .plot-error { font-size:var(--font-size-ui); padding:8px; margin:0; background:var(--note); border-left:2px solid var(--ink); line-height:1.5; border-color:var(--danger); }
 [data-power-status][data-state=low] { color:var(--ink); border-left:2px solid var(--ink); padding-left:8px; background:var(--note); }
@@ -84,5 +82,27 @@
   .pen-order :global(.button) { width:44px; height:44px; }
   .plot-pen-main { flex-wrap:wrap; }
   .plot-pen-main .pen-hex { flex:1 1 70px; }
-  .plot-section-title :global(.button), .plot-sidebar-head :global(.button), .plot-connection :global(.button), .plot-pen-name :global(.button) { min-height:44px; height:auto; }
+  .plot-section-title :global(.button), .plot-connection :global(.button), .plot-pen-name :global(.button) { min-height:44px; height:auto; }
 }
+
+.plot-secondary-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+.plot-secondary-actions :global(.button) { min-width:0; padding-inline:4px; white-space:nowrap; }
+
+.plot-pass-list[data-single-pass] { display:none; }
+:global(.plot-playing) .plot-pass-list[data-single-pass] { display:grid; }
+.plot-diagnostics { display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 10px; margin:0; font-size:var(--font-size-secondary); line-height:1.5; }
+.plot-diagnostics dt { color:var(--text-secondary); }
+.plot-diagnostics dd { margin:0; overflow-wrap:anywhere; }
+
+.plot-section { position:relative; }
+.plot-section > :global([data-context-help]) { position:absolute; top:calc(var(--panel-padding) - 2px); right:var(--panel-padding); }
+.plot-section:has(> :global([data-context-help])) > summary { padding-right:32px; }
+@media(max-width:639px), (pointer:coarse) {
+  .plot-section > :global([data-context-help]) { top:var(--panel-padding); }
+  .plot-section:has(> :global([data-context-help])) > summary { padding-right:50px; }
+}
+
+:global(.plot-sidebar) details:not(.plot-section) { position:relative; }
+:global(.plot-sidebar) details:not(.plot-section) > :global([data-context-help]) { position:absolute; top:1px; right:0; }
+:global(.plot-sidebar) details:not(.plot-section):has(> :global([data-context-help])) > summary { padding-right:32px; }
+@media(max-width:639px), (pointer:coarse) { :global(.plot-sidebar) details:not(.plot-section):has(> :global([data-context-help])) > summary { padding-right:50px; } }

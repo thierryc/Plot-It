@@ -1,3 +1,5 @@
+import {validateNativePreview} from './native-preview';
+import {motorCommand} from '@thierryc/plotter-core';
 import { DEFAULT_MACHINE_ROTATION, type Point } from './model';
 import { compileMotion, MOTION_INTERVAL_MS, type CompiledMotion, type MotionEvent, type MotionPlan } from './motion-plan';
 import { validateMotionCommand } from './motion-command';
@@ -18,6 +20,7 @@ export function compilePlotProcess(input: MotionPlan, maxCommands = 1_000_000): 
   // Physical pen adjustment can leave its height different from cached state.
   // Require a real, stationary lift before any travel or drawing from origin.
   if (plan.events[0]!.kind !== 'pen' || plan.events[0]!.penDown) throw new Error('The plot must start by raising the pen at the origin.');
+  if(plan.executable){const program=validateNativePreview(plan);if(program.records.length>maxCommands)throw new Error('Compiled job exceeds command limit.');return{plan,steps:program.records.map((r,index)=>({index,event:plan.events[index]!,moves:r.kind==='motor'?[{command:motorCommand(r),targetSteps:{x:(r.toSteps.m1+r.toSteps.m2)/2,y:(r.toSteps.m1-r.toSteps.m2)/2},durationMs:r.durationMs}]:[]})),penCounts:indexPenCounts(plan)};}
   servoPosition(plan.settings.penUp); servoPosition(plan.settings.penDown);
   if (!['axidraw', 'xylodraw'].includes(plan.settings.profile)
     || ![0, 90, 180, 270].includes(plan.settings.machineRotation ?? DEFAULT_MACHINE_ROTATION)

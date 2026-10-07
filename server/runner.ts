@@ -1,3 +1,4 @@
+import {dispatchCompletion,type CompletionEvent} from '@thierryc/plotter-core/client';
 import { createServer, type Socket } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import { mkdir, chmod, unlink } from 'node:fs/promises';
@@ -7,7 +8,7 @@ import { isId, validateControl, validateJob, terminalStatus, type ControlRequest
 import { JobStore } from './jobs';
 import { LatestChannel, readFrames } from './ipc';
 
-export interface RunnerOptions { directory: string; socketDirectory: string; core: PlotterCore; maxEvents?: number; connectionPolicy?: 'manual' | 'auto' }
+export interface RunnerOptions { directory: string; socketDirectory: string; core: PlotterCore; maxEvents?: number; connectionPolicy?: 'manual' | 'auto';onCompletion?:(event:CompletionEvent)=>Promise<void> }
 export async function startRunner(options: RunnerOptions) {
   const { core } = options, store = new JobStore(options.directory, options.maxEvents);
   await mkdir(options.socketDirectory, { recursive: true, mode: 0o700 });
@@ -32,12 +33,12 @@ export async function startRunner(options: RunnerOptions) {
   let persistence = Promise.resolve();
   const persist = () => {
     if (!jobId || status === 'idle') return;
-    const id = jobId, fields = { status: status as JobStatus, ...(error ? { error } : {}) };
+    const id = jobId, fields = { status: status as JobStatus, ...(error ? { error } : {}),copy:core.progress.copy,remainingMs:core.progress.remainingMs,...(core.completedCheckpoint?{checkpoint:core.completedCheckpoint}:{}) };
     persistence = persistence.then(() => store.update(id, fields)).then(() => undefined).catch(reason => { error = `Could not persist job state: ${String(reason)}`; });
   };
   const snapshot = (): NetworkSnapshot => ({ epoch, revision: ++revision, timestamp: Date.now(), connected: core.connected, connecting: core.connecting, firmware: core.firmwareLabel,
-    jobId, status, progress: core.progress, signal: core.executionSignal, power: core.powerStatus, elapsedMs: core.elapsedMs, position, positionTimestamp, origin: core.originStatus,
-    originProfile: core.hasOrigin('axidraw') ? 'axidraw' : core.hasOrigin('xylodraw') ? 'xylodraw' : null, motorsOn: core.motorsOn, canAdjustPen: core.canAdjustPen, connectionPolicy, connectionDesired, ...(error ? { error: error.slice(0, 4096) } : {}) });
+    jobId, status, progress: core.progress, signal: core.executionSignal, power: core.powerStatus, elapsedMs: core.elapsedMs, capabilities:core.motionCapabilities,checkpoint:core.completedCheckpoint,position, positionTimestamp, origin: core.originStatus,
+    originProfile: core.hasOrigin('axidraw') ? 'axidraw' : core.hasOrigin('xylodraw') ? 'xylodraw' : core.hasOrigin('nextdraw')?'nextdraw':null, motorsOn: core.motorsOn, canAdjustPen: core.canAdjustPen, connectionPolicy, connectionDesired, ...(error ? { error: error.slice(0, 4096) } : {}) });
   const publish = () => { const current = snapshot(); for (const channel of channels.values()) channel.publish(current); };
   core.onProgress = progress => {
     const next = progress.state === 'plotting' ? 'running' : progress.state === 'cancelled' ? 'failed' : progress.state;
@@ -70,6 +71,7 @@ export async function startRunner(options: RunnerOptions) {
       let prepared!: () => void; preparation = new Promise<void>(resolve => { prepared = resolve; });
       try {
         validateJob(record, { maxEvents: options.maxEvents });
+        if(record.prepared&&record.prepared.target.firmware!==core.firmwareLabel)throw new Error('Connected firmware differs from the prepared target; prepare again.');
         await persistence;
         await store.update(record.id, { status: 'starting', startRequestId: request.clientRequestId ?? request.requestId });
         if (closed) { await store.update(record.id, { status: 'interrupted' }); throw new Error('Runner shut down during preparation'); }
@@ -78,7 +80,7 @@ export async function startRunner(options: RunnerOptions) {
           status = core.connected ? 'failed' : 'interrupted';
           if (status === 'interrupted') recoveryRequired = true;
           error = (reason as Error).message; publish(); persist();
-        }).finally(() => { task = null; starting = false; publish(); });
+        }).finally(() => {if(options.onCompletion)dispatchCompletion({version:1,jobDigest:record.prepared?.digest??record.id,state:status,elapsedMs:core.elapsedMs,virtual:false},options.onCompletion); task = null; starting = false; publish(); });
         return { jobId };
       } catch (reason) { starting = false; throw reason; }
       finally { prepared(); preparation = null; }
@@ -119,7 +121,10 @@ export async function startRunner(options: RunnerOptions) {
       if (!core.active && request.settings) core.configurePen(request.settings);
       await core.setPen(request.percent!, true);
     }
-    else if (request.action === 'set-origin') { await core.setOrigin(request.profile!); recoveryRequired = false; }
+    else if(request.action==='jog')await core.jog(request.delta!,request.settings!);
+    else if(request.action==='clear-checkpoint'){core.clearCheckpoint();if(jobId)await store.update(jobId,{checkpoint:undefined});}
+    else if(request.action==='home'){let settings=request.settings;if(request.jobId){const record=await store.get(request.jobId);validateJob(record,{maxEvents:options.maxEvents});if(record.prepared?.target.firmware!==core.firmwareLabel)throw new Error('Homing job target differs from connected firmware');settings=record.plan.settings;}core.configurePen(settings!);await core.home();recoveryRequired=false;}
+    else if (request.action === 'set-origin') {if(request.settings)core.configurePen(request.settings); await core.setOrigin(request.profile!); recoveryRequired = false; }
     else if (request.action === 'return-origin') await core.returnToOrigin(request.settings!);
     else if (request.action === 'check-power') await core.checkPowerSupply();
     else if (request.action === 'engage') await core.engageMotors();
@@ -177,9 +182,10 @@ export async function startRunner(options: RunnerOptions) {
   await Promise.all([new Promise<void>((resolve, reject) => { controlServer.once('error', reject); controlServer.listen(controlPath, resolve); }), new Promise<void>((resolve, reject) => { telemetryServer.once('error', reject); telemetryServer.listen(telemetryPath, resolve); })]);
   await chmod(controlPath, 0o600); await chmod(telemetryPath, 0o600);
   await connectDevice().catch(() => undefined);
+  const persistenceTimer=setInterval(()=>{if(task)persist();},1000);
   const telemetryTimer = setInterval(publish, 200), deviceTimer = setInterval(() => { void connectDevice().catch(() => undefined); }, 5000);
   return { snapshot, async close() {
-    closed = true; clearInterval(telemetryTimer); clearInterval(deviceTimer);
+    closed = true; clearInterval(persistenceTimer); clearInterval(telemetryTimer); clearInterval(deviceTimer);
     await preparation;
     await connecting?.catch(() => undefined);
     if (task) { core.cancel(); await task; }

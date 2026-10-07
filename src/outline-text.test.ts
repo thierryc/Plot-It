@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { initializeTypography, registerFont, typographyToItem, defaultTextOptions, migrateOutlineText, splitContours } from './typography';
 import { elements, markupRoot, parsePath, pathData } from './editor';
-import { flattenContour } from '@thierryc/plotfont';
+import { flattenContour } from '@thierryc/openplotfont';
 import { generateGeometry, resolveRegionBoundaries, type GeometryJob } from './fill';
 import { defaultFillSettings, initialState, type ArtworkItem, type Point } from './model';
 import { isOutlineGlyph } from './outline-source';

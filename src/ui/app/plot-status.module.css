@@ -1,0 +1,5 @@
+.status { order:-1; flex-basis:100%; min-width:0; display:grid; gap:3px; padding-bottom:4px; color:var(--text-secondary); }
+.heading { font:400 12px/1.5 var(--font-ui); }
+.details { display:flex; flex-wrap:wrap; gap:2px 12px; font:400 11px/1.5 var(--font-ui); color:var(--text-quiet); font-variant-numeric:tabular-nums; }
+.status .details span { white-space:normal; overflow:visible; }
+.details [data-power-status][data-state=low] { color:var(--danger); }

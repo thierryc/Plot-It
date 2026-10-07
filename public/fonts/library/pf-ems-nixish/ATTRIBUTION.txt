@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Nixish
+OpenPlotFont conversion of PF EMS Nixish
 
 Font name:               EMS Nixish
 License:                 SIL Open Font License http://scripts.sil.org/OFL

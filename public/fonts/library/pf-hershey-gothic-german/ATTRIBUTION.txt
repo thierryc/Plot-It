@@ -1,4 +1,4 @@
-PlotFont conversion of PF Hershey Gothic German
+OpenPlotFont conversion of PF Hershey Gothic German
 
 Font name: Hershey Gothic German
 

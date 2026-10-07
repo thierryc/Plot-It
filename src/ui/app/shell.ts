@@ -1,3 +1,4 @@
+import {machineProfileFields} from './machine-profile';
 import appCanvas from './canvas.module.css';
 import appInspector from './inspector.module.css';
 import appOverlay from './overlay.module.css';
@@ -8,13 +9,13 @@ import dsInput from '../design-system/input.module.css';
 import dsOverlay from '../design-system/overlay.module.css';
 import dsSelect from '../design-system/select.module.css';
 import type { AppState } from '../../model';
-import { PLOTTER_POSITIONS, setupModel } from '../../plotter-setup';
+import { PLOTTER_POSITIONS } from '../../plotter-setup';
 import { paperPresetIndex } from '../../paper';
 import { SHAPES } from '../../shapes';
 import { DOCUMENT_ACCEPT } from '../../document-file';
 import { icon } from '../../icons';
 import { workspaceHeader, workspaceControls } from './workspace';
-import { colorField, escapeUI } from '../design-system';
+import { colorField, escapeUI, fieldWithAction, propertyField } from '../design-system';
 import { inspectorSectionMarkup } from './components';
 import type { editorViews } from './editor-views';
 export interface ShellView {
@@ -51,20 +52,19 @@ export function workspaceShell(view: ShellView): string {
         </section>
         <div class="inspector-host ${appInspector["inspector-host"]} " data-inspector-dock>
         <aside class="inspector ${appInspector["inspector"]} " data-ui="inspector" aria-label="Inspector">
-          ${inspectorSectionMarkup("paper", `<summary class="panel-title ${appInspector["panel-title"]} ">Paper</summary><div class="panel-body ${appInspector["panel-body"]} "><label class="${dsField["field"]} ">Size<select class="${dsSelect["select"]} " data-setting="paper">${view.editor.paperOptions(paperPresetIndex(state.paper))}</select></label><button class="button ${dsButton["button"]} " data-action="canvas-size">Canvas dimensions…</button>${colorField('Paper color', state.paperColor, { 'data-setting':'paperColor' })}<label class="${dsField["field"]} ">Safe margin<div class="unit-input ${dsInput["unit-input"]} "><input class="${dsInput["input"]}" type="number" min="0" max="50" step="1" value="${state.settings.margin}" data-setting="margin"><span>mm</span></div></label></div>`, inspectorSections.get("paper") ?? true, "")}
+          ${inspectorSectionMarkup("paper", `<summary class="panel-title ${appInspector["panel-title"]} ">Paper</summary><div class="panel-body ${appInspector["panel-body"]} ">${fieldWithAction('Size', `<select class="${dsSelect.select}" data-setting="paper">${view.editor.paperOptions(paperPresetIndex(state.paper))}</select>`, {label:'Canvas dimensions',icon:icon('more'),variant:'ghost',attributes:{'data-action':'canvas-size','aria-haspopup':'dialog','aria-controls':'canvas-dialog',title:'Advanced canvas dimensions'}})}${colorField('Paper color', state.paperColor, { 'data-setting':'paperColor' })}${propertyField({label:'Safe margin',prefix:'Margin',unit:'mm',value:state.settings.margin,attributes:{min:0,max:50,step:1,'data-setting':'margin'}})}</div>`, inspectorSections.get("paper") ?? !state.selectedId, "")}
           ${inspectorSectionMarkup('setup', `<summary class="panel-title ${appInspector["panel-title"]} ">Plotter setup</summary><div class="panel-body ${appInspector["panel-body"]} ">
-            <label class="${dsField["field"]} ">Machine profile<select class="${dsSelect["select"]} " data-setting="profile"><option value="axidraw" ${state.settings.profile === 'axidraw' ? 'selected' : ''}>AxiDraw / EBB</option><option value="xylodraw" ${state.settings.profile === 'xylodraw' ? 'selected' : ''}>XyloDraw</option></select></label>
-            ${state.settings.profile === 'axidraw' ? `<label class="${dsField["field"]} ">AxiDraw model<select class="${dsSelect["select"]} " data-setting="axidrawModel"><option value="v3-a4" ${setupModel(state.settings.axidrawModel) === 'v3-a4' ? 'selected' : ''}>V3 · A4</option><option value="v3-a3" ${state.settings.axidrawModel === 'v3-a3' ? 'selected' : ''}>V3/A3 · A3</option></select></label>` : ''}
-            <label class="${dsField["field"]} ">Plotter position<select class="${dsSelect["select"]} " data-setting="machineRotation">${PLOTTER_POSITIONS.map(option => `<option value="${option.rotation}" ${(state.settings.machineRotation ?? 90) === option.rotation ? 'selected' : ''}>${option.label}</option>`).join('')}</select></label>
-            <p class="field-help ${dsField["field-help"]} ">Position sets the machine orientation. The diagram follows the pen during simulation. Fit frames the paper.</p>
-          </div>`, inspectorSections.get('setup') ?? true, "")}
-          ${inspectorSectionMarkup("objects", `${view.editor.objectsMarkup()}`, inspectorSections.get("objects") ?? true, "objects-panel")}
+            ${machineProfileFields(state.settings, key=>({'data-setting':key}))}
+            ${propertyField({label:'Plotter position',prefix:'Rail',type:'select',align:'left',value:state.settings.machineRotation??90,options:PLOTTER_POSITIONS.map(({rotation})=>({value:String(rotation),label:({90:'Right',180:'Above',270:'Left',0:'Below'} as Record<number,string>)[rotation]!})),attributes:{'data-setting':'machineRotation'}})}
+
+          </div>`, inspectorSections.get('setup') ?? !state.selectedId, "")}
+          ${inspectorSectionMarkup("objects", `${view.editor.objectsMarkup()}`, inspectorSections.get("objects") ?? !state.selectedId, "objects-panel")}
           ${inspectorSectionMarkup("selection", `${view.editor.selectionPanelMarkup()}`, inspectorSections.get("selection") ?? true, "selection-panel")}
 
         </aside>
         </div>
       </main>
-      <dialog id="inspector-drawer" class="inspector-host ${appInspector["inspector-host"]} " data-inspector-host aria-labelledby="inspector-title"><header class="inspector-head ${appInspector["inspector-head"]} "><span id="inspector-title">Inspector</span><button type="button" class="button ghost icon-button ${dsButton["button"]} ${dsButton["ghost"]} ${dsButton["icon-button"]} " data-close-inspector aria-label="Close inspector">${icon("close")}</button></header></dialog>
+      <dialog id="inspector-drawer" class="inspector-host ${appInspector["inspector-host"]} " data-inspector-host aria-labelledby="inspector-title"><header class="inspector-head ${appInspector["inspector-head"]} "><span id="inspector-title">Inspector</span><button type="button" class="button ghost icon-button ${dsButton["button"]} ${dsButton["ghost"]} ${dsButton["icon-button"]} " data-close-inspector aria-label="Close inspector">${icon("close")}</button></header><div class="inspector-mode ${appInspector['inspector-mode']}" data-inspector-mode></div></dialog>
       <input class="${dsInput["input"]} " id="file-input" type="file" accept="image/svg+xml,.svg" hidden>
       <input class="${dsInput["input"]}" id="document-input" type="file" accept="${DOCUMENT_ACCEPT}" hidden>
       <section id="shape-menu" class="elements-popover shape-popover ${appOverlay["elements-popover"]} " popover="auto" role="dialog" aria-labelledby="shape-title">

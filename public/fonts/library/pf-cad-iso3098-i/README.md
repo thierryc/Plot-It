@@ -14,4 +14,4 @@ License: GPL v2 or later. Retain every accompanying notice and SOURCE file with 
 
 
 
-Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only PlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.
+Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only OpenPlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.

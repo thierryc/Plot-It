@@ -2,6 +2,7 @@ import { attributes, classes, escapeUI, type Attributes } from './html';
 import buttons from './button.module.css';
 import checks from './checkbox.module.css';
 import fields from './field.module.css';
+import fieldActions from './field-action.module.css';
 import inputs from './input.module.css';
 import selects from './select.module.css';
 import textareas from './textarea.module.css';
@@ -15,13 +16,17 @@ export function button(o: ButtonOptions): string {
   return `<button type="${o.type ?? 'button'}" class="${classes('button', buttons.button, o.variant, o.variant && buttons[o.variant], o.iconOnly && 'icon-button', o.iconOnly && buttons['icon-button'], o.className)}" ${attributes({ 'aria-label': o.label, title: o.label, ...o.attributes, disabled: o.disabled ?? o.attributes?.disabled })}>${o.icon ?? ''}${o.iconOnly ? '' : `<span>${escapeUI(o.label)}</span>`}</button>`;
 }
 export function checkboxInput(label: string, checked: boolean, attrs: Attributes = {}): string {
-  return `<input type="checkbox" class="${checks.checkbox}" ${attributes({ ...attrs, 'aria-label': label, checked })}>`;
+  return `<input type="checkbox" class="${checks.checkbox}" ${attributes({ ...attrs, 'aria-label': attrs['aria-label'] ?? label, checked })}>`;
 }
 export function checkbox(label: string, checked: boolean, attrs: Attributes = {}): string {
   return `<label class="check ${checks.check}">${checkboxInput(label, checked, attrs)}<span>${escapeUI(label)}</span></label>`;
 }
 export function field(label: string, control: string, attrs: Attributes = {}): string {
   return `<label class="field ${fields.field}" ${attributes(attrs)}><span>${escapeUI(label)}</span>${control}</label>`;
+}
+/** The trailing action stays outside the field label and has its own accessible name. */
+export function fieldWithAction(label: string, control: string, action: ButtonOptions & { icon: string }): string {
+  return `<div class="${fieldActions['field-action']}">${field(label,control)}${button({...action,iconOnly:true})}</div>`;
 }
 export function input(value: string | number, attrs: Attributes = {}, type: 'text' | 'number' | 'search' | 'file' | 'hidden' = 'text'): string {
   return `<input type="${type}" class="${inputs.input}" ${attributes({ ...attrs, value })}>`;
@@ -33,8 +38,8 @@ export function select(options: { value: string; label: string; disabled?: boole
   return `<select class="${selects.select}" ${attributes(attrs)}>${options.map(option => `<option ${attributes({ value: option.value, disabled: option.disabled })} ${option.value === value ? 'selected' : ''}>${escapeUI(option.label)}</option>`).join('')}</select>`;
 }
 export function textarea(value: string, attrs: Attributes = {}): string { return `<textarea class="${textareas.textarea}" ${attributes(attrs)}>${escapeUI(value)}</textarea>`; }
-export function colorField(label: string, value: string, attrs: Attributes = {}): string {
-  return `<div class="field ${fields.field} color-field ${colors['color-field']}"><span class="${fields['field-label']}">${escapeUI(label)}</span><div class="color-inputs ${colors['color-inputs']}"><input type="color" class="${colors.color}" ${attributes({ ...attrs, value, 'aria-label': `${label} picker` })}>${input(value, { 'data-color-hex': '', 'aria-label': `${label} hex`, autocomplete: 'off', spellcheck: false, placeholder: '#RRGGBB' })}</div><p class="field-error ${fields['field-error']}" data-color-error role="alert" hidden></p></div>`;
+export function colorField(label: string, value: string, attrs: Attributes = {}, compact = false): string {
+  return `<div class="field ${fields.field} color-field ${colors['color-field']}"><span class="${fields['field-label']}" ${compact ? 'hidden' : ''}>${escapeUI(label)}</span><div class="color-inputs ${colors['color-inputs']}"><input type="color" class="${colors.color}" ${attributes({ ...attrs, value, 'aria-label': `${label} picker` })}>${input(value, { 'data-color-hex': '', 'aria-label': `${label} hex`, autocomplete: 'off', spellcheck: false, placeholder: '#RRGGBB' })}</div><p class="field-error ${fields['field-error']}" data-color-error role="alert" hidden></p></div>`;
 }
 export function surface(content: string, className = '', attrs: Attributes = {}): string { return `<div class="surface ${surfaces.surface} ${className}" ${attributes(attrs)}>${content}</div>`; }
 export function disclosure(content: string, open: boolean, className = '', attrs: Attributes = {}): string { return `<details class="${disclosures.disclosure} ${className}" ${attributes(attrs)} ${open ? 'open' : ''}>${content}</details>`; }

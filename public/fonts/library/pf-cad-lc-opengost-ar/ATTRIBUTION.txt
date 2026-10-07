@@ -1,4 +1,4 @@
-PlotFont conversion of PF CAD lc_opengost-ar
+OpenPlotFont conversion of PF CAD lc_opengost-ar
 
 # Author:            stranger573 <stranger573@mail.ru>
 # License:           SIL OPEN FONT LICENSE Version 1.1

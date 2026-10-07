@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { parsePlotFont } from '@thierryc/plotfont';
+import { parseOpenPlotFont } from '@thierryc/openplotfont';
 import catalog from './fonts/catalog.json';
 import { bundledFontCatalog, defaultTextOptions, ensureFontLoaded, findFont, fontTextOptions, loadedFonts, typographyToItem } from './typography';
 
@@ -24,8 +24,8 @@ describe('complete font menu and lazy assets', () => {
       const bytes = assetBytes(entry.url);
       expect(createHash('sha256').update(bytes).digest('hex'), entry.id).toBe(entry.sha256);
       expect(existsSync(`public${entry.noticeUrl}`), entry.id).toBe(true);
-      if (entry.kind === 'plotfont') {
-        const font = parsePlotFont(bytes.toString('utf8'));
+      if (entry.kind === 'openplotfont') {
+        const font = parseOpenPlotFont(bytes.toString('utf8'));
         for (const notice of font.metadata?.licenseFiles as string[] ?? []) {
           expect(existsSync(`public/fonts/library/${entry.id}/${notice}`), `${entry.id}: ${notice}`).toBe(true);
         }
@@ -52,12 +52,12 @@ describe('complete font menu and lazy assets', () => {
 
   it('loads and renders every stroke entry, including temporary private-use repertoires', async () => {
     vi.stubGlobal('fetch', serveAssets());
-    for (const entry of catalog.filter(font => font.kind === 'plotfont')) {
+    for (const entry of catalog.filter(font => font.kind === 'openplotfont')) {
       const font = (await ensureFontLoaded(entry.id))!;
-      const glyph = font.plotfont!.glyphs.find(glyph => glyph.unicodes.length && glyph.strokes.length);
+      const glyph = font.openplotfont!.glyphs.find(glyph => glyph.unicodes.length && glyph.strokes.length);
       expect(glyph, entry.id).toBeDefined();
       const item = typographyToItem(String.fromCodePoint(parseInt(glyph!.unicodes[0]!, 16)), 8, fontTextOptions(font, defaultTextOptions));
-      expect(item.text?.format, entry.id).toBe('plotfont');
+      expect(item.text?.format, entry.id).toBe('openplotfont');
       expect(item.width, entry.id).toBeGreaterThan(0);
       expect(item.markup, entry.id).toContain('<path');
       expect(font.bundled, entry.id).toBe(true);
@@ -69,7 +69,7 @@ describe('complete font menu and lazy assets', () => {
     for (const id of ['inter', 'inter-italic', 'square-bot-sans']) {
       const font = (await ensureFontLoaded(id))!;
       expect(font.face, id).toBeDefined();
-      expect(font.plotfont, id).toBeUndefined();
+      expect(font.openplotfont, id).toBeUndefined();
       expect(font.axes.wght, id).toBeDefined();
       const options = fontTextOptions(font, defaultTextOptions);
       const light = typographyToItem('Abc fi 123 é', 8, {...options, variations: 'wght=300'});

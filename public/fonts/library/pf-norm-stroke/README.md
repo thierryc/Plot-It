@@ -16,4 +16,4 @@ NormStroke by octycs; based on Wikimedia ISO3098 Type B lettering. CC0 declarati
 
 
 
-Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only PlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.
+Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only OpenPlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.

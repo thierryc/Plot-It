@@ -14,7 +14,7 @@ remains pending. See the hosted compatibility notes for primary sources.
 - Installable PWA with local document persistence
 - Safe SVG import, drag-and-drop, export, canvas/object-list selection, move, corner resize, rotate, duplicate, and delete
 - Live text and cap-height editing; local TTF/OTF font loading with HarfBuzz shaping, spacing, kerning, ligatures, OpenType features, and variable axes
-- PlotFont 0.3 loading with original centerlines, ordered mixed fills, and embedded OpenType layout
+- OpenPlotFont 0.2/0.3 loading with original centerlines, ordered mixed fills, and embedded OpenType layout
 - Individual imported SVG element selection, millimetre positioning/sizing, shape attributes, and Bézier anchor/control-handle editing
 - Freehand pen tool
 - **Plot Sans**, an original single-line A–Z / 0–9 plot font
@@ -106,9 +106,9 @@ SVG element above its editing fields; the list stays in place during selection.
 
 Plot Font text keeps its full original copy. Edit **Text** or **Cap height** in the inspector; valid edits update live. Older saved text is recoverable only when its stored name exactly reproduces its geometry. Otherwise it remains editable as paths, without guessing missing text.
 
-New text defaults to **Hershey Roman Simplex Regular**. The Font menu groups the complete 87-entry PlotFont stroke library into **Hershey**, **EMS**, and **Other stroke fonts**, alongside PlotFont Layout Demo, Plot Sans, and **Outline fonts** (Inter Regular, Inter Italic, and Square Bot Sans from AP.CX). Fonts download when selected; the default works immediately. Saved documents reload their used bundled fonts; matching legacy OpenType outlines automatically gain perimeter cleanup, while manually edited or unverifiable geometry is preserved with a notice. Downloaded fonts are available offline through the installed app's cache. Inter and Square Bot Sans retain original outlines and OpenType features, with variable weight/optical size or width/italic controls under Advanced. Each bundled font links to its attribution and license. Some Hershey symbol/non-Latin collections use temporary private-use codes; the menu help identifies their mapping limitation rather than promising standard language coverage.
+New text defaults to **Hershey Roman Simplex Regular**. The Font menu groups the complete 87-entry OpenPlotFont stroke library into **Hershey**, **EMS**, and **Other stroke fonts**, alongside OpenPlotFont Layout Demo, Plot Sans, and **Outline fonts** (Inter Regular, Inter Italic, and Square Bot Sans from AP.CX). Fonts download when selected; the default works immediately. Saved documents reload their used bundled fonts; matching legacy OpenType outlines automatically gain perimeter cleanup, while manually edited or unverifiable geometry is preserved with a notice. Downloaded fonts are available offline through the installed app's cache. Inter and Square Bot Sans retain original outlines and OpenType features, with variable weight/optical size or width/italic controls under Advanced. Each bundled font links to its attribution and license. Some Hershey symbol/non-Latin collections use temporary private-use codes; the menu help identifies their mapping limitation rather than promising standard language coverage.
 
-Choose **Text**, then **Load a font** to use a PlotFont **0.3** `.plotfont.json`, OpenType `.otf`, or TrueType `.ttf` file. PlotFont preserves original strokes, curves and mixed fill regions; files with embedded OpenType layout support ligatures, alternates and positioning through HarfBuzz. Version 0.2 is rejected. See [PlotFont integration](docs/PLOTFONT_INTEGRATION.md) for behavior and limits. Loaded fonts are saved locally in this browser. Ordinary OpenType fonts retain editable curves grouped by glyph. Preview, SVG export, and plotting use their resolved non-zero boundaries, removing component and letter overlap seams while preserving counters; PlotFont draws its original operations. Mixed PlotFont fills require a physical Plot fill mode before export or plotting. The Text dialog and inspector provide letter/word spacing, line height, alignment, kerning, ligatures, and advanced feature tags (`smcp=1, ss01=1, salt=2`). Variable fonts expose axis ranges and coordinates (`wght=700`). Use one script/direction per object; ordinary OpenType fonts must include capital H for cap-height calibration, while PlotFont uses its declared metrics. See [Typography research and implementation](docs/TYPOGRAPHY.md) for the library comparison, supported behavior and limits.
+Choose **Text**, then **Load a font** to use an OpenPlotFont **0.2 or 0.3** `.opf` or `.opf.json`, OpenType `.otf`, or TrueType `.ttf` file. OpenPlotFont preserves original strokes, curves and mixed fill regions; files with embedded OpenType layout support ligatures, alternates and positioning through HarfBuzz. The format identifier must be `OpenPlotFont`; pre-rename files require the explicit migration described in the integration guide. See [OpenPlotFont integration](docs/OPENPLOTFONT_INTEGRATION.md) for behavior and limits. Loaded fonts are saved locally in this browser. Ordinary OpenType fonts retain editable curves grouped by glyph. Preview, SVG export, and plotting use their resolved non-zero boundaries, removing component and letter overlap seams while preserving counters; OpenPlotFont draws its original operations. Mixed OpenPlotFont fills require a physical Plot fill mode before export or plotting. The Text dialog and inspector provide letter/word spacing, line height, alignment, kerning, ligatures, and advanced feature tags (`smcp=1, ss01=1, salt=2`). Variable fonts expose axis ranges and coordinates (`wght=700`). Use one script/direction per object; ordinary OpenType fonts must include capital H for cap-height calibration, while OpenPlotFont uses its declared metrics. See [Typography research and implementation](docs/TYPOGRAPHY.md) for the library comparison, supported behavior and limits.
 
 Double-click an imported shape, or choose it under **SVG elements**, to edit it independently without ungrouping. Its X/Y/width/height controls use page millimetres; **Shape geometry** uses the source SVG units. Choose **Edit path nodes** for square anchors and round Bézier handles, or edit path data directly. Select a node for exact page-coordinate inputs. **Whole object** or Escape leaves element editing.
 
@@ -139,7 +139,7 @@ and job without recoloring the drawing or SVG export. Assigning colors to the
 same pen merges them. **All pens** restores the full selection.
 
 The default **Group by pen** completes each pen together and optimizes paths
-within it. Protected PlotFont stroke/fill sequences remain intact and can
+within it. Protected OpenPlotFont stroke/fill sequences remain intact and can
 require repeated pens; the numbered pass list shows the actual sequence.
 **Follow artwork order**, under Advanced, preserves source order. Every pen
 change lifts the pen, parks at origin, and waits for **Continue with this pen**.
@@ -203,13 +203,25 @@ limitations, and the pending pencil/pen release checks. Try
 [fill-regions.svg](public/examples/fill-regions.svg) for holes, transforms, and
 open linework. Concentric/spiral and artistic patterns remain later milestones.
 
-## Reusable PlotFont library
+## Reusable OpenPlotFont library
 
-Plot-it consumes the MIT-licensed `@thierryc/plotfont` package from the local
-`packages/plotfont` npm workspace. See [the library README](packages/plotfont/README.md)
+Plot-it consumes the MIT-licensed `@thierryc/openplotfont` package from the local
+`packages/openplotfont` npm workspace. See [the library README](packages/openplotfont/README.md)
 for loading, text layout, SVG/Canvas adapters, units, and publishing.
 `npm run dev`, `npm test`, and `npm run build` build the library first; run
 `npm run dev:lib` in a second terminal to rebuild it while editing its source.
 The library contains no font assets or editor/device controls. Plot-it keeps
 its AGPL license, its bundled fonts and their notices, and its own thin
 editor adapter. The corresponding-source download includes the library source.
+
+### Shared Plotter Core and virtual monitor
+
+The fresh native SM / T3 / TD core is in `packages/plotter-core`; browser execution
+runs in a dedicated worker and Node/CLI reuse the same library. Firmware 2.8.1–3.x
+has the SM compatibility path; explicit S-curve targets 3.1.7. Physical Auto remains
+SM until hardware acceptance. See [the candidate checkpoint](docs/CORE_REWRITE_STATUS.md).
+
+Open `/virtual.html` on the local app for position/pen/FIFO/power and a simple path
+trail, or run `scripts/node-lts.sh --npm run plot:virtual -- --modern --monitor --trace`.
+The monitor cannot open USB. `plot:cli -- --help` describes JSON/SVG preparation,
+virtual execution, explicit devices/runner jobs, repeats and checkpoint resume.

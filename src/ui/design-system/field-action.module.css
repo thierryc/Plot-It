@@ -1,0 +1,5 @@
+.field-action { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:6px; min-width:0; }
+.field-action > button { min-height:var(--control-height); width:var(--control-height); height:var(--control-height); }
+@media(max-width:639px), (pointer:coarse) {
+  .field-action > button { min-height:var(--touch-target); width:var(--touch-target); height:var(--touch-target); }
+}

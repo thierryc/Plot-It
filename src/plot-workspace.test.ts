@@ -38,7 +38,7 @@ beforeEach(() => {
   jobs = []; save = vi.fn(); exit = vi.fn(); state = structuredClone(initialState); state.pens = defaultPens();
   root = document.createElement('div'); document.body.append(root);
   root.innerHTML = `<header class="top-actions"><div class="mode-switch" role="radiogroup" aria-label="Workspace mode" data-segmented><button data-action="edit-mode" role="radio" aria-checked="true" tabindex="0">Edit</button><button data-action="open-plot" role="radio" aria-checked="false" tabindex="-1">Plot</button></div><button data-action="undo" data-edit-control>Undo</button><button data-action="redo" data-edit-control>Redo</button></header>
-    <main><div data-ui="drawing-toolbar" data-edit-control></div><button class="canvas-size-button" data-edit-control></button><svg id="paper"><g id="artwork-layer"></g></svg><aside class="inspector" data-ui="inspector"><section data-editor>Editing controls</section></aside></main>`;
+    <footer data-ui="status"><span data-connection-status>Web Serial ready</span><span>1 object</span></footer><main><div data-ui="drawing-toolbar" data-edit-control></div><button class="canvas-size-button" data-edit-control></button><svg id="paper"><g id="artwork-layer"></g></svg><aside class="inspector" data-ui="inspector"><section data-editor>Editing controls</section></aside></main>`;
   mocks.prepare.mockImplementation((_svg, _paper, _settings, progress) => {
     const pending = deferred<MotionPlan>();
     const job = { ...pending, progress, cancel: vi.fn(() => pending.reject(new Error('Planning cancelled.'))) };
@@ -51,6 +51,139 @@ beforeEach(() => {
 afterEach(async () => { workspace?.destroy(); await flush(); root.remove(); vi.restoreAllMocks(); vi.unstubAllGlobals(); mocks.prepare.mockReset(); });
 
 describe('Plot sidebar preparation and recovery', () => {
+  it('offers NextDraw model selection, hardware controls and simulation', async () => {
+    state.settings.profile = 'nextdraw'; state.settings.nextdrawModel = '2234';
+    open(true); jobs[0]!.resolve({...plan(),settings:{...state.settings}}); await flush();
+    expect(root.querySelector<HTMLSelectElement>('[data-plot-setting="profile"]')!.value).toBe('nextdraw');
+    expect(root.querySelector<HTMLSelectElement>('[data-plot-setting="nextdrawModel"]')!.value).toBe('2234');
+    expect(root.querySelector('[data-connection-section]')).not.toBeNull();
+    expect(root.querySelector('[data-plot-action="connect"]')).toBeNull();
+    expect(root.querySelector('[data-section="motors"]')).not.toBeNull();
+    expect(root.querySelector('[data-section="pen"]')).not.toBeNull();
+    expect(button('start').disabled).toBe(false); expect(button('choose-simulation').disabled).toBe(false);
+    expect(status()).toBe('Ready to plot');
+    const model = root.querySelector<HTMLSelectElement>('[data-plot-setting="nextdrawModel"]')!;
+    model.value = '1117'; model.dispatchEvent(new Event('change',{bubbles:true}));
+    jobs.at(-1)!.resolve({...plan(),settings:{...state.settings}}); await flush();
+    expect(state.settings.nextdrawModel).toBe('1117'); expect(save).toHaveBeenCalled();
+    button('choose-simulation').click(); frame(0);
+    expect(status()).toBe('Simulating');
+    expect(plotter.connect).not.toHaveBeenCalled(); expect(plotter.plot).not.toHaveBeenCalled(); expect(plotter.setPen).not.toHaveBeenCalled();
+    button('stop').click();
+  });
+  it('keeps native section states and summary focus through preparation refreshes', async () => {
+    open();
+    const section = (name: string) => root.querySelector<HTMLDetailsElement>(`.plot-scroll > details[data-section="${name}"]`)!;
+    expect(root.querySelector('.plot-sidebar-head')).toBeNull();
+    expect(root.querySelector('[data-plot-action="back"]')).toBeNull();
+    expect(root.querySelector('.plot-sidebar h2')).toBeNull();
+    expect(['connection', 'plot-settings', 'pens'].every(name => section(name).open)).toBe(true);
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="advanced"]')!.open).toBe(false);
+    section('connection').open = false;
+    section('plot-settings').open = false;
+    section('plot-settings').querySelector<HTMLElement>('summary')!.focus();
+    jobs[0]!.resolve(plan()); await flush();
+    expect(section('connection').open).toBe(false);
+    expect(section('plot-settings').open).toBe(false);
+    expect(document.activeElement).toBe(section('plot-settings').querySelector('summary'));
+    const destination = root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
+    destination.value = 'machine'; destination.dispatchEvent(new Event('change', { bubbles: true }));
+    jobs.at(-1)!.resolve(plan()); await flush();
+    expect(section('motors').open).toBe(true);
+    expect(section('pen').open).toBe(true);
+    expect(section('diagnostics').open).toBe(false);
+    expect(section('connection').open).toBe(false);
+    expect(section('plot-settings').open).toBe(false);
+  });
+  it('opens the pen passes when playback begins from a collapsed pen section', async () => {
+    open(); jobs[0]!.resolve(plan()); await flush();
+    root.querySelector<HTMLDetailsElement>('[data-section="pens"]')!.open = false;
+    button('choose-simulation').click(); frame(0);
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="pens"]')!.open).toBe(true);
+    expect(root.querySelector('[data-section="passes"]')).toBeNull();
+    expect(root.querySelector('[data-pass-index]')).not.toBeNull();
+    expect(root.querySelector('[data-plot-pens-title]')!.textContent).toBe('Pen passes');
+    button('stop').click();
+  });
+
+  it('separates motor, pen and diagnostic controls without nested disclosures', async () => {
+    open(true); jobs[0]!.resolve(plan(['#000000', '#ff0000'])); await flush();
+    const motors = root.querySelector<HTMLDetailsElement>('[data-section="motors"]')!;
+    const pen = root.querySelector<HTMLDetailsElement>('[data-section="pen"]')!;
+    const diagnostics = root.querySelector<HTMLDetailsElement>('[data-section="diagnostics"]')!;
+    expect(root.querySelector('[data-section="machine"]')).toBeNull();
+    expect(motors.querySelector('[data-plot-action="engage"]')).toBe(button('engage'));
+    expect(motors.querySelector('[data-plot-action="pen-up"]')).toBeNull();
+    expect(pen.querySelectorAll('details')).toHaveLength(0);
+    expect(root.querySelector('[data-section="pens"] details')).toBeNull();
+    expect(pen.querySelector('[data-plot-action="pen-up"]')).toBe(button('pen-up'));
+    expect(button('pen-up').textContent).toBe('Up');
+    expect(button('pen-up').getAttribute('aria-label')).toBe('Pen up');
+    expect(button('pen-down').getAttribute('aria-label')).toBe('Pen down');
+    expect(pen.querySelectorAll('[data-pen-heights] input')).toHaveLength(2);
+    expect(pen.querySelector('[data-plot-setting="penUp"]')!.getAttribute('aria-label')).toBe('Pen up height %');
+    expect(pen.querySelector('[data-plot-setting="penDown"]')!.getAttribute('aria-label')).toBe('Pen down height %');
+    expect(pen.querySelector('[data-plot-action="machine-log"]')).toBeNull();
+    expect(diagnostics.querySelector('[data-plot-action="machine-log"]')).toBe(button('machine-log'));
+    expect(diagnostics.textContent).toContain('Firmware');
+    expect(diagnostics.open).toBe(false);
+    expect(root.querySelectorAll('[data-pass-index]')).toHaveLength(2);
+    expect(root.textContent).not.toContain('Your current pen position will be used');
+    motors.open = false; diagnostics.open = true;
+    diagnostics.querySelector<HTMLElement>('summary')!.focus();
+    const speed = root.querySelector<HTMLInputElement>('[data-plot-setting="speed"]')!;
+    speed.value = '36'; speed.dispatchEvent(new Event('change', {bubbles:true}));
+    jobs.at(-1)!.resolve(plan(['#000000', '#ff0000'])); await flush();
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="motors"]')!.open).toBe(false);
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="diagnostics"]')!.open).toBe(true);
+    expect(document.activeElement).toBe(root.querySelector('[data-section="diagnostics"] > summary'));
+    expect(plotter.plot).not.toHaveBeenCalled(); expect(plotter.setPen).not.toHaveBeenCalled();
+  });
+
+  it('keeps connection choices separate from secondary preview actions', async () => {
+    open(); jobs[0]!.resolve(plan()); await flush();
+    const destination = () => root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
+    expect(destination().querySelector('[value=simulation]')).toBeNull();
+    expect(button('connect').disabled).toBe(true);
+    expect(button('choose-simulation').closest('.plot-player')).not.toBeNull();
+    expect(button('choose-simulation').classList.contains('primary')).toBe(false);
+    expect(button('bounds-preview').closest('.plot-player')).not.toBeNull();
+    expect(button('bounds-preview').textContent).toBe('Preview bounds');
+    destination().value='machine'; destination().dispatchEvent(new Event('change',{bubbles:true}));
+    jobs.at(-1)!.resolve(plan()); await flush();
+    expect(button('connect').disabled).toBe(false); expect(button('connect').classList.contains('primary')).toBe(true);
+    expect(plotter.connect).not.toHaveBeenCalled(); expect(plotter.plot).not.toHaveBeenCalled();
+    destination().value=''; destination().dispatchEvent(new Event('change',{bubbles:true}));
+    jobs.at(-1)!.resolve(plan()); await flush(); expect(button('connect').disabled).toBe(true);
+  });
+  it('retains the selected connection after simulation and requires a separate hardware Start', async () => {
+    open(true); jobs[0]!.resolve(plan()); await flush();
+    button('choose-simulation').click(); frame(0); frame(100000);
+    expect(root.querySelector<HTMLSelectElement>('[data-plot-destination]')!.value).toBe('machine');
+    expect(plotter.plot).not.toHaveBeenCalled(); expect(plotter.connect).not.toHaveBeenCalled();
+    expect(button('start').disabled).toBe(false); expect(button('start').textContent).toContain('Start with this pen');
+    button('start').click(); await flush(); expect(plotter.plot).toHaveBeenCalledOnce();
+  });
+  it('keeps hardware pen controls disabled during paused simulation', async () => {
+    open(true); vi.spyOn(plotter,'canAdjustPen','get').mockReturnValue(true);
+    jobs[0]!.resolve(plan()); await flush(); button('choose-simulation').click(); frame(0); button('pause').click();
+    expect(status()).toContain('Paused'); expect(button('pen-up').disabled).toBe(true);
+    button('pen-up').click(); expect(plotter.setPen).not.toHaveBeenCalled(); expect(plotter.plot).not.toHaveBeenCalled();
+    button('stop').click();
+  });
+  it('moves process metrics to the canvas status and keeps live announcements limited to state changes', async () => {
+    open(); jobs[0]!.resolve(plan()); await flush();
+    const canvas = root.querySelector('[data-ui=status]')!;
+    expect(canvas.querySelector('[data-plot-distances]')!.textContent).toContain('Drawing');
+    expect(root.querySelector('.plot-player [data-plot-distances]')).toBeNull();
+    expect(root.querySelector('.plot-player [data-player-time]')).toBeNull();
+    expect(canvas.querySelector('[data-player-status]')!.getAttribute('aria-live')).toBe('polite');
+    expect(canvas.querySelector('[data-player-time]')!.parentElement!.getAttribute('aria-live')).toBe('off');
+    button('choose-simulation').click(); frame(0);
+    expect(status()).toBe('Simulating'); expect(canvas.querySelector<HTMLElement>('[data-plot-distances]')!.hidden).toBe(true);
+    button('stop').click(); workspace.destroy(); expect(canvas.querySelector('[data-plot-canvas-status]')).toBeNull();
+  });
+
   it('persists optimization controls, replans, and gates random seed entry by start mode',async()=>{
     open(); jobs[0]!.resolve(plan()); await flush();
     const input=(key:string)=>root.querySelector<HTMLInputElement>(`[data-plot-setting="${key}"]`)!;
@@ -80,9 +213,25 @@ describe('Plot sidebar preparation and recovery', () => {
     expect(counter.querySelector('[data-pen-down-count]')!.textContent).toBe('1');
     expect(counter.querySelector('[data-pen-up-count]')!.textContent).toBe('2');
     expect(signals.length).toBeGreaterThan(0);
-    button('start').click(); button('stop').click();
+    button('choose-simulation').click(); button('stop').click();
     expect(counter.querySelector('[data-pen-down-count]')!.textContent).toBe('0');
     workspace.destroy(); expect(root.querySelector('[data-plot-pen-counter]')).toBeNull();
+  });
+  it('preserves Direct USB ownership when the combined network Connect action is used', async () => {
+    vi.stubGlobal('location', {hostname:'127.0.0.1'});
+    const remote = new NetworkPlotter({epoch:'runner',revision:1,timestamp:1,connected:false,connecting:false,firmware:null,jobId:null,status:'idle',progress:{completed:0,total:0,state:'idle'},position:null,positionTimestamp:null,origin:'unset',originProfile:null,motorsOn:false,canAdjustPen:false});
+    let controlled=false;
+    vi.spyOn(NetworkPlotter,'discover').mockResolvedValue(remote);
+    vi.spyOn(remote,'watch').mockResolvedValue(); vi.spyOn(remote,'disconnect').mockResolvedValue();
+    vi.spyOn(remote,'hasControl','get').mockImplementation(()=>controlled);
+    vi.spyOn(remote,'connect').mockImplementation(async()=>{controlled=true; return 'Network plotter';});
+    const connectEbb=vi.spyOn(remote,'connectEbb').mockResolvedValue();
+    open(true); jobs[0]!.resolve(plan()); await flush(); await flush();
+    const select=root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
+    select.value='network'; select.dispatchEvent(new Event('change',{bubbles:true})); jobs.at(-1)!.resolve(plan()); await flush();
+    button('connect').click(); await flush();
+    expect(connectEbb).not.toHaveBeenCalled(); expect(root.textContent).toContain('Disconnect Direct USB');
+    expect(plotter.plot).not.toHaveBeenCalled();
   });
   it('updates the device label after connecting server USB and explains local USB ownership', async () => {
     vi.stubGlobal('location', { hostname: '127.0.0.1' });
@@ -99,7 +248,8 @@ describe('Plot sidebar preparation and recovery', () => {
     let select = root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
     select.value = 'network'; select.dispatchEvent(new Event('change', { bubbles: true })); jobs.at(-1)!.resolve(plan()); await flush();
     button('connect').click(); await flush();
-    button('connect-ebb').click(); await flush();
+    expect(state.settings.motionFirmware).toBe('2.8.1');jobs.at(-1)!.resolve(plan());await flush();
+    await flush();
     expect(root.textContent).not.toContain('EBB not connected');
     select = root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
     select.value = 'machine'; select.dispatchEvent(new Event('change', { bubbles: true })); jobs.at(-1)!.resolve(plan()); await flush();
@@ -127,13 +277,15 @@ describe('Plot sidebar preparation and recovery', () => {
     expect(select.textContent).toContain('Node server');
     select.value = 'network'; select.dispatchEvent(new Event('change', { bubbles: true }));
     jobs.at(-1)!.resolve(plan()); await flush();
-    expect(button('start').disabled).toBe(true); expect(button('connect').textContent).toContain('Take control');
-    expect(root.textContent).toContain('Server connected · EBB 2.8.1');
+    expect(button('start').disabled).toBe(true); expect(button('connect').textContent).toContain('Connect');
+    expect(root.textContent).toContain('Server connected · Plotter connected');
+    expect(root.querySelector('[data-section="diagnostics"]')!.textContent).toContain('EBB 2.8.1');
     expect(button('set-origin').disabled).toBe(true); expect(button('pen-up').disabled).toBe(true);
     button('connect').click(); await flush(); expect(connect).toHaveBeenCalledOnce();
+    expect(state.settings.motionFirmware).toBe('2.8.1');jobs.at(-1)!.resolve(plan());await flush();
     expect(button('set-origin').disabled).toBe(false); expect(button('pen-up').disabled).toBe(false);
     button('set-origin').click(); await flush(); expect(origin).toHaveBeenCalledWith('axidraw');
-    expect(button('disconnect-ebb').textContent).toContain('Disconnect EBB');
+    expect(button('disconnect-ebb').textContent).toContain('Disconnect');
     button('disconnect-ebb').click(); await flush(); expect(releaseUsb).toHaveBeenCalledWith(expect.objectContaining({ penUp: state.settings.penUp }));
     button('release-control').click(); await flush(); expect(releaseControl).toHaveBeenCalledOnce();
     expect(remote.disconnect).not.toHaveBeenCalled();
@@ -151,7 +303,7 @@ describe('Plot sidebar preparation and recovery', () => {
   it.each(['penUp', 'penDown', 'speed'] as const)('keeps %s keyboard edits focused and the sidebar in place while updating the plan', async key => {
     open(true); jobs[0]!.resolve(plan()); await flush();
     const scroll = root.querySelector<HTMLElement>('.plot-scroll')!;
-    const heights = root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!;
+    const heights = root.querySelector<HTMLDetailsElement>('[data-section="pen"]')!;
     heights.open = true;
     scroll.scrollTop = 327;
     const input = root.querySelector<HTMLInputElement>(`[data-plot-setting="${key}"]`)!;
@@ -172,7 +324,7 @@ describe('Plot sidebar preparation and recovery', () => {
     expect(document.activeElement).toBe(input);
     expect(input.value).toBe('31');
     expect(root.querySelector<HTMLElement>('.plot-scroll')!.scrollTop).toBe(327);
-    expect(root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!.open).toBe(true);
+    expect(root.querySelector<HTMLDetailsElement>('[data-section="pen"]')!.open).toBe(true);
     // A subsequent spinner/arrow edit commits through the same surviving field.
     input.value = '32'; input.dispatchEvent(new Event('change', { bubbles: true }));
     expect(state.settings[key]).toBe(32); expect(jobs).toHaveLength(3);
@@ -180,7 +332,7 @@ describe('Plot sidebar preparation and recovery', () => {
   });
   it('preserves a newer unfinished keyboard value when preparation finishes', async () => {
     open(true); jobs[0]!.resolve(plan()); await flush();
-    root.querySelector<HTMLDetailsElement>('[data-section="heights"]')!.open = true;
+    root.querySelector<HTMLDetailsElement>('[data-section="pen"]')!.open = true;
     const input = root.querySelector<HTMLInputElement>('[data-plot-setting="penDown"]')!;
     input.focus(); input.value = '52';
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -213,7 +365,7 @@ describe('Plot sidebar preparation and recovery', () => {
   });
   it('locks editing and selects Plot mode without starting hardware', async () => {
     open(true);
-    const sections = root.querySelectorAll('.plot-scroll > section');
+    const sections = root.querySelectorAll('.plot-scroll > details');
     expect(sections[0]!.querySelector('[data-plot-destination]')).not.toBeNull();
     expect(sections[1]!.classList.contains('plot-settings-section')).toBe(true);
     expect(sections[2]!.classList.contains('plot-pens-section')).toBe(true);
@@ -306,6 +458,8 @@ describe('Plot sidebar preparation and recovery', () => {
   });
   it('keeps USB picker cancellation quiet and permits a later connection attempt', async () => {
     open(); jobs[0]!.resolve(plan()); await flush();
+    const destination = root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
+    destination.value = 'machine'; destination.dispatchEvent(new Event('change',{bubbles:true})); jobs.at(-1)!.resolve(plan()); await flush();
     vi.mocked(plotter.connect).mockRejectedValue(new DOMException('User cancelled', 'NotFoundError'));
     button('connect').click(); await flush();
     expect(root.querySelector('[data-player-error]')!.hasAttribute('hidden')).toBe(true);
@@ -314,9 +468,11 @@ describe('Plot sidebar preparation and recovery', () => {
   });
   it('surfaces a failed connection inline and retries without starting hardware', async () => {
     open(); jobs[0]!.resolve(plan()); await flush();
+    const destination = root.querySelector<HTMLSelectElement>('[data-plot-destination]')!;
+    destination.value = 'machine'; destination.dispatchEvent(new Event('change',{bubbles:true})); jobs.at(-1)!.resolve(plan()); await flush();
     vi.mocked(plotter.connect).mockRejectedValue(new Error('Serial port already open'));
     button('connect').click(); await flush();
-    expect(root.textContent).toContain('Serial port already open'); expect(button('connect').textContent).toBe('Retry connection');
+    expect(root.textContent).toContain('Serial port already open'); expect(button('connect').textContent).toContain('Connect');
     vi.mocked(plotter.connect).mockImplementation(async () => { vi.spyOn(plotter, 'connected', 'get').mockReturnValue(true); return 'EBB'; });
     button('connect').click(); await flush();
     expect(root.textContent).not.toContain('Serial port already open'); expect(button('start').disabled).toBe(false);
@@ -347,15 +503,15 @@ describe('pen timing, statistics, supply and placement controls',()=>{
     expect(save).toHaveBeenCalled(); expect(plotter.setPen).not.toHaveBeenCalled();
     expect(root.querySelector('[data-plot-distances]')!.textContent).toMatch(/Drawing 5.0 mm · Travel/);
   });
-  it('simulates the placement bounds and follows with the original drawing on Play',async()=>{
+  it('simulates the placement bounds and follows with the original drawing on Simulate',async()=>{
     open(); const original=plan(); jobs[0]!.resolve(original); await flush();
     const signals: Array<{penDown:boolean;source:string}> = [];
     root.querySelector('#paper')!.addEventListener('plot-execution-signal',event=>signals.push((event as CustomEvent).detail));
     button('bounds-preview').click(); frame(0); frame(100000);
-    expect(signals.every(s=>!s.penDown)).toBe(true); expect(status()).toContain('Bounding box · Complete');
+    expect(signals.every(s=>!s.penDown)).toBe(true); expect(status()).toContain('Bounds preview · Complete');
     expect(root.querySelector('[data-plot-distances]')!.textContent).toContain('Drawing 0.0 mm');
-    expect(root.querySelector('[data-plot-elapsed]')!.textContent).toContain('Simulation time');
-    button('start').click(); frame(100001); frame(200000);
+    expect(root.querySelector('[data-player-time]')!.textContent).toContain('100%');
+    button('choose-simulation').click(); frame(100001); frame(200000);
     expect(signals.some(s=>s.penDown)).toBe(true); expect(status()).toBe('Complete'); expect(plotter.plot).not.toHaveBeenCalled();
   });
   it('runs bounds explicitly over USB, keeps the drawing available, and shows power/elapsed',async()=>{

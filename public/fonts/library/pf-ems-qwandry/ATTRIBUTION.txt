@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Qwandry
+OpenPlotFont conversion of PF EMS Qwandry
 
 Font name:               EMS Qwandry
 License:                 SIL Open Font License http://scripts.sil.org/OFL

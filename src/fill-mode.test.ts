@@ -27,7 +27,7 @@ describe('effective plot fill modes',()=>{
   expect(resolveFillSettings(boundary,setting('solid'))).toEqual(boundary);
   expect(resolveFillSettings(undefined,boundary)).toEqual(boundary);
  });
- it('preserves original PlotFont strokes when object boundary-only mode is enabled',()=>{
+ it('preserves original OpenPlotFont strokes when object boundary-only mode is enabled',()=>{
   const item={fillSettings:{...setting('none'),outline:true}} as ArtworkItem;
   const element={getAttribute:()=> 'stroke'} as unknown as Element;
   expect(effectiveFill(item,element)).toEqual(defaultFillSettings);

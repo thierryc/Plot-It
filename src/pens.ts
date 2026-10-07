@@ -107,8 +107,9 @@ function orderUnits(units: PlotPath[][], settings: PlotSettings, mode = settings
 }
 
 export function preparePenPaths(source: PlotPath[], settings: PlotSettings, preferences: PenPreferences, paper?: { width: number; height: number }): { paths: PlotPath[]; pens: PlotPen[] } {
+  if(settings.strictOrder){settings={...settings,reorderMode:'preserve',pathJoinToleranceMm:0,pathSimplifyToleranceMm:0,closedPathStart:'preserve'};preferences={...preferences,mode:'source'};}
   pathOptimizationSettings(settings);
-  const clipped = paper ? clipPlotPaths(source, { minX: settings.margin, minY: settings.margin, maxX: paper.width - settings.margin, maxY: paper.height - settings.margin }) : source;
+  const clipped = paper&&settings.pageClipping!==false ? clipPlotPaths(source, { minX: settings.margin, minY: settings.margin, maxX: paper.width - settings.margin, maxY: paper.height - settings.margin }) : source;
   const pens = discoverPens(clipped, preferences);
   const mapped = clipped.filter(path => !preferences.excluded.includes(path.tool)).map(path => ({ ...path, tool: preferences.assignments[path.tool]?.color ?? path.tool }));
   if (preferences.mode === 'source') return { paths: splitPlotPaths(orderUnits(optimizePathUnits(mapped.map(path=>[path]),settings,true),settings,'preserve'),settings.maxPenDownMm),pens };

@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Bird
+OpenPlotFont conversion of PF EMS Bird
 
 Font name:               EMS Bird
 License:                 SIL Open Font License http://scripts.sil.org/OFL

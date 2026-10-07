@@ -1,0 +1,69 @@
+{
+  "format": "OpenPlotFont",
+  "version": "0.3",
+  "id": "openplotfont-script-demo-regular",
+  "familyName": "OpenPlotFont Script Demo",
+  "styleName": "Regular",
+  "unitsPerEm": 1000,
+  "metrics": {
+    "ascender": 800,
+    "descender": -200,
+    "capHeight": 700,
+    "xHeight": 500,
+    "lineGap": 200
+  },
+  "missingGlyph": ".notdef",
+  "glyphs": [
+    {
+      "name": ".notdef",
+      "unicodes": [],
+      "advanceWidth": 500,
+      "strokes": [
+        {"closed": true, "commands": [["M", 50, 0], ["L", 50, 500], ["L", 450, 500], ["L", 450, 0]]}
+      ]
+    },
+    {
+      "name": "space",
+      "unicodes": ["0020"],
+      "advanceWidth": 250,
+      "strokes": []
+    },
+    {
+      "name": "u",
+      "unicodes": ["0075"],
+      "advanceWidth": 500,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [["M", 0, 150], ["C", 100, 200, 100, 500, 150, 500], ["C", 100, 0, 300, 0, 350, 500], ["C", 300, 150, 400, 50, 500, 150]]
+        }
+      ],
+      "connections": {
+        "entry": {"strokeIndex": 0, "endpoint": "start"},
+        "exit": {"strokeIndex": 0, "endpoint": "end", "userData": {"org.openplotfont.authoring": {"note": "Join to the next declared entry."}}}
+      },
+      "anchors": [{"name": "top", "x": 250, "y": 550}],
+      "userData": {"org.openplotfont.authoring": {"tags": ["script", "continuous"], "note": "Illustrative geometry."}}
+    },
+    {
+      "name": "n",
+      "unicodes": ["006E"],
+      "advanceWidth": 500,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [["M", 0, 150], ["C", 100, 200, 100, 400, 150, 500], ["L", 100, 0], ["C", 200, 500, 400, 600, 350, 200], ["C", 325, 0, 425, 50, 500, 150]]
+        }
+      ],
+      "connections": {
+        "entry": {"strokeIndex": 0, "endpoint": "start"},
+        "exit": {"strokeIndex": 0, "endpoint": "end"}
+      },
+      "userData": {"org.openplotfont.authoring": {"tags": ["script", "continuous"]}}
+    }
+  ],
+  "kerning": [],
+  "metadata": {
+    "description": "Illustrative script glyphs for the unreleased draft; joining is optional and not implemented."
+  }
+}

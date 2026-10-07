@@ -1,7 +1,7 @@
 :root:has([data-ui-root]) {
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
   --control-height:30px; --button-height:32px; --touch-target:44px; --checkbox-size:16px;
-  --field-gap:4px; --panel-gap:8px; --panel-padding:14px; --toolbar-size:36px;
+  --field-gap:4px; --panel-gap:6px; --panel-padding:12px; --toolbar-size:36px;
   --radius-button:9999px; --radius-control:6px; --radius-surface:12px; --layer-paper:2; --layer-status:3; --layer-controls:5; --layer-progress:6; --layer-toast:20;
   --font-size-ui:14px; --font-size-secondary:12px; --line-height-ui:20px;
   --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

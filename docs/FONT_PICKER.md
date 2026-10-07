@@ -12,9 +12,9 @@ existing font loading, document IDs, attribution, and undo behavior.
 
 Style categories are curated browsing aids in `scripts/font-styles.mjs`.
 Imported fonts appear under Your fonts and Other / unclassified; appearance is
-not inferred from their filenames. Drawing type comes from actual PlotFont
+not inferred from their filenames. Drawing type comes from actual OpenPlotFont
 operations, including older operations with an implicit stroke type. Ordinary
-OpenType fonts are outlines. A mixed PlotFont contains both strokes and filled
+OpenType fonts are outlines. A mixed OpenPlotFont contains both strokes and filled
 shapes. Limited/private-use mapping warnings remain visible.
 
 ## Preview generation

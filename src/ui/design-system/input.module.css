@@ -7,3 +7,6 @@
 .unit-input .input { padding-right:38px; }
 .unit-input span { position:absolute; right:8px; top:50%; transform:translateY(-50%); color:var(--text-quiet); font:400 9px var(--font-ui); pointer-events:none; }
 @media(max-width:639px), (pointer:coarse) { .input { height:var(--touch-target); min-height:var(--touch-target); } }
+
+.input[type=number] { text-align:right; font-variant-numeric:tabular-nums; appearance:textfield; }
+.input[type=number]::-webkit-inner-spin-button,.input[type=number]::-webkit-outer-spin-button { appearance:none; margin:0; }

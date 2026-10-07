@@ -1,6 +1,7 @@
+import {restoreNextDrawModel} from './machine-profiles';
 import inputStyles from './ui/design-system/input.module.css';
 import { bindColorControls } from './ui/app/color-events';
-import { bindWorkspaceCommands, captureCheckboxFocus } from './ui/app/events';
+import { bindWorkspaceCommands, captureCheckboxFocus, captureSettingSelectFocus, captureAlignmentFocus, bindTextAlignment } from './ui/app/events';
 import { penTimingSettings } from './pen-control';
 import "./styles.css";
 import { FontPicker } from "./font-picker";
@@ -124,6 +125,7 @@ function loadState(): AppState {
         ...pathOptimizationSettings(parsed.settings ?? {}),
         ...penTimingSettings(parsed.settings ?? {}),
         axidrawModel: setupModel(parsed.settings?.axidrawModel),
+        nextdrawModel: restoreNextDrawModel(parsed.settings?.nextdrawModel),
         pauseOnToolChange: true,
         ...restoreMachineOrientation(parsed.settings),
         reorderMode: parsed.settings?.reorderMode ?? (parsed.settings?.optimize === false ? "preserve" : "reversible")
@@ -194,6 +196,8 @@ const fontPickers = new Set<FontPicker>();
 function render(): void {
   if (plotWorkspace) return;
   const restoreCheckboxFocus = captureCheckboxFocus(app);
+  const restoreAlignmentFocus = captureAlignmentFocus(app);
+  const restoreSettingFocus = captureSettingSelectFocus(app);
   const inspectorOpen = overlays?.inspectorOpen ?? false;
   overlays?.destroy();
   plotterBackground?.destroy();
@@ -224,7 +228,7 @@ function render(): void {
   app.querySelector('[data-ui="inspector"]')!.scrollTop = inspectorScroll;
   app.querySelector("#stage")!.scrollTop = scroll.top;
   app.querySelector("#stage")!.scrollLeft = scroll.left;
-  restoreCheckboxFocus();
+  restoreCheckboxFocus(); restoreAlignmentFocus(); restoreSettingFocus();
 }
 
 function handleScale(): number {
@@ -540,6 +544,7 @@ function selectObject(id: string | null, index: number | null = null): void {
 }
 function refreshInspector(): void {
   const restoreCheckboxFocus = captureCheckboxFocus(app);
+  const restoreAlignmentFocus = captureAlignmentFocus(app);
   rememberInspectorSections();
   const panel = app.querySelector('[data-ui="selection-panel"]'), objects = app.querySelector('[data-ui="objects-panel"]');
   if (panel) {
@@ -561,7 +566,11 @@ function refreshInspector(): void {
     const scroll = objects.querySelector('[data-object-list]')?.scrollTop ?? 0;
     objects.innerHTML = objectsMarkup(); bindEditorEvents(objects); restoreObjectListScroll(scroll);
   }
-  restoreCheckboxFocus();
+  if (panel && objects?.parentElement) {
+    const inspector = objects.parentElement;
+    if (state.selectedId) inspector.prepend(panel); else inspector.append(panel);
+  }
+  restoreCheckboxFocus(); restoreAlignmentFocus();
 }
 
 async function action(name: string): Promise<void> {
@@ -583,7 +592,7 @@ async function action(name: string): Promise<void> {
     if (name === "zoom-in") state.zoom = Math.min(2, state.zoom + .1);
     else if (name === "zoom-out") state.zoom = Math.max(.5, state.zoom - .1);
     else if (name === "zoom-fit") { state.zoom = 1; pan = { x: 0, y: 0 }; applyPan(); const stage = app.querySelector('#stage')!; stage.scrollTop = 0; stage.scrollLeft = 0; }
-    else if (name === "open-plot") app.querySelector<HTMLElement>('.plot-sidebar h2')?.focus();
+    else if (name === "open-plot") app.querySelector<HTMLElement>('.plot-sidebar .plot-scroll > details > summary')?.focus();
     else return;
     app.querySelector<HTMLElement>('[data-ui="paper-frame"]')?.style.setProperty('--zoom', String(state.zoom));
     const zoom = app.querySelector('[data-zoom-label]'); if (zoom) zoom.textContent = `${Math.round(state.zoom * 100)}%`;
@@ -644,7 +653,8 @@ function updateSetting(input: HTMLInputElement | HTMLSelectElement): void {
     if (key === "paperColor") state.paperColor = restorePaperColor(input.value);
     else if (key === "paper") state.paper = PAPERS[Number(input.value)] ?? state.paper;
     else if (key === "returnToOrigin" && input instanceof HTMLInputElement) state.settings[key] = input.checked;
-    else if (key === "profile") state.settings.profile = input.value as "axidraw" | "xylodraw";
+    else if (key === "profile") state.settings.profile = input.value as AppState["settings"]["profile"];
+    else if (key === 'nextdrawModel') state.settings.nextdrawModel = restoreNextDrawModel(input.value);
     else if (key === 'axidrawModel') state.settings.axidrawModel = setupModel(input.value);
     else if (key === 'machineRotation') state.settings.machineRotation = Number(input.value) as AppState['settings']['machineRotation'];
     else if (key === "reorderMode") state.settings.reorderMode = input.value as AppState["settings"]["reorderMode"];
@@ -1307,6 +1317,7 @@ render();
 
 const typographyRevisions = new WeakMap<Element, number>();
 function bindTypographyEvents(root: ParentNode): void {
+  bindTextAlignment(root);
   for (const picker of fontPickers) if (!picker.root.isConnected) { picker.destroy(); fontPickers.delete(picker); }
   root.querySelectorAll<HTMLElement>('[data-font-picker]').forEach(wrapper => {
     if (![...fontPickers].some(picker => picker.root === wrapper)) fontPickers.add(new FontPicker(wrapper, fontChoices, id => customFontPreviews.get(id)));
@@ -1320,7 +1331,7 @@ function bindTypographyEvents(root: ParentNode): void {
     const revision = (typographyRevisions.get(scope) ?? 0) + 1; typographyRevisions.set(scope, revision);
     const current = () => input.isConnected && typographyRevisions.get(scope) === revision;
     const add = form?.querySelector<HTMLButtonElement>('[value="default"]');
-    const fontSettings = [...scope.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-typography]')]
+    const fontSettings = [...scope.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>('[data-typography], [data-alignment]')]
       .filter(control => control.dataset.typography !== 'fontId');
     try {
       if (input.dataset.typography === 'fontId') {

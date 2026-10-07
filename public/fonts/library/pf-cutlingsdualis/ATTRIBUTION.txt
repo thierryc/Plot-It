@@ -1,4 +1,4 @@
-PlotFont conversion of PF CutlingsDualis
+OpenPlotFont conversion of PF CutlingsDualis
 
 Font name:               Cutlings Dualis
 License:                 SIL Open Font License http://scripts.sil.org/OFL

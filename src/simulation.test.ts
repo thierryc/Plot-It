@@ -40,3 +40,8 @@ describe('shared simulation transport', () => {
     expect(current().state).toBe('tool-change'); expect(current().pass).toBe(1); player.destroy();
   });
 });
+
+it('simulates repeat gaps, freezes the countdown and requires Continue only after it expires',()=>{
+ let frame!:FrameRequestCallback;vi.stubGlobal('requestAnimationFrame',(fn:FrameRequestCallback)=>{frame=fn;return 1;});vi.stubGlobal('cancelAnimationFrame',()=>{});let view!:SimulationView;
+ const job=buildMotionPlan([{tool:'#000000',points:[{x:10,y:10},{x:20,y:10}]}],{...initialState.settings,copies:3,repeatIntervalMs:10000,repeatRequireContinue:true,returnToOrigin:false});const player=new Simulation(job,next=>{view=next;});frame(0);frame(100000);expect(view.copy).toBe(1);expect(view.nextAction).toBe('delay');expect(view.remainingMs).toBe(10000);expect(view.plan!.events.at(-1)!.to).toEqual({x:0,y:0});frame(104000);expect(view.remainingMs).toBe(6000);player.pause();frame(200000);expect(view.remainingMs).toBe(6000);player.play();frame(201000);frame(207000);expect(view.nextAction).toBe('continue');expect(view.state).toBe('tool-change');player.play();expect(view.copy).toBe(2);expect(view.time).toBe(0);player.stop();frame(400000);expect(view.copy).toBe(2);expect(view.state).toBe('stopped');player.destroy();
+});

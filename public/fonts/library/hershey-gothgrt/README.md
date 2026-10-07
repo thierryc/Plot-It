@@ -12,4 +12,4 @@ Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. S
 
 Rows 0–94 -> printable ASCII; final row retained unencoded
 
-Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only PlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.
+Independent strokes retain their order and pen lifts. No automatic script joining, stroke-width expansion, or device commands. This is geometry-only OpenPlotFont 0.3; retained unencoded alternates/ligatures have no automatic substitutions.

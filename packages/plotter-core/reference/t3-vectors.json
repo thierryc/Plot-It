@@ -1,0 +1,185 @@
+{
+  "scope": "Offline motor math only; no TypeScript port or physical quality validation.",
+  "results": [
+    {
+      "inputs": [
+        5000,
+        0,
+        0,
+        100,
+        "clear"
+      ],
+      "plotink": [
+        970,
+        274191440
+      ],
+      "integer_tick_model": [
+        970,
+        274191440
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        5000,
+        0,
+        0,
+        -100,
+        "clear"
+      ],
+      "plotink": [
+        -970,
+        1873292207
+      ],
+      "integer_tick_model": [
+        -970,
+        1873292207
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        10000,
+        50000000,
+        10000,
+        5,
+        "clear"
+      ],
+      "plotink": [
+        853,
+        1529773256
+      ],
+      "integer_tick_model": [
+        853,
+        1529773256
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        10000,
+        -50000000,
+        -10000,
+        -5,
+        "clear"
+      ],
+      "plotink": [
+        -853,
+        617710391
+      ],
+      "integer_tick_model": [
+        -853,
+        617710391
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        2500,
+        10000000,
+        100,
+        -1,
+        12345
+      ],
+      "plotink": [
+        10,
+        1233509615
+      ],
+      "integer_tick_model": [
+        10,
+        1233509615
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        2500,
+        -10000000,
+        -100,
+        1,
+        12345
+      ],
+      "plotink": [
+        -11,
+        913998723
+      ],
+      "integer_tick_model": [
+        -11,
+        913998723
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        1,
+        0,
+        0,
+        0,
+        "clear"
+      ],
+      "plotink": [
+        0,
+        0
+      ],
+      "integer_tick_model": [
+        0,
+        0
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        1,
+        0,
+        -1,
+        0,
+        "clear"
+      ],
+      "plotink": [
+        0,
+        2147483646
+      ],
+      "integer_tick_model": [
+        0,
+        2147483646
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        7,
+        11,
+        3,
+        1,
+        "clear"
+      ],
+      "plotink": [
+        0,
+        210
+      ],
+      "integer_tick_model": [
+        0,
+        210
+      ],
+      "matches": true
+    },
+    {
+      "inputs": [
+        7,
+        -11,
+        -3,
+        -1,
+        "clear"
+      ],
+      "plotink": [
+        0,
+        2147483437
+      ],
+      "integer_tick_model": [
+        0,
+        2147483437
+      ],
+      "matches": true
+    }
+  ]
+}

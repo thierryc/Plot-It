@@ -3,15 +3,15 @@ import { makeId } from './model';
 import { markupRoot, parsePath, pathData, type PathCommand } from './editor';
 import { isOutlineGlyph, OUTLINE_GLYPH_ATTRIBUTE, OUTLINE_VERSION_ATTRIBUTE } from './outline-source';
 import { textToItem } from './plot-font';
-import { createPlotFont, loadPlotFont, parsePlotFont, type PlotFontData, type PlotFont } from '@thierryc/plotfont';
-import { plotFontToItem } from './plotfont-layout';
+import { createOpenPlotFont, loadOpenPlotFont, parseOpenPlotFont, type OpenPlotFontData, type OpenPlotFont } from '@thierryc/openplotfont';
+import { openPlotFontToItem } from './openplotfont-layout';
 import type * as HB from 'harfbuzzjs';
-import hersheySource from './fonts/hershey-roman-simplex.plotfont.json?raw';
-import duplexSource from './fonts/hershey-roman-duplex.plotfont.json?raw';
-import triplexSource from './fonts/hershey-roman-triplex.plotfont.json?raw';
-import scriptSource from './fonts/hershey-script-simplex.plotfont.json?raw';
-import layoutDemoSource from './fonts/plotfont-layout-demo.plotfont.json?raw';
-import spaceRocksSource from './fonts/pf-ems-spacerocks.plotfont.json?raw';
+import hersheySource from './fonts/hershey-roman-simplex.opf.json?raw';
+import duplexSource from './fonts/hershey-roman-duplex.opf.json?raw';
+import triplexSource from './fonts/hershey-roman-triplex.opf.json?raw';
+import scriptSource from './fonts/hershey-script-simplex.opf.json?raw';
+import layoutDemoSource from './fonts/openplotfont-layout-demo.opf.json?raw';
+import spaceRocksSource from './fonts/pf-ems-spacerocks.opf.json?raw';
 import catalog from './fonts/catalog.json';
 import type { EmbeddedFont } from './document-file';
 
@@ -19,29 +19,29 @@ let hb: typeof HB;
 let initialization: Promise<void> | undefined;
 export function initializeTypography(): Promise<void> {
   return initialization ??= import('harfbuzzjs').then(async module => {
-    const prepared = await Promise.all([...fonts.values()].filter(f => f.bundled && f.plotfont?.layout).map(async font => ({
-      font, prepared: await loadPlotFont(JSON.stringify(font.plotfont))
+    const prepared = await Promise.all([...fonts.values()].filter(f => f.bundled && f.openplotfont?.layout).map(async font => ({
+      font, prepared: await loadOpenPlotFont(JSON.stringify(font.openplotfont))
     })));
     hb = module;
     for (const result of prepared) result.font.prepared = result.prepared;
   }).catch(error => { initialization = undefined; throw error; });
 }
-export interface LoadedFont { id: string; name: string; features: string[]; axes: Record<string, HB.AxisInfo>; face?: HB.Face; plotfont?: PlotFontData; prepared?: PlotFont; bundled?: boolean; noticeUrl?: string; kind?: 'plotfont' | 'outline'; group?: string; coverageHint?: string }
-interface BundledFontAsset { id: string; name: string; kind: 'plotfont' | 'outline'; group: string; url: string; noticeUrl: string; sha256: string; coverageHint: string }
+export interface LoadedFont { id: string; name: string; features: string[]; axes: Record<string, HB.AxisInfo>; face?: HB.Face; openplotfont?: OpenPlotFontData; prepared?: OpenPlotFont; bundled?: boolean; noticeUrl?: string; kind?: 'openplotfont' | 'outline'; group?: string; coverageHint?: string }
+interface BundledFontAsset { id: string; name: string; kind: 'openplotfont' | 'outline'; group: string; url: string; noticeUrl: string; sha256: string; coverageHint: string }
 export const bundledFontCatalog = catalog as BundledFontAsset[];
 export const DEFAULT_FONT_ID = 'hershey-roman-simplex';
 const bundledSources = [
   [DEFAULT_FONT_ID, hersheySource], ['hershey-roman-duplex', duplexSource],
   ['hershey-roman-triplex', triplexSource], ['hershey-script-simplex', scriptSource],
-  ['plotfont-layout-demo', layoutDemoSource], ['pf-ems-spacerocks', spaceRocksSource]
+  ['openplotfont-layout-demo', layoutDemoSource], ['pf-ems-spacerocks', spaceRocksSource]
 ] as const;
 const fonts = new Map<string, LoadedFont>(bundledSources.map(([id, source]) => {
-  const plotfont = parsePlotFont(source);
-  return [id, { id, name: `${plotfont.familyName} ${plotfont.styleName}`, plotfont, prepared: plotfont.layout ? undefined : createPlotFont(plotfont),
-    features: plotfont.layout?.features.map(f => f.tag).sort() ?? [], axes: {}, bundled: true, kind: 'plotfont',
+  const openplotfont = parseOpenPlotFont(source);
+  return [id, { id, name: `${openplotfont.familyName} ${openplotfont.styleName}`, openplotfont, prepared: openplotfont.layout ? undefined : createOpenPlotFont(openplotfont),
+    features: openplotfont.layout?.features.map(f => f.tag).sort() ?? [], axes: {}, bundled: true, kind: 'openplotfont',
     group: id.startsWith('hershey-') ? 'Hershey' : id.startsWith('pf-ems-') ? 'EMS' : 'Other stroke fonts',
     noticeUrl: id.startsWith('hershey-') ? '/fonts/HERSHEY_NOTICE.txt'
-      : id === 'pf-ems-spacerocks' ? '/fonts/ems-spacerocks/ATTRIBUTION.txt' : '/fonts/PLOTFONT_LICENSE.txt' }];
+      : id === 'pf-ems-spacerocks' ? '/fonts/ems-spacerocks/ATTRIBUTION.txt' : '/fonts/OPENPLOTFONT_LICENSE.txt' }];
 }));
 for (const asset of bundledFontCatalog) {
   if (!fonts.has(asset.id)) fonts.set(asset.id, { id: asset.id, name: asset.name, kind: asset.kind, group: asset.group,
@@ -60,8 +60,8 @@ export async function ensureFontLoaded(id: string): Promise<LoadedFont | undefin
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const bytes = await response.arrayBuffer();
       await initializeTypography();
-      const loaded = asset.kind === 'plotfont'
-        ? await registerPlotFont(new TextDecoder('utf-8', { fatal: true }).decode(bytes), id)
+      const loaded = asset.kind === 'openplotfont'
+        ? await registerOpenPlotFont(new TextDecoder('utf-8', { fatal: true }).decode(bytes), id)
         : registerFont(bytes, asset.name, id);
       Object.assign(loaded, { bundled: true, kind: asset.kind, group: asset.group, noticeUrl: asset.noticeUrl, coverageHint: asset.coverageHint });
       return loaded;
@@ -72,7 +72,7 @@ export async function ensureFontLoaded(id: string): Promise<LoadedFont | undefin
   pendingFonts.set(id, request);
   return request;
 }
-const hershey = fonts.get(DEFAULT_FONT_ID)!.plotfont!;
+const hershey = fonts.get(DEFAULT_FONT_ID)!.openplotfont!;
 export const loadedFonts = (): LoadedFont[] => [...fonts.values()];
 export const findFont = (id?: string): LoadedFont | undefined => id ? fonts.get(id) : undefined;
 export const defaultTextOptions: TextOptions = {
@@ -97,7 +97,7 @@ function fontDatabase(): Promise<IDBDatabase> {
     request.onerror = () => reject(request.error);
   });
 }
-interface FontRecord { id: string; name: string; bytes: ArrayBuffer; format?: 'plotfont' }
+interface FontRecord { id: string; name: string; bytes: ArrayBuffer; format?: 'openplotfont' }
 async function saveFont(record: FontRecord): Promise<void> {
   const db = await fontDatabase();
   try { await new Promise<void>((resolve, reject) => {
@@ -129,14 +129,14 @@ export async function importDocumentFonts(records: EmbeddedFont[]): Promise<void
   // Verify all identities before registration/storage, preserving existing fonts.
   const decoded = await Promise.all(records.map(async record => {
     const bytes = Uint8Array.from(atob(record.data), char => char.charCodeAt(0)).buffer;
-    const id = `${record.format === 'plotfont' ? 'plotfont-' : ''}${await sha256(bytes)}`;
+    const id = `${record.format === 'openplotfont' ? 'openplotfont-' : ''}${await sha256(bytes)}`;
     if (id !== record.id) throw new Error(`Embedded font ${record.name} does not match its ID.`);
     return {...record, bytes};
   }));
   for (const record of decoded) {
-    if (record.format === 'plotfont') await registerPlotFont(new TextDecoder('utf-8', {fatal: true}).decode(record.bytes), record.id);
+    if (record.format === 'openplotfont') await registerOpenPlotFont(new TextDecoder('utf-8', {fatal: true}).decode(record.bytes), record.id);
     else registerFont(record.bytes, record.name, record.id);
-    await saveFont({id: record.id, name: record.name, bytes: record.bytes, format: record.format === 'plotfont' ? 'plotfont' : undefined});
+    await saveFont({id: record.id, name: record.name, bytes: record.bytes, format: record.format === 'openplotfont' ? 'openplotfont' : undefined});
   }
 }
 export async function restoreFonts(usedFontIds: string[] = []): Promise<void> {
@@ -148,7 +148,7 @@ export async function restoreFonts(usedFontIds: string[] = []): Promise<void> {
       const request = db.transaction('fonts').objectStore('fonts').getAll();
       request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
     });
-    for (const record of records) { try { if (record.format === 'plotfont') await registerPlotFont(new TextDecoder('utf-8', { fatal: true }).decode(record.bytes), record.id); else registerFont(record.bytes, record.name, record.id); } catch { /* Preserve other usable fonts. */ } }
+    for (const record of records) { try { if (record.format === 'openplotfont') await registerOpenPlotFont(new TextDecoder('utf-8', { fatal: true }).decode(record.bytes), record.id); else registerFont(record.bytes, record.name, record.id); } catch { /* Preserve other usable fonts. */ } }
   } finally { db.close(); }
   const failed = bundled.find(result => result.status === 'rejected');
   if (failed?.status === 'rejected') throw failed.reason;
@@ -172,13 +172,14 @@ export async function loadFontFile(file: File): Promise<LoadedFont> {
   if (file.size > 20 * 1024 * 1024) throw new Error('Choose a font smaller than 20 MB.');
   await initializeTypography();
   const bytes = await file.arrayBuffer();
-  if (/\.json$/i.test(file.name)) {
+  if (/\.opf(?:\.json)?$/i.test(file.name)) {
     const source = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    const id = `plotfont-${await sha256(bytes)}`, font = await registerPlotFont(source, id);
-    try { await saveFont({ id, name: file.name, bytes, format: 'plotfont' }); }
-    catch { fonts.delete(id); throw new Error('Could not save the PlotFont in browser storage.'); }
+    const id = `openplotfont-${await sha256(bytes)}`, font = await registerOpenPlotFont(source, id);
+    try { await saveFont({ id, name: file.name, bytes, format: 'openplotfont' }); }
+    catch { fonts.delete(id); throw new Error('Could not save the OpenPlotFont in browser storage.'); }
     return font;
   }
+  if (!/\.(?:otf|ttf)$/i.test(file.name)) throw new Error('Choose an OpenPlotFont .opf or .opf.json, OpenType .otf, or TrueType .ttf file.');
   if (bytes.byteLength < 12) throw new Error('This font file is invalid.');
   const hash = await crypto.subtle.digest('SHA-256', bytes);
   const id = Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
@@ -188,14 +189,14 @@ export async function loadFontFile(file: File): Promise<LoadedFont> {
   return font;
 }
 
-export async function registerPlotFont(source: string, id: string): Promise<LoadedFont> {
-  const prepared = await loadPlotFont(source), plotfont = prepared.data;
-  const result: LoadedFont = { id, name: `${plotfont.familyName} ${plotfont.styleName}`, axes: {},
-    features: [...prepared.features], plotfont, prepared, kind: 'plotfont' };
+export async function registerOpenPlotFont(source: string, id: string): Promise<LoadedFont> {
+  const prepared = await loadOpenPlotFont(source), openplotfont = prepared.data;
+  const result: LoadedFont = { id, name: `${openplotfont.familyName} ${openplotfont.styleName}`, axes: {},
+    features: [...prepared.features], openplotfont, prepared, kind: 'openplotfont' };
   fonts.set(id, result); return result;
 }
 export function fontTextOptions(font: LoadedFont, options: TextOptions): TextOptions {
-  const m = font.plotfont?.metrics;
+  const m = font.openplotfont?.metrics;
   return { ...options, fontId: font.id, features: '', variations: '',
     lineHeight: m ? (m.ascender - m.descender + m.lineGap) / m.capHeight : options.lineHeight };
 }
@@ -224,9 +225,9 @@ function createTypographyItem(content: string, capHeightMm: number, options: Tex
   if (options.fontId === 'plot-sans') return textToItem(content, capHeightMm, options);
   const loaded = findFont(options.fontId);
   if (!loaded) throw new Error('This font is unavailable. Load the original font again to edit this text.');
-  if (loaded.bundled && !loaded.plotfont && !loaded.face) throw new Error('This font is still loading. Try again in a moment.');
-  if (loaded.plotfont && !loaded.prepared) throw new Error('The font engine is still loading. Try again in a moment.');
-  if (loaded.plotfont) return plotFontToItem(loaded.prepared!, content, capHeightMm, options);
+  if (loaded.bundled && !loaded.openplotfont && !loaded.face) throw new Error('This font is still loading. Try again in a moment.');
+  if (loaded.openplotfont && !loaded.prepared) throw new Error('The font engine is still loading. Try again in a moment.');
+  if (loaded.openplotfont) return openPlotFontToItem(loaded.prepared!, content, capHeightMm, options);
   if (!loaded.face) throw new Error('This font has no shaping data.');
   const face = loaded.face;
   const font = new hb.Font(face);
@@ -298,7 +299,7 @@ function createTypographyItem(content: string, capHeightMm: number, options: Tex
 /** Verify legacy source before replacing it: node edits and element overrides win. */
 export function migrateOutlineText(item: ArtworkItem): {replacement?: ArtworkItem; notice?: string} {
   const id = item.text?.options?.fontId;
-  if (!id || id === 'plot-sans' || item.text?.format === 'plotfont' || findFont(id)?.plotfont || findFont(id)?.kind === 'plotfont') return {};
+  if (!id || id === 'plot-sans' || item.text?.format === 'openplotfont' || findFont(id)?.openplotfont || findFont(id)?.kind === 'openplotfont') return {};
   const notice = `${item.name}: Perimeter cleanup was not applied; stored outlines were preserved. Reload the font or edit the text to regenerate.`;
   const root = markupRoot(item.markup), paths = [...root.children];
   if (paths.length && paths.every(isOutlineGlyph)) return {};

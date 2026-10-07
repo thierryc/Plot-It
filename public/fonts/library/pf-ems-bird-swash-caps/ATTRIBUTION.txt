@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Bird Swash Caps
+OpenPlotFont conversion of PF EMS Bird Swash Caps
 
 Font name:               EMS Bird Swash Caps
 License:                 SIL Open Font License http://scripts.sil.org/OFL

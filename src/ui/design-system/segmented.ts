@@ -1,13 +1,13 @@
 import { attributes, classes, escapeUI, type Attributes } from './html';
 import styles from './segmented.module.css';
 
-export interface SegmentOption { label: string; selected: boolean; attributes: Attributes; }
+export interface SegmentOption { label: string; selected: boolean; attributes: Attributes; icon?:string; iconOnly?:boolean; }
 
 /** Single-choice button group; mount its keyboard behavior with mountSegmentedControls. */
 export function segmentedControl(label: string, options: SegmentOption[]): string {
   const selected = options.findIndex(option => option.selected && !option.attributes.disabled);
   const entry = selected >= 0 ? selected : options.findIndex(option => !option.attributes.disabled);
-  return `<div class="${classes('mode-switch', styles['mode-switch'])}" ${attributes({role:'radiogroup', 'aria-label':label, 'data-segmented':''})}>${options.map((option, index) => `<button type="button" class="${classes(styles.segment)}" ${attributes({...option.attributes, role:'radio', 'aria-checked':index===entry, tabindex:index===entry ? 0 : -1})}><span>${escapeUI(option.label)}</span></button>`).join('')}</div>`;
+  return `<div class="${classes('mode-switch', styles['mode-switch'], options.every(option=>option.iconOnly) && styles['icon-group'])}" ${attributes({role:'radiogroup', 'aria-label':label, 'data-segmented':''})}>${options.map((option, index) => `<button type="button" class="${classes(styles.segment)}" ${attributes({...option.attributes, ...(option.iconOnly ? {'aria-label':option.label,title:option.label} : {}), role:'radio', 'aria-checked':index===entry, tabindex:index===entry ? 0 : -1})}>${option.icon??''}${option.iconOnly?'':`<span>${escapeUI(option.label)}</span>`}</button>`).join('')}</div>`;
 }
 
 /** Native click/Space/Enter activation plus one Tab stop and arrow/Home/End selection. */
@@ -33,6 +33,8 @@ export class SegmentedControl {
       const backward = event.key === 'ArrowUp' || event.key === (rtl ? 'ArrowRight' : 'ArrowLeft');
       const index = event.key === 'Home' ? 0 : event.key === 'End' ? controls.length - 1 : (current + (backward ? -1 : 1) + controls.length) % controls.length;
       const target = controls[index]!;
+      // Focus before activation so a synchronous app rerender can restore this option.
+      target.focus({preventScroll:true});
       if (target.getAttribute('aria-checked') !== 'true') target.click();
       // Application activation may replace this view; its new view owns focus then.
       if (target.isConnected) target.focus({preventScroll:true});
@@ -63,6 +65,12 @@ export class SegmentedControl {
 }
 
 export function mountSegmentedControls(root: ParentNode): () => void {
-  const controls = [...root.querySelectorAll<HTMLElement>('[data-segmented]')].map(group => new SegmentedControl(group));
-  return () => controls.forEach(control => control.destroy());
+  const controls = new Map<HTMLElement,SegmentedControl>();
+  const sync = () => {
+    for (const [group,control] of controls) if (!root.contains(group)) { control.destroy(); controls.delete(group); }
+    root.querySelectorAll<HTMLElement>('[data-segmented]').forEach(group=>{if(!controls.has(group))controls.set(group,new SegmentedControl(group));});
+  };
+  sync();
+  const observer = new MutationObserver(sync); observer.observe(root,{childList:true,subtree:true});
+  return () => { observer.disconnect(); controls.forEach(control=>control.destroy()); controls.clear(); };
 }

@@ -6,7 +6,7 @@ import { initialState } from './model';
 import type { PlotPath } from './svg';
 const mocks = vi.hoisted(() => ({ fills: vi.fn(), extras: vi.fn(), flatten: vi.fn() }));
 vi.mock('./fill-dom', () => ({ awaitFills: mocks.fills, fillPlotPaths: mocks.extras }));
-vi.mock('./svg', () => ({ flattenPlotPathsAsync: mocks.flatten }));
+vi.mock('./svg', () => ({ flattenPlotPathsAsync: mocks.flatten,readSourceLayers:()=>[] }));
 
 class TestWorker {
   static instances: TestWorker[] = [];
@@ -18,7 +18,7 @@ class TestWorker {
   constructor(public url: URL, public options: WorkerOptions) { TestWorker.instances.push(this); }
   send(data: unknown) { this.onmessage?.call(this as unknown as Worker, { data } as MessageEvent); }
 }
-const svg = {} as SVGSVGElement;
+const svg = {querySelector:()=>null} as unknown as SVGSVGElement;
 const paths: PlotPath[] = [{ tool: 'rgb(255, 0, 0)', points: [{ x: 15, y: 15 }, { x: 20, y: 15 }] }];
 const plan = () => ({ ...buildMotionPlan([{ ...paths[0]!, tool: '#FF0000' }], initialState.settings),
   pens: [{ color: '#FF0000', name: '', sources: ['#FF0000'], included: true }] });

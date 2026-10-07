@@ -47,11 +47,11 @@ copyright (c) 2026 Thierry C. Its full notice is distributed in
 [public/licenses/apcx-gl-marquee.txt](public/licenses/apcx-gl-marquee.txt).
 The marquee reuses the bundled Square Bot Sans font with its existing OFL notice.
 
-## Bundled PlotFont fonts
+## Bundled OpenPlotFont fonts
 
-`src/fonts/hershey-*.plotfont.json` contains Roman Simplex, Roman Duplex,
+`src/fonts/hershey-*.opf.json` contains Roman Simplex, Roman Duplex,
 Roman Triplex, and Script Simplex. The assets are copied unchanged from the
-PlotFont repository's current native geometry-only 0.3 exports. They derive
+OpenPlotFont repository's current native geometry-only 0.3 exports. They derive
 from kamalmostafa/hershey-fonts revision
 `1356bf2f83d380fcef68c887e88675eb9d445d86`, files `hershey-fonts/rowmans.jhf`,
 `rowmand.jhf`, `rowmant.jhf` and `scripts.jhf` respectively.
@@ -62,16 +62,16 @@ distribution was originally created by James Hurt, Cognition, Inc.,
 900 Technology Park Drive, Billerica, MA 01821 (mit-eddie!ci-dandelion!hurt).
 
 The font data has separate Hershey terms; it is not licensed under the app's
-AGPL or PlotFont's MIT license. Preserve the full upstream acknowledgements
+AGPL or OpenPlotFont's MIT license. Preserve the full upstream acknowledgements
 and restrictions in [public/fonts/HERSHEY_NOTICE.txt](public/fonts/HERSHEY_NOTICE.txt).
 
-`src/fonts/plotfont-layout-demo.plotfont.json` is the original PlotFont Layout
+`src/fonts/openplotfont-layout-demo.opf.json` is the original OpenPlotFont Layout
 Demo native export, copyright (c) 2026 Thierry Charbonnel, licensed under MIT.
-Its complete license is in [public/fonts/PLOTFONT_LICENSE.txt](public/fonts/PLOTFONT_LICENSE.txt).
+Its complete license is in [public/fonts/OPENPLOTFONT_LICENSE.txt](public/fonts/OPENPLOTFONT_LICENSE.txt).
 Both notices are distributed alongside the production app and source archive.
 
-`src/fonts/pf-ems-spacerocks.plotfont.json` is copied unchanged from the
-PlotFont 0.3 converted font library. EMS SpaceRocks was created and converted
+`src/fonts/pf-ems-spacerocks.opf.json` is copied unchanged from the
+OpenPlotFont 0.3 converted font library. EMS SpaceRocks was created and converted
 to SVG by Trammell Hudson, derived from the Atari Asteroids font designed by
 Ed Logg. Its source is `fonts/EMS/EMSSpaceRocks.svg` in
 https://gitlab.com/oskay/svg-fonts at revision
@@ -83,17 +83,17 @@ with the app and source archive. The supplied OFL template retains its
 unfilled copyright fields unchanged; author credits remain in the attribution
 and font metadata.
 
-## Local PlotFont library
+## Local OpenPlotFont library
 
-`packages/plotfont` is extracted PlotFont validation, layout, and geometry code
+`packages/openplotfont` is extracted OpenPlotFont validation, layout, and geometry code
 licensed separately under MIT, copyright (c) 2026 Thierry Charbonnel.
-See [its license](packages/plotfont/LICENSE) and [dependency notices](packages/plotfont/THIRD_PARTY_NOTICES.md).
+See [its license](packages/openplotfont/LICENSE) and [dependency notices](packages/openplotfont/THIRD_PARTY_NOTICES.md).
 Plot-it remains AGPL-3.0-only; no Saxi planner or Clipper code is included in
 the standalone package. Font assets remain in the app under the terms above.
 
 ## Complete font-menu library
 
-`public/fonts/library` bundles the 87-source PlotFont stroke library. The JSON
+`public/fonts/library` bundles the 87-source OpenPlotFont stroke library. The JSON
 retains each source revision, SHA-256, attribution, full available license notices,
 and conversion metadata. Accompanying files retain complete upstream notices,
 ancestor licenses, and original font sources. Font-menu attribution links point to
@@ -110,3 +110,14 @@ the font. Font names, geometry, and layout are preserved.
 
 The menu manifest `src/fonts/catalog.json` pins every bundled asset by SHA-256.
 `scripts/bundle-font-library.py` recreates the bundle from these reviewed sources.
+
+## Plotter Core reference adaptations
+
+The independent TypeScript motion planner/compiler does not import Saxi or Python.
+The discrete EBB math in `packages/plotter-core/src/ebb-math.ts` is adapted from
+Plotink `ebb_calc.py` under MIT; the complete notice is in
+`packages/plotter-core/reference/PLOTINK-LICENSE`. The NextDraw homing procedure
+is adapted from NextDraw 1.7.4 `homing.py`, also MIT; its complete notice is in
+`packages/plotter-core/reference/NEXTDRAW-NOTICE`. Pinned revisions, archive and
+wheel hashes are recorded alongside those notices. The virtual ISR implementation
+and TypeScript motion/geometry services are independently authored.

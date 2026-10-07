@@ -1,7 +1,7 @@
-import type { PlotFontData } from '@thierryc/plotfont';
+import type { OpenPlotFontData } from '@thierryc/openplotfont';
 import type { ArtworkItem } from './model';
 export type DrawingType = 'stroke' | 'outline' | 'mixed';
-export function drawingType(font?: PlotFontData): DrawingType {
+export function drawingType(font?: OpenPlotFontData): DrawingType {
     if (!font)
         return 'outline';
     let stroke = false, fill = false;
@@ -12,7 +12,7 @@ export function drawingType(font?: PlotFontData): DrawingType {
         }
     return stroke && fill ? 'mixed' : stroke ? 'stroke' : 'outline';
 }
-export function specimenText(font?: PlotFontData): string {
+export function specimenText(font?: OpenPlotFontData): string {
     if (!font)
         return 'Aa 012';
     const encoded = font.glyphs.filter(g => g.strokes.length).flatMap(g => g.unicodes.map(u => parseInt(u, 16)));

@@ -1,8 +1,10 @@
+import {parseLayerControls} from '@thierryc/plotter-core';
+import {flattenSvgGeometry} from './svg-scene';
 import { WorkSlice } from './cooperative';
 import type { ArtworkItem, Point } from "./model";
 import { itemTransform, makeId } from "./model";
 import { parsePath, parsePathSteps, pathData } from "./editor";
-import { flattenContour } from '@thierryc/plotfont';
+import { flattenContour } from '@thierryc/openplotfont';
 
 const DRAWABLE = "path,line,polyline,polygon,rect,circle,ellipse";
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -11,9 +13,10 @@ export interface PlotPath {
   points: Point[];
   tool: string;
   width?: number;
-  /** PlotFont trajectories are an atomic ordered block, even during travel optimization. */
+  /** OpenPlotFont trajectories are an atomic ordered block, even during travel optimization. */
   orderGroup?: string;
   sourceKey?: string;
+  layerId?:string;sourceId?:string;sourceOrder?:number;
 }
 
 function number(value: string | null, fallback: number): number {
@@ -94,7 +97,7 @@ export function freehandItem(points: Point[]): ArtworkItem {
 }
 
 export function renderItem(item: ArtworkItem, selected = false): string {
-  return `<g class="artwork ${selected ? "is-selected" : ""}" data-item-id="${item.id}" ${item.text?.format === 'plotfont' ? 'data-plotfont-order="true"' : ''} transform="${itemTransform(item)}" style="color:${item.stroke}">${item.markup}</g>`;
+  return `<g class="artwork ${selected ? "is-selected" : ""}" data-item-id="${item.id}" ${item.text?.format === 'openplotfont' ? 'data-openplotfont-order="true"' : ''} transform="${itemTransform(item)}" style="color:${item.stroke}">${item.markup}</g>`;
 }
 
 export function serializeDocument(items: ArtworkItem[], width: number, height: number): string {
@@ -102,7 +105,7 @@ export function serializeDocument(items: ArtworkItem[], width: number, height: n
   return `<svg xmlns="${SVG_NS}" width="${width}mm" height="${height}mm" viewBox="0 0 ${width} ${height}" fill="none">\n  ${body}\n</svg>\n`;
 }
 
-function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = false, generated: PlotPath[] = []): Generator<void, PlotPath[]> {
+function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = false, generated: PlotPath[] = [], toleranceMm?:number): Generator<void, PlotPath[]> {
   const rootMatrix = svg.getScreenCTM();
   if (!rootMatrix) return [];
   const inverseRoot = rootMatrix.inverse();
@@ -110,12 +113,18 @@ function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = fal
   const artwork = svg.querySelector("#artwork-layer") ?? svg;
   const bySource = new Map<string, PlotPath[]>();
   for (const path of generated) if (path.sourceKey) { const list = bySource.get(path.sourceKey) ?? []; list.push(path); bySource.set(path.sourceKey, list); }
+  const layerNodes=Array.from(artwork.querySelectorAll<SVGGElement>('g')).filter(node=>!!sourceLayerLabel(node)||node.getAttributeNS('http://www.inkscape.org/namespaces/inkscape','groupmode')==='layer'||node.getAttribute('inkscape:groupmode')==='layer');
+  let sourceOrdinal=0;
   for (const element of artwork.querySelectorAll<SVGGeometryElement>(DRAWABLE)) {
     yield;
+    const sourceId=`scene-${sourceOrdinal++}`;element.setAttribute('data-plot-source-id',sourceId);
+    const layer=layerNodes.filter(node=>node.contains(element)).at(-1),layerId=layer?.id||`source-layer-${layerNodes.indexOf(layer!)}`;
+    const append=(...incoming:PlotPath[])=>{paths.push(...incoming.map(path=>({...path,sourceId,sourceOrder:sourceOrdinal-1,...(layer?{layerId}:{})})));};
+    if(layer&&(parseLayerControls(sourceLayerLabel(layer)).documentation||getComputedStyle(layer).display==='none'||getComputedStyle(layer).visibility==='hidden'))continue;
     if (skipGenerated && element.closest("[data-generated-fill]")) continue;
     if (skipGenerated && element.hasAttribute('data-fill-source')) {
       const sourceKey = element.getAttribute('data-fill-path-key') ?? '';
-      paths.push(...(bySource.get(sourceKey) ?? []));
+      append(...(bySource.get(sourceKey) ?? []));
       // Several editable glyphs can share one resolved batch. Insert that batch
       // at its first source only, retaining intentional strokes within it.
       bySource.delete(sourceKey);
@@ -125,14 +134,14 @@ function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = fal
     const matrix = element.getScreenCTM();
     if (!matrix) continue;
     const transform = inverseRoot.multiply(matrix);
-    const orderRoot = element.closest<SVGGElement>('[data-plotfont-order]');
+    const orderRoot = element.closest<SVGGElement>('[data-openplotfont-order]');
     const orderGroup = orderRoot?.dataset.itemId;
-    if (element.getAttribute('data-plotfont-kind') === 'stroke') {
+    if (element.getAttribute('data-openplotfont-kind') === 'stroke') {
       const commands = parsePath(element.getAttribute('d') ?? '').map(command => ({...command,values:command.values.flatMap((_,i,values)=>{
         if(i%2)return [];const p=new DOMPoint(values[i]!,values[i+1]!).matrixTransform(transform);return [p.x,p.y];
       })}));
       const points = flattenContour(commands, .005);
-      if(points.length>1) paths.push({points,tool:getComputedStyle(element).stroke,orderGroup});
+      if(points.length>1) append({points,tool:getComputedStyle(element).stroke,orderGroup});
       continue;
     }
     // Fill output is already flattened page-space geometry. Preserve each vertex:
@@ -142,7 +151,13 @@ function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = fal
         const p = new DOMPoint(c.values[0]!, c.values[1]!).matrixTransform(transform);
         return { x: p.x, y: p.y };
       });
-      if (points.length > 1) paths.push({ points, tool: getComputedStyle(element).stroke, width: Number(element.getAttribute('stroke-width')) || .35, orderGroup });
+      if (points.length > 1) append({ points, tool: getComputedStyle(element).stroke, width: Number(element.getAttribute('stroke-width')) || .35, orderGroup });
+      continue;
+    }
+    if(toleranceMm!==undefined){
+      const mode=layer?parseLayerControls(sourceLayerLabel(layer)).handlingMetadata:undefined,localTolerance=mode===2?.0508:mode===3?.2032:mode===4?.127:toleranceMm;
+      const contours=flattenSvgGeometry(element,[transform.a,transform.b,transform.c,transform.d,transform.e,transform.f],localTolerance);
+      const stroke=getComputedStyle(element).stroke;for(const points of contours){if(points.length>1)append({points,tool:stroke&&stroke!=='none'?stroke:'rgb(23, 23, 20)',orderGroup});yield;}
       continue;
     }
     const geometries: SVGGeometryElement[] = [];
@@ -179,7 +194,7 @@ function* plotPathSteps(svg: SVGSVGElement, spacingMm = 0.7, skipGenerated = fal
       const tool = computedStroke && computedStroke !== "none" && computedStroke !== "rgba(0, 0, 0, 0)"
         ? computedStroke
         : "rgb(23, 23, 20)";
-      paths.push({ points, tool, orderGroup });
+      append({ points, tool, orderGroup });
     }
     }
   }
@@ -190,8 +205,8 @@ export function flattenPlotPaths(svg:SVGSVGElement,spacingMm=.7):PlotPath[] {
   const steps=plotPathSteps(svg,spacingMm); let step=steps.next();
   while(!step.done) step=steps.next(); return step.value;
 }
-export async function flattenPlotPathsAsync(svg:SVGSVGElement,work:WorkSlice,generated:PlotPath[]):Promise<PlotPath[]> {
-  const steps=plotPathSteps(svg,.7,true,generated); let step=steps.next();
+export async function flattenPlotPathsAsync(svg:SVGSVGElement,work:WorkSlice,generated:PlotPath[],toleranceMm?:number):Promise<PlotPath[]> {
+  const steps=plotPathSteps(svg,.7,true,generated,toleranceMm); let step=steps.next();
   while(!step.done) {const pause=work.checkpoint();if(pause) await pause;step=steps.next();}
   return [...step.value,...generated.filter(path=>!path.sourceKey)];
 }
@@ -350,4 +365,10 @@ export function clipPlotPaths(paths: PlotPath[], bounds: PlotBounds): PlotPath[]
     if (current.length > 1) result.push({ ...path, points: current });
   }
   return result;
+}
+
+export interface SourceLayer {id:string;name:string;controls:import('@thierryc/plotter-core').LayerControls;hidden:boolean;sourceOrder?:number}
+const sourceLayerLabel=(node:Element)=>node.getAttributeNS('http://www.inkscape.org/namespaces/inkscape','label')??node.getAttribute('inkscape:label')??'';
+export function readSourceLayers(svg:SVGSVGElement):SourceLayer[]{
+ return Array.from(svg.querySelectorAll<SVGGElement>('g')).filter(node=>!!sourceLayerLabel(node)||node.getAttributeNS('http://www.inkscape.org/namespaces/inkscape','groupmode')==='layer'||node.getAttribute('inkscape:groupmode')==='layer').map((node,index)=>({id:node.id||`source-layer-${index}`,name:sourceLayerLabel(node),sourceOrder:(()=>{const n=Array.from(svg.querySelectorAll('[data-plot-source-id]')).findIndex(path=>node.contains(path)||!!(node.compareDocumentPosition(path)&Node.DOCUMENT_POSITION_FOLLOWING));return n<0?Number.MAX_SAFE_INTEGER:n;})(),controls:parseLayerControls(sourceLayerLabel(node)),hidden:getComputedStyle(node).display==='none'||getComputedStyle(node).visibility==='hidden'}));
 }

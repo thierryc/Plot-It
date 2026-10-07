@@ -1,4 +1,4 @@
-PlotFont conversion of PF Relief SingleLine Ornament
+OpenPlotFont conversion of PF Relief SingleLine Ornament
 
 Created by FontForge 20201107 at Thu May 26 19:50:12 2022
  By Tanguy Vanlaeys

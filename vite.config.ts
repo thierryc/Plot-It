@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: { exclude: ['harfbuzzjs'] },
   build: {
     rollupOptions: {
-      input: mode === 'site' ? Object.fromEntries(['index.html', 'app/index.html', 'docs/index.html', 'docs/self-hosted/index.html', '404.html'].map(path => [path, fileURLToPath(new URL(`./site/${path}`, import.meta.url))])) : undefined,
+      input: mode === 'site' ? Object.fromEntries(['index.html', 'app/index.html', 'docs/index.html', 'docs/self-hosted/index.html', '404.html'].map(path => [path, fileURLToPath(new URL(`./site/${path}`, import.meta.url))])) : {app:fileURLToPath(new URL('./index.html',import.meta.url)),virtual:fileURLToPath(new URL('./virtual.html',import.meta.url))},
       output: {
         // A shared helper in a top-level-await entry can deadlock lazy HarfBuzz imports.
         manualChunks(id) { if (id.includes('vite/preload-helper')) return 'preload-helper'; }

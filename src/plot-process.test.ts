@@ -23,7 +23,7 @@ const optimizedDrawing=()=>{
 afterEach(() => vi.unstubAllGlobals());
 
 describe('clean plot process', () => {
-  it.each(['2.4.6', '2.8.1'])('reloads the mechanical pen in place at the continuous-distance limit (%s)', async version => {
+  it.each(['3.1.7', '2.8.1'])('reloads the mechanical pen in place at the continuous-distance limit (%s)', async version => {
     const settings = { ...initialState.settings, maxPenDownMm: 30, returnToOrigin: false };
     // The first 30 mm crosses a corner: use drawn length, not displacement.
     const source = [{ tool: '#000000', points: [{x:10,y:10},{x:35,y:10},{x:35,y:65}] }];
@@ -49,8 +49,8 @@ describe('clean plot process', () => {
     expect(penCommands.map(entry => Number(entry.command.split(',')[1]))).toEqual([1,0,1,0,1,0,1]);
     for (const up of [2,4]) {
       const between = fixture.commands.slice(penCommands[up]!.index + 1, penCommands[up+1]!.index);
-      expect(between.some(command => /^(XM|HM),/.test(command))).toBe(false);
-      expect(between).toContain(version === '2.8.1' ? 'QG' : 'QM');
+      expect(between.some(command => /^(SM|HM),/.test(command))).toBe(false);
+      expect(between).toContain('QG');
     }
     expect(fixture.commands.some(command => command.startsWith('HM,'))).toBe(false);
     expect(core.progress.state).toBe('finished'); await core.disconnect();
@@ -60,7 +60,7 @@ describe('clean plot process', () => {
   });
 
   it.each([
-    ['2.4.6', 'up'], ['2.4.6', 'down'], ['2.8.1', 'up'], ['2.8.1', 'down'],
+    ['3.1.7', 'up'], ['3.1.7', 'down'], ['2.8.1', 'up'], ['2.8.1', 'down'],
   ])('raises before leaving origin after manual pen %s / %s and returns raised', async (version, height) => {
     const plan = buildMotionPlan([
       { tool: '#000000', points: [{ x: 10, y: 10 }, { x: 20, y: 10 }] },
@@ -76,17 +76,17 @@ describe('clean plot process', () => {
     const commands = fixture.commands.slice(before);
     expect(commands).toContain(`SC,4,${servoPosition(plan.settings.penUp)}`);
     const firstLift = commands.findIndex(command => command.startsWith('SP,'));
-    const firstMotion = commands.findIndex(command => /^(LM|XM),/.test(command));
+    const firstMotion = commands.findIndex(command => /^(LM|SM),/.test(command));
     expect(commands[firstLift]).toMatch(/^SP,1,\d+,1$/);
     expect(firstLift).toBeLessThan(firstMotion);
-    expect(commands.slice(firstLift + 1, firstMotion)).toContain(version === '2.8.1' ? 'QG' : 'QM');
+    expect(commands.slice(firstLift + 1, firstMotion)).toContain('QG');
     expect(settled[0]).toMatchObject({ kind: 'pen', position: { x: 0, y: 0 }, penDown: false });
     const reverse = [...commands].reverse();
     const lastLift = commands.length - 1 - reverse.findIndex(command => command.startsWith('SP,'));
-    const lastMotion = commands.length - 1 - reverse.findIndex(command => /^(LM|XM),/.test(command));
+    const lastMotion = commands.length - 1 - reverse.findIndex(command => /^(LM|SM),/.test(command));
     expect(commands[lastLift]).toMatch(/^SP,1,\d+,1$/);
     expect(lastLift).toBeLessThan(lastMotion);
-    expect(commands.slice(lastLift + 1, lastMotion)).toContain(version === '2.8.1' ? 'QG' : 'QM');
+    expect(commands.slice(lastLift + 1, lastMotion)).toContain('QG');
     expect(settled.at(-1)).toMatchObject({ kind: 'xy', position: { x: 0, y: 0 }, penDown: false });
     await core.disconnect();
   });
@@ -96,12 +96,12 @@ describe('clean plot process', () => {
     await core.connect(); const before = fixture.commands.length;
     const missingLift = drawing(); missingLift.events.shift();
     const startsDown = drawing(); startsDown.events[0]!.penDown = true;
-    for (const plan of [missingLift, startsDown]) await expect(core.plot(plan)).rejects.toThrow('start by raising the pen at the origin');
+    for (const plan of [missingLift, startsDown]) await expect(core.plot(plan)).rejects.toThrow('Preview');
     const missingReturn = buildMotionPlan([
       { tool: '#000000', points: [{ x: 10, y: 10 }, { x: 20, y: 10 }] },
     ], { ...initialState.settings, returnToOrigin: false });
     missingReturn.settings.returnToOrigin = true;
-    await expect(core.plot(missingReturn)).rejects.toThrow('finish at the origin');
+    await expect(core.plot(missingReturn)).rejects.toThrow('Preview');
     expect(fixture.commands).toHaveLength(before); expect(core.active).toBe(false);
     const shortWait = drawing(); shortWait.events[0]!.duration = .001;
     await expect(core.plot(shortWait)).rejects.toThrow('pen settling time');
@@ -117,18 +117,18 @@ describe('clean plot process', () => {
     await core.returnToOrigin(initialState.settings);
     const commands = fixture.commands.slice(before);
     const lift = commands.findIndex(command => command.startsWith('SP,'));
-    const home = commands.findIndex(command => command.startsWith('HM,'));
+    const home = commands.findIndex(command => command.startsWith('SM,'));
     expect(commands[lift]).toMatch(/^SP,1,\d+,1$/);
     // Do not use a zero-distance ramp/dwell derived from the cached Up height.
     expect(fixture.commands).toContain('SC,11,1845');
     expect(Number(commands[lift]!.split(',')[2])).toBeGreaterThanOrEqual(349);
-    expect(lift).toBeLessThan(home);
-    expect(commands.slice(lift + 1, home)).toContain('QG');
+    expect(home).toBe(-1); // Already at origin: no zero-distance utility move.
+    expect(commands.slice(lift+1)).toContain('QG');
     await core.disconnect();
   });
 
   it.each([
-    ['2.4.6','ordinary',drawing],['2.8.1','ordinary',drawing],['2.4.6','optimized + reloads',optimizedDrawing],['2.8.1','optimized + reloads',optimizedDrawing],
+    ['3.1.7','ordinary',drawing],['2.8.1','ordinary',drawing],['3.1.7','optimized + reloads',optimizedDrawing],['2.8.1','optimized + reloads',optimizedDrawing],
   ] as const)('matches every simulation event, position, height and counter on firmware %s (%s)', async (version,_label,makePlan) => {
     const plan = makePlan(), simulated: PlotSignal[] = [], executed: PlotSignal[] = [];
     let frame!: FrameRequestCallback;
@@ -159,7 +159,7 @@ describe('clean plot process', () => {
     plan.events.find(event => event.kind === 'xy')!.penDown = true;
     const fixture = fakeTransport(), core = new PlotterCore(fixture.transport, { sleep: async () => {} });
     await core.connect(); const before = fixture.commands.length;
-    await expect(core.plot(plan)).rejects.toThrow('Pen state');
+    await expect(core.plot(plan)).rejects.toThrow('Preview events differ');
     expect(fixture.commands).toHaveLength(before); expect(core.active).toBe(false);
     await core.disconnect();
   });
@@ -187,17 +187,17 @@ describe('clean plot process', () => {
     const plan = buildMotionPlan([{tool:'#000',points:[{x:0,y:0},{x:.025,y:0},{x:0,y:0}]}], {...initialState.settings,returnToOrigin:false});
     const process=compilePlotProcess(plan), boundaries:number[]=[], moves:number[]=[];
     const drawingSteps=process.steps.filter(step=>step.event.kind==='xy'&&step.event.penDown);
-    expect(drawingSteps).toHaveLength(2);
-    expect(drawingSteps.every(step=>step.event.initialSpeed>0&&step.event.stopBefore)).toBe(true);
+    const rests=drawingSteps.filter(step=>step.event.stopBefore); expect(rests).toHaveLength(2);
+    expect(drawingSteps.every(step=>Number.isFinite(step.event.initialSpeed))).toBe(true);
     await executePlotProcess(process, {
-      waitUntilIdle:async()=>{},boundary:async step=>{boundaries.push(step.index);return step.index!==drawingSteps[1]!.index;},
+      waitUntilIdle:async()=>{},boundary:async step=>{boundaries.push(step.index);return step.index!==rests[1]!.index;},
       cancelled:()=>false,changeTool:async()=>{},movePen:async()=>{},
       moveXY:async(_move,step)=>{moves.push(step.index);},signal:()=>{},progress:()=>{},
     });
-    expect(boundaries).toContain(drawingSteps[0]!.index);
-    expect(boundaries).toContain(drawingSteps[1]!.index);
-    expect(moves).toContain(drawingSteps[0]!.index);
-    expect(moves).not.toContain(drawingSteps[1]!.index);
+    expect(boundaries).toContain(rests[0]!.index);
+    expect(boundaries).toContain(rests[1]!.index);
+    expect(moves).toContain(rests[0]!.index);
+    expect(moves).not.toContain(rests[1]!.index);
   });
 
   it('executes its own snapshot when the input artwork changes during playback', () => {

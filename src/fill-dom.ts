@@ -5,7 +5,7 @@ import type { ArtworkItem, FillSettings, Point } from './model';
 import { defaultFillSettings } from './model';
 import { elements, parsePath, parsePathSteps, pathData } from './editor';
 import { MAX_FILL_POINTS, validateFill, type GeometryJob, type FillResult, type FillStroke } from './fill';
-import { flattenContour } from '@thierryc/plotfont';
+import { flattenContour } from '@thierryc/openplotfont';
 import { isOutlineGlyph } from './outline-source';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -20,10 +20,10 @@ export function resolveFillSettings(object?: FillSettings, element?: FillSetting
 }
 export function effectiveFill(item: ArtworkItem, element?: Element): FillSettings {
   if (item.fillSettings?.mode === 'none') {
-    if (item.fillSettings.outline && element?.getAttribute('data-plotfont-kind') === 'stroke') return { ...defaultFillSettings };
+    if (item.fillSettings.outline && element?.getAttribute('data-openplotfont-kind') === 'stroke') return { ...defaultFillSettings };
     return resolveFillSettings(item.fillSettings);
   }
-  if (element?.getAttribute('data-plotfont-kind') === 'stroke') return { ...defaultFillSettings, mode: 'none' };
+  if (element?.getAttribute('data-openplotfont-kind') === 'stroke') return { ...defaultFillSettings, mode: 'none' };
   return resolveFillSettings(item.fillSettings, !element ? undefined : elementFill(element));
 }
 export function hasActiveFill(item: ArtworkItem, root: ParentNode): boolean {
@@ -37,7 +37,7 @@ interface Source { element: SVGGraphicsElement; elements: SVGGraphicsElement[]; 
 interface Collected { regions: GeometryJob[]; sources: Source[]; diagnostics: string[] }
 type CollectionCache = Map<string, { signature: string; data: Collected; indices: number[][]; points: number }>;
 function outlineGlyph(item: ArtworkItem, element: Element): boolean {
-  return !!item.text?.options && item.text.format !== 'plotfont' && item.text.options.fontId !== 'plot-sans' && isOutlineGlyph(element);
+  return !!item.text?.options && item.text.format !== 'openplotfont' && item.text.options.fontId !== 'plot-sans' && isOutlineGlyph(element);
 }
 async function contours(element: SVGGeometryElement, matrix: DOMMatrix, work: WorkSlice, glyph = false): Promise<{ closed: Point[][]; open: Point[][] }> {
   const geometries: { geometry: SVGGeometryElement; closed: boolean }[] = [];
@@ -204,7 +204,7 @@ function showUnfilledOutlines(svg: SVGSVGElement, items: ArtworkItem[]): boolean
     for (const element of elements(group)) {
       if (outlineGlyph(item, element)) active = true;
       const settings = effectiveFill(item, element);
-      if (element.getAttribute('data-plotfont-kind') === 'fill' && settings.mode === 'none' && !settings.outline) throw new Error(`${item.name}: PlotFont contains filled regions. Enable Draw boundary or choose Solid, Hatch stripes or Crosshatch in Plot fill before exporting or plotting.`);
+      if (element.getAttribute('data-openplotfont-kind') === 'fill' && settings.mode === 'none' && !settings.outline) throw new Error(`${item.name}: OpenPlotFont contains filled regions. Enable Draw boundary or choose Solid, Hatch stripes or Crosshatch in Plot fill before exporting or plotting.`);
       if (settings.outline) active = true;
       if (effectiveFill(item, element).mode !== 'none') { active = true; continue; }
       if (element.hasAttribute('data-outline-preview')) continue;
@@ -261,7 +261,7 @@ export function fillPlotPaths(svg: SVGSVGElement): PlotPath[] {
   const paths: PlotPath[] = [];
   let count = 0;
   for (const { group, sourceKey } of keyedGroups) {
-    const orderGroup = group.closest<SVGGElement>('[data-plotfont-order]')?.dataset.itemId;
+    const orderGroup = group.closest<SVGGElement>('[data-openplotfont-order]')?.dataset.itemId;
     for (const path of group.querySelectorAll('path')) {
       // apply() writes page-mm coordinates and cancels the ancestor transform.
       // Read those exact rounded vertices, without resampling or retransforming.
@@ -311,7 +311,7 @@ async function apply(svg: SVGSVGElement, data: Collected, results: FillResult[],
       retained.add(previous.group); paths.push(...previous.paths); continue;
     }
     const sourceKey = sourceIdentity(source.element);
-    const orderGroup = source.element.closest<SVGGElement>('[data-plotfont-order]')?.dataset.itemId;
+    const orderGroup = source.element.closest<SVGGElement>('[data-openplotfont-order]')?.dataset.itemId;
     const group = document.createElementNS(NS, 'g'); group.setAttribute('data-generated-fill', 'true'); group.setAttribute('data-fill-path-key', sourceKey);
     const parentMatrix = (source.element.parentElement as unknown as SVGGraphicsElement).getScreenCTM(), rootMatrix = svg.getScreenCTM();
     if (!parentMatrix || !rootMatrix) throw new Error('Fill transform is unavailable.');

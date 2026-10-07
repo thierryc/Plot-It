@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Osmotron
+OpenPlotFont conversion of PF EMS Osmotron
 
 Font name:               EMS Osmotron
 License:                 SIL Open Font License http://scripts.sil.org/OFL

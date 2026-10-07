@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { initialState } from './model';
 import { machinePoint } from './motion';
 import { buildMotionPlan, compileMotion } from './motion-plan';
-import { PLOTTER_POSITIONS, setupAngle, setupPen, setupSize } from './plotter-setup';
+import { PLOTTER_POSITIONS, setupAngle, setupArmRetracted, setupPen, setupSize } from './plotter-setup';
 
 describe('physical setup preview', () => {
   it.each(PLOTTER_POSITIONS)('keeps the moving arm on the pen with $label', ({ rotation }) => {
@@ -12,6 +12,10 @@ describe('physical setup preview', () => {
     const angle = ((setupAngle(settings) + 360) % 360) as typeof rotation;
     expect(machinePoint(local, angle)).toEqual(position);
     expect(setupPen({ x: 0, y: 0 }, settings)).toEqual({ x: 0, y: 0 });
+  });
+  it.each(PLOTTER_POSITIONS)('retracts at origin only for top/left placement: $label', ({ rotation }) => {
+    const settings = { ...initialState.settings, machineRotation: rotation };
+    expect(setupArmRetracted(settings)).toBe(rotation === 180 || rotation === 270);
   });
   it('preserves the existing default direction and uses overall model dimensions', () => {
     expect(setupAngle(initialState.settings)).toBe(0);

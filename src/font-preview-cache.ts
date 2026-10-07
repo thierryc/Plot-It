@@ -101,5 +101,5 @@ export const customFontPreviews = new FontPreviewCache(async (id) => {
     if (!font || font.bundled)
         throw new Error('Custom preview requires an imported font.');
     await initializeTypography();
-    return previewSVG(typographyToItem(specimenText(font.plotfont), 8, fontTextOptions(font, defaultTextOptions)));
+    return previewSVG(typographyToItem(specimenText(font.openplotfont), 8, fontTextOptions(font, defaultTextOptions)));
 }, storedPreviews());

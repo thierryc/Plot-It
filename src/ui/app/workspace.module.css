@@ -3,7 +3,7 @@
 .top-actions { position:absolute; right:16px; top:16px; z-index:var(--layer-controls); display:flex; align-items:center; gap:8px; }
 .menu-trigger { position:absolute; top:16px; left:16px; z-index:var(--layer-controls); box-shadow:var(--island-shadow); background:var(--surface); }
 .inspector-trigger { display:none; }
-.statusbar { position:absolute; bottom:16px; left:20px; z-index:var(--layer-status); display:flex; align-items:center; gap:12px; max-width:calc(100% - 440px); color:var(--text-quiet); font-size:10px; line-height:1.5; pointer-events:none; }
+.statusbar { position:absolute; bottom:16px; left:20px; z-index:var(--layer-status); display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; max-width:min(calc(100% - 440px),var(--status-max-width,100vw)); color:var(--text-quiet); font-size:10px; line-height:1.5; pointer-events:none; }
 .statusbar span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .statusbar i { display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--status); margin-right:6px; }
 .document-title { display:flex; align-items:center; gap:8px; min-width:0; }
@@ -18,13 +18,13 @@
 .menu-links { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; padding:12px 8px 0; border-top:1px solid var(--line); font-size:var(--font-size-ui); }
 .menu-links a { color:var(--text-quiet); text-decoration:none; }
 .menu-links a:hover { color:var(--ink); text-decoration:underline; }
-@media (min-width:640px) and (max-width:950px) { .workspace { grid-template-columns:minmax(0,1fr) 260px; } .statusbar { max-width:calc(100% - 40px); bottom:72px; } }
+@media (min-width:640px) and (max-width:950px) { .workspace { grid-template-columns:minmax(0,1fr) 260px; } .statusbar { max-width:min(calc(100% - 40px),var(--status-max-width,100vw)); bottom:72px; } }
 @media (max-width:639px) {
   .workspace { grid-template-columns:minmax(0,1fr); }
   .top-actions { right:12px; top:12px; gap:8px; }
   .menu-trigger { top:12px; left:12px; }
   .inspector-trigger { display:inline-flex; }
-  .statusbar { left:16px; bottom:130px; max-width:calc(100% - 32px); font-size:9px; }
+  .statusbar { left:16px; bottom:130px; max-width:min(calc(100% - 32px),var(--status-max-width,100vw)); font-size:9px; }
 }
 .tool { border:0; border-radius:8px; background:transparent; padding:0; display:flex; flex-direction:column; align-items:center; gap:0; color:var(--text-secondary); width:var(--toolbar-size); height:var(--toolbar-size); flex:none; }
 .tool:hover { background:var(--hover); }

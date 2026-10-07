@@ -12,7 +12,7 @@ export function a3ThreeAs(positions: Point[] = [170,210,250].map(x => ({x,y:130}
     {tool:'#000000',points:[{x,y:y+24},{x:x+12,y},{x:x+24,y:y+24}]},
     {tool:'#000000',points:[{x:x+5,y:y+14},{x:x+19,y:y+14}]},
   ]);
-  const settings = {...initialState.settings,profile:'axidraw' as const,machineRotation:90 as const,
+  const settings = {...initialState.settings,profile:'axidraw' as const,axidrawHardwareModel:'v3-a3' as const,machineRotation:90 as const,
     speed:50,travelSpeed:200,penUp:30,penDown:44,reorderMode:'preserve' as const,returnToOrigin:true};
   const markup = paths.map(path => `<path fill="none" stroke="#000000" d="${path.points.map((p,i) => `${i?'L':'M'}${p.x-x} ${p.y-y}`).join(' ')}"/>`).join('');
   const document: PlotItDocument = {format:'plot-it',version:1,units:'mm',fonts:[],document:{

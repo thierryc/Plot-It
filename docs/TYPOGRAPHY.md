@@ -2,8 +2,8 @@
 
 Research reviewed 2026-09-30. Implementation uses `harfbuzzjs` 1.6.2 (MIT), loaded on demand. Vite emits a local WASM asset (approximately 434 KB uncompressed); no CDN or font upload is involved.
 
-PlotFont 0.3 also uses this engine for embedded layout while drawing its original
-stroke/fill geometry. See [PlotFont integration](PLOTFONT_INTEGRATION.md) for its
+OpenPlotFont 0.3 also uses this engine for embedded layout while drawing its original
+stroke/fill geometry. See [OpenPlotFont integration](OPENPLOTFONT_INTEGRATION.md) for its
 separate import, sizing, validation and drawing-order contract. The outline-font
 behavior below continues to apply to ordinary TTF/OTF files.
 

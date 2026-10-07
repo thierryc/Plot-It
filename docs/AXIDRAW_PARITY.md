@@ -1,68 +1,57 @@
-# AxiDraw plotting feature parity
+# AxiDraw / NextDraw capability coverage
 
-Target: the plotting capabilities of Evil Mad Scientist's AxiDraw Python driver,
-plus a maximum continuous drawing distance that reloads a mechanical pen with
-an in-place lift/lower cycle. Feature parity is the target; it is not yet complete.
+2026-10-06 software candidate. Physical acceptance is pending; the implementation
+is independent TypeScript, with named numerical/control differences. See
+[the checkpoint](CORE_REWRITE_STATUS.md), [motor plan](MOTOR_IMPLEMENTATION_PLAN.md)
+and [device checklist](HARDWARE_ACCEPTANCE_2026-10-07.md).
 
-Behavior reference: AxiDraw revision
-`a0df054f41f8e3ae8d408e08e7b2656968e375f1`, with Plotink revision
-`4976b86080c25a10a9f979b870669dc62a1741fa`. These are reviewed references,
-not vendored runtime dependencies. The active implementation is TypeScript.
+Pinned references: AxiDraw `a0df054f41f8e3ae8d408e08e7b2656968e375f1`, Plotink
+`4976b86080c25a10a9f979b870669dc62a1741fa`, NextDraw 1.7.4 (2026-10-02) and EBB
+`8f7fb319ec6507b2f1a60d9a9acd4e5f1ff95f71`. Archive hashes and MIT adaptation notices
+are in `packages/plotter-core/reference/`. No Python or Saxi runtime is imported.
 
-| Capability | Current status | Remaining work |
+| Capability | Software coverage | Physical / intentional limits |
 | --- | --- | --- |
-| Full-stroke acceleration and cornering | Implemented | Physical tuning on both device profiles |
-| Forward/backward speed reachability | Implemented | Broader physical validation |
-| Separate drawing/travel speed and acceleration | Implemented | Per-layer overrides below |
-| Triangle, trapezoid, short linear/constant profiles | Implemented | Independent 15 ms sampling differs from Python's 25 ms stream |
-| Rounded movement distance and cumulative endpoint correction | Implemented for XM | Native-axis SM parity and half-step XY endpoints depend on resolution work |
-| Minimum/maximum native motor rate handling | Implemented | Physical checks at speed extremes |
-| Explicit pen state and settling before XY | Implemented | Adjustable raise/lower rates and extra Up/Down delays; default extra Up delay 150 ms. Reload waits configurable; see [controls](PLOT_CONTROLS.md) |
-| Startup/origin return with pen raised | Implemented | Physical verification of new motion profiles |
-| Mechanical pen reload distance | Implemented | Distance splitting precedes step rounding, so physical chunk length has step-resolution tolerance |
-| Multi-pen selection/order and origin tool changes | Implemented | Per-layer settings and pause/delay annotations |
-| Live Pause/Resume, graceful Stop, emergency cancel | Implemented | Persistent resume from saved position/drawn distance after interruption |
-| Physical pause button | Pending | Query button state during feeding and draining; integrate with Pause/Resume |
-| Supply voltage and power monitoring | Implemented | QC raw supply status on connect/start, during feeding and manual check; unsupported reads explicit, low supply cancels; physical validation remains |
-| High/low selectable microstep resolution | Pending | Resolution-aware motor enable, geometry scale, speed limits, position feedback and persisted settings |
-| Constant drawing speed mode | Pending | Plan mode and UI setting; retain pen-up acceleration |
-| Narrow-band/brushless servo configurations | Pending | Capability-specific calibration, command configuration and timing |
-| Per-layer speed, pen height, delays and selection | Partial | Pen selection exists; layer overrides and annotations remain |
-| Repeated copies and delay between copies | Pending | Shared job scheduling, controls and progress |
-| Path optimization options | Implemented | Configurable nearby endpoint joining, bounded vertex reduction, original/nearest/seeded random closed starts; see [path optimization](PATH_OPTIMIZATION.md) |
-| Bounding-box preview | Implemented | Raised perimeter of selected, prepared drawing; shared simulation/USB/network executor and origin return |
-| Jog controls | Pending | Individual axis controls |
-| Plot statistics | Partial | Drawing/travel distances, estimated motion time and actual elapsed time implemented; copy/resume statistics remain |
-| Device/model and API coverage | Partial | AxiDraw/Xylodraw EBB profiles exist; additional model bounds/options and Python API/CLI-equivalent controls need a separate inventory |
+| Whole-stroke look-ahead, corners, forward/backward passes | SM acceleration planner and modern S-curve planner | Explicit mm/s² caps differ from vendor recipes; tuning remains |
+| Short moves, integer endpoints and native rates | Constant/boosted-entry/reduced-acceleration SM policies; ties-even rounding and empty-time retention | Float64/ceil policies and conservative local acceleration change some Python timings |
+| Native modern motion | BigInt T3 predictions, carried state, bounded native speed, equivalent TD pairs | Modern target 3.1.7; older supported firmware uses SM |
+| Constant drawing | Both backends; profiled travel | Deliberate rate jumps at drawing starts/corners; not perfectly constant mechanical velocity |
+| Pen heights/rates/waits/timeout | Restored every job/copy, stationary barriers, long-travel destination wait | Controller bits do not prove paper contact; brushless setup differs from standard servo |
+| Reload maximum and wait | Split before planning; verify compiled quantized drawing length; in-place Up/Down | Measures commanded centerline distance, not sensed motion |
+| Machine models/resolution | AxiDraw V3/SE A4/A3, existing XyloDraw, NextDraw 8511/1117/2234; 8×/16× | Hardware model/orientation/calibration must match the mechanism |
+| Handling/curve accuracy | Custom, technical, handwriting, sketching; independent curve/simplification tolerances | Recipes use physical units; NextDraw jerk is not applied to XyloDraw |
+| Pause/Stop/Cancel and button | Single status owner, waits/queue drains, fault cleanup and origin recovery | Graceful controls finish the next planned rest; no synthetic mid-stroke brake |
+| Supply and origin confidence | QC plus armed modern CU,60; latched faults; QS endpoint checks | Neither QS nor virtual execution excludes missed steps |
+| Repeats and timed gaps | Finite/continuous, raised origin returns, frozen timer, Continue gate, seeded variants | No fictional continuous/manual-wait ETA; no automatic repeat after crash |
+| Layers | IDs/order, selection, speed/height overrides, empty waits/pauses, optimization annotations | `+M` retains partial upstream sampling semantics, not per-layer motor resolution |
+| Recovered resume / start offset | Settled digest/cursor/native/settings checkpoint; drawing-distance slicing and signed overlap | Restore physical origin explicitly; reject stale/corrupt checkpoints |
+| Geometry | Placement without scaling, page/machine clipping, optional opaque-fill occlusion, strict order | CLI supports an explicit SVG subset; unsupported rendering is rejected |
+| Preview and statistics | Command-derived sampling, repeat countdowns, pen counters, completed/remaining distance, SVG filters/export, aggregates | Nominal program time excludes setup/serial and unbounded user waits |
+| Device/API utilities | Explicit Node device selection, names/rename, firmware/capabilities, jog/move/draw/path/delay/wait, supported homing | Homing is NextDraw-specific; rename is explicit |
+| Runner/CLI/prepared jobs | V2 recompilation/digest/target validation, sidecar checkpoints, public client, JSON/SVG CLI | Package is private workspace; vendor Plob/SVG-resume interchange is separately specified |
+| Completion / B3 | Detached host delivery, optional default-off synchronized B3 | Delivery cannot alter success or start another job; B3 is controller output, not contact feedback |
+| Virtual EBB | Independent byte parser, FIFO, ISR, servo/pen, counters/faults, homing fixture, CLI/browser monitor | Declared subset, not complete PIC/mechanics simulation |
 
-Recommended next work: physical pause button; selectable resolution and constant-speed mode; persistent resume;
-layer/copy controls; remaining device/API coverage. Each change
-must retain shared simulation/execution plans, stationary pen barriers, and
-reload-distance behavior.
+## Pinned short-move comparison
 
-## Short-move comparison
+Reference Python was run offline at 200 mm/s², 35 mm/s and 40 steps/mm. The
+candidate benchmark compiles the same isolated geometry with native SM:
 
-The pinned Python `compute_segment` was run offline with 200 mm/s² drawing
-acceleration, 35 mm/s maximum drawing speed, and 40 steps/mm. Reference examples:
-
-| Segment | Entry / exit speed | Python queued time | TypeScript policy |
+| Distance (mm) | Entry/exit (mm/s) | Python (ms) | TypeScript (ms) |
 | --- | --- | --- | --- |
-| 0.025 mm | 0 / 0 mm/s | 11 ms | Single constant-speed short profile |
-| 0.1 mm | 0 / 0 mm/s | 89 ms | Boosted-entry linear deceleration |
-| 1 mm | 0 / 0 mm/s | 283 ms | Boosted-entry linear deceleration |
-| 6 mm | 0 / 0 mm/s | 336 ms | Reduced local acceleration, triangular profile |
-| 0.05 mm | 5 / 3 mm/s | 10 ms | Single constant-speed short profile |
-| 0.05 mm | 3 / 5 mm/s | 10 ms | Single constant-speed short profile |
+| .025 | 0 / 0 | 11 | 12 |
+| .1 | 0 / 0 | 89 | 90 |
+| 1 | 0 / 0 | 283 | 283 |
+| 6 | 0 / 0 | 336 | 362 |
+| .05 | 5 / 3 | 10 | 10 |
+| .05 | 3 / 5 | 10 | 10 |
 
-TypeScript rounds each shared phase duration upward to integer milliseconds,
-retains empty-interval time, and uses XM step endpoints. These choices can
-change queued milliseconds and intermediate step placement. Neither simulated
-nor mock-serial results establish physical motion quality.
+The candidate uses upward integer duration rounding and retains empty-interval time.
+Its near-cruise local acceleration rule is deliberately conservative; it is not an
+exact port of the vendor's reduced-profile timing. Modern T3 phases may also be
+extended to keep rounded endpoints within the selected native vector speed. Those
+policies are explicit and tested; passing numerical tests is not physical acceptance.
 
-References:
-
-- [Motion policies](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/motion.py)
-- [Driver configuration](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/axidraw_conf.py)
-- [Pen handling](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/pen_handling.py)
-- [Path optimization](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/plot_optimizations.py)
-- [EBB XM specification](https://evil-mad.github.io/EggBot/ebb2.html#XM)
+References: [AxiDraw motion](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/motion.py),
+[configuration](https://github.com/evil-mad/axidraw/blob/a0df054f41f8e3ae8d408e08e7b2656968e375f1/inkscape%20driver/axidraw_conf.py),
+[EBB command documentation](https://evil-mad.github.io/EggBot/ebb.html).

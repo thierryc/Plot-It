@@ -1,7 +1,7 @@
 import styles from './footer.module.css';
 import { initializeFooterMarquee } from './footer-marquee';
 
-/** Static, accessible footer content shares the PlotFont/AP.CX layout. */
+/** Static, accessible footer content shares the OpenPlotFont/AP.CX layout. */
 export function initializeFooter() {
   const footer = document.querySelector<HTMLElement>('[data-site-footer]');
   if (!footer) return () => {};

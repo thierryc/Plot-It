@@ -25,7 +25,7 @@ describe('hosted site contract', () => {
   });
   it('publishes honest hardware status and primary sources', () => {
     const html = read('site/docs/index.html');
-    for (const content of ['I do not own an AxiDraw or NextDraw', 'compatibility not established', 'untested', 'https://www.axidraw.com/', 'https://bantamtools.com/collections/nextdraw-merge-bundles', 'https://www.schmalzhaus.com/EBB/', 'https://github.com/thierryc/PlotFont', '2026-10-05']) expect(html).toContain(content);
+    for (const content of ['I do not own an AxiDraw or NextDraw', 'compatibility not established', 'untested', 'https://www.axidraw.com/', 'https://bantamtools.com/collections/nextdraw-merge-bundles', 'https://www.schmalzhaus.com/EBB/', 'https://github.com/thierryc/OpenPlotFont', '2026-10-05']) expect(html).toContain(content);
     expect(read('site/docs/self-hosted/index.html')).toContain('hardware acceptance is pending');
     expect(existsSync('.github/ISSUE_TEMPLATE/hardware-report.yml')).toBe(true);
   });

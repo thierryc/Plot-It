@@ -6,6 +6,8 @@ import type { PlotProgress, PlotterTrace, PlotterJobTrace } from './plotter-core
 import type { PlotSignal } from './plot-signals';
 import type { PlotDestination } from './plot-destination';
 import { terminalStatus, type ControlAction, type ControlResult, type JobRecord, type NetworkSnapshot } from './network-protocol';
+import {preparePaths,prepareLayerJob} from '@thierryc/plotter-core';
+import {coreOptions} from './core-settings';
 
 /** Same-origin destination. Network disconnection never cancels server execution. */
 export class NetworkPlotter implements PlotDestination {
@@ -48,6 +50,7 @@ export class NetworkPlotter implements PlotDestination {
   get elapsedMs() { return this.snapshot.elapsedMs ?? 0; }
   async checkPowerSupply() { await this.request('check-power'); return this.powerStatus; }
   get firmwareLabel() { return this.snapshot.firmware; }
+  get motionCapabilities(){return this.snapshot.capabilities??null;}
   get active() { return this.snapshot.jobId !== null && !terminalStatus(this.snapshot.status) && this.snapshot.status !== 'idle'; }
   get progress(): PlotProgress {
     const state = this.snapshot.status === 'running' ? 'plotting' : this.snapshot.status === 'failed' || this.snapshot.status === 'interrupted' ? 'cancelled' : this.snapshot.status === 'pending' || this.snapshot.status === 'starting' ? 'plotting' : this.snapshot.status;
@@ -62,6 +65,10 @@ export class NetworkPlotter implements PlotDestination {
   hasOrigin(profile: PlotSettings['profile']) { return this.connected && this.snapshot.origin !== 'unset' && this.snapshot.originProfile === profile; }
   get diagnosticTrace() { return this.trace; }
   get diagnosticPenTrace() { return this.penTrace; }
+  get completedCheckpoint(){return this.snapshot.checkpoint;}
+  clearCheckpoint(){this.background('clear-checkpoint');}
+  async jog(delta:Point,settings:PlotSettings){await this.request('jog',{delta,settings});}
+  async home(){await this.request('home',{settings:this.settings});}
   get diagnosticJobTrace() { return this.jobTrace; }
   configurePen(settings: PenSettings) { this.settings = { ...this.settings, ...settings }; }
   invalidateOrigin() { this.background('invalidate-origin'); }
@@ -138,7 +145,7 @@ export class NetworkPlotter implements PlotDestination {
   }
   async firmwareVersion() { return this.firmwareLabel ?? ''; }
   async setPen(percent: number) { await this.request('pen', { percent, settings: this.settings }); }
-  async setOrigin(profile: PlotSettings['profile'] = 'axidraw') { await this.request('set-origin', { profile }); }
+  async setOrigin(profile: PlotSettings['profile'] = 'axidraw') { await this.request('set-origin', { profile,settings:this.settings }); }
   async ensureOrigin(profile: PlotSettings['profile']) { if (!this.hasOrigin(profile)) await this.setOrigin(profile); }
   async returnToOrigin(settings: PlotSettings) { await this.request('return-origin', { settings }); }
   async engageMotors() { await this.request('engage'); }
@@ -161,7 +168,9 @@ export class NetworkPlotter implements PlotDestination {
   }
   async plot(plan: MotionPlan) {
     this.settings = { ...plan.settings };
-    const response = await fetch('/api/v1/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ version: 1, requestId: crypto.randomUUID(), plan }) });
+    const repeat={copies:plan.settings.copies??1,intervalMs:plan.settings.repeatIntervalMs??0,requireContinue:plan.settings.repeatRequireContinue??false,varyClosedStarts:plan.settings.varyClosedStarts??false,seed:plan.settings.pathRandomSeed??1};
+    const prepared=plan.executable&&plan.sourcePaths?(plan.layers?prepareLayerJob(plan.layers,coreOptions(plan.settings),repeat,plan.settings.startAtMm):preparePaths(plan.sourcePaths,coreOptions(plan.settings),repeat,plan.settings.startAtMm)):undefined;
+    const response = await fetch('/api/v1/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ version: prepared?2:1, requestId: crypto.randomUUID(), plan,...(prepared?{prepared}:{}) }) });
     const record = await response.json(); if (!response.ok) throw new Error(record.error ?? 'Job upload failed');
     await this.request('start', { jobId: record.id }); await this.waitForJob(record.id);
   }

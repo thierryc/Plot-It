@@ -1,5 +1,7 @@
+import {planningProfile} from './machine-profiles';
 import type { Point, PlotSettings } from "./model";
 import { DEFAULT_MACHINE_ROTATION, MACHINE_ORIENTATION_VERSION } from './model';
+import {toNative,machineProfile} from '@thierryc/plotter-core';
 
 /** Upgrade the old Standard (0°) while retaining already chosen corrections. */
 export function restoreMachineOrientation(settings?: { machineRotation?: unknown; machineOrientationVersion?: unknown }): Pick<PlotSettings, 'machineRotation' | 'machineOrientationVersion'> {
@@ -38,15 +40,15 @@ export function canvasPoint(point: Point, rotation: PlotSettings['machineRotatio
   return machinePoint(point, ((360 - rotation) % 360) as PlotSettings['machineRotation']);
 }
 
-export function profileStepsPerMm(profile: PlotSettings["profile"]): number {
+export function profileStepsPerMm(profile: PlotSettings["profile"],resolution:8|16=8): number {
   const fullStepsPerMm = profile === "xylodraw" ? 6.25 : 5;
-  return fullStepsPerMm * 8; // EBB EM mode 2: 1/8 microsteps.
+  return fullStepsPerMm * resolution;
 }
 
 /** Absolute XM lattice coordinates; rounding deltas separately causes drift. */
 export function quantizePoint(point: Point, settings: PlotSettings): Point {
-  const machine = machinePoint(point, settings.machineRotation), scale = profileStepsPerMm(settings.profile);
-  return { x: Math.round(machine.x * scale) + 0, y: Math.round(machine.y * scale) + 0 };
+  const motors=toNative(point,machineProfile(planningProfile(settings.profile),settings.machineRotation??DEFAULT_MACHINE_ROTATION,settings.resolution??8));
+  return {x:(motors.m1+motors.m2)/2,y:(motors.m1-motors.m2)/2};
 }
 
 export interface StepVertex { requested: Point; position: Point }
@@ -70,7 +72,7 @@ export function stepPathVertices(points: Point[], settings: PlotSettings): StepV
   }
   const result: StepVertex[] = [];
   let previous: Point | undefined;
-  const scale = profileStepsPerMm(settings.profile);
+  const scale = profileStepsPerMm(settings.profile,settings.resolution);
   for (const point of source) {
     const steps = quantizePoint(point, settings);
     if (previous && steps.x === previous.x && steps.y === previous.y) continue;

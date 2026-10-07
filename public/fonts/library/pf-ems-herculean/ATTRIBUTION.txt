@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Herculean
+OpenPlotFont conversion of PF EMS Herculean
 
 Font name:               EMS Herculean
 License:                 SIL Open Font License http://scripts.sil.org/OFL
