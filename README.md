@@ -5,8 +5,8 @@ Plot-it is a local-first Chrome PWA for preparing SVG artwork and sending it to 
 **Alpha · Active development. This project is not viable yet.**
 It is experimental and is not ready for production use.
 
-[Open the browser app](https://plot-it.litsquare.com/app/),
-[read the documentation](https://plot-it.litsquare.com/docs/), or
+[Open the browser app](https://thierryc.github.io/Plot-It/app/),
+[read the documentation](https://thierryc.github.io/Plot-It/docs/), or
 [get support on GitHub](https://github.com/thierryc/Plot-It/issues).
 AxiDraw is untested by the author; NextDraw compatibility is not established,
 including its different brushless pen-lift configuration. Pi hardware acceptance
@@ -29,10 +29,10 @@ remains pending. See the hosted compatibility notes for primary sources.
 
 ## Run locally
 
-For **plot-it.litsquare.com** on GitHub Pages, build locally with
+For **https://thierryc.github.io/Plot-It/** on GitHub Pages, build locally with
 `scripts/node-lts.sh --npm run build:site` and publish **dist-site/**.
-The landing page is `/`, the browser editor is `/app/`, and documentation is
-under `/docs/`. It offers browser USB and simulation without a Node installation.
+The landing page is `/Plot-It/`, the browser editor is `/Plot-It/app/`, and documentation is
+under `/Plot-It/docs/`. The custom domain is deferred. It offers browser USB and simulation without a Node installation.
 See [site hosting and local publication](docs/SITE_HOSTING.md). No custom GitHub
 Actions workflow is used. `build:browser` still produces the standalone root
 editor in **dist-browser/**; the local/Pi build remains separate.

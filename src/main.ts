@@ -48,7 +48,7 @@ import { editorPreferences, type EditorPreferences } from './editor-preferences'
 import { angleStep, snappedAngle, DuplicationChain, clonedMarkup, cloneSvgElement, remapSvgIds, type SelectionPose } from './editor-modifiers';
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
-const deployment = applicationDeployment(import.meta.env.MODE);
+const deployment = applicationDeployment(import.meta.env.MODE, import.meta.env.BASE_URL);
 const theme = initializeTheme(window, document);
 const plotter = new Plotter();
 let state = loadState();

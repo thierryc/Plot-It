@@ -14,7 +14,8 @@ describe.skipIf(!directory)('hosted production artifact', () => {
       for (const element of document.querySelectorAll('[src], [href]')) {
         const reference = element.getAttribute('src') ?? element.getAttribute('href')!;
         if (!reference.startsWith('/')) continue;
-        const path = reference.split(/[?#]/)[0]!;
+        expect(reference).toMatch(/^\/Plot-It\//);
+        const path = reference.split(/[?#]/)[0]!.slice('/Plot-It/'.length);
         expect(existsSync(join(directory!, path, path.endsWith('/') ? 'index.html' : '')), reference).toBe(true);
       }
     }
@@ -24,7 +25,9 @@ describe.skipIf(!directory)('hosted production artifact', () => {
     expect(existsSync(join(directory!, 'manifest.webmanifest'))).toBe(false);
   });
   it('ships complete browser assets and corresponding website source', () => {
-    expect(readFileSync(join(directory!, 'CNAME'), 'utf8').trim()).toBe('plot-it.litsquare.com');
+    expect(existsSync(join(directory!, 'CNAME'))).toBe(false);
+    const manifest = JSON.parse(readFileSync(join(directory!, 'app/manifest.webmanifest'), 'utf8'));
+    expect(manifest).toMatchObject({start_url: './', scope: './'});
     expect(existsSync(join(directory!, '.nojekyll'))).toBe(true);
     const files = readdirSync(join(directory!, 'assets'), { recursive: true, encoding: 'utf8' });
     expect(files.some(file => file.endsWith('.wasm'))).toBe(true);

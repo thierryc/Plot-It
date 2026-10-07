@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 const directory = process.env.PLOT_BROWSER_BUILD_DIR;
 describe.skipIf(!directory)('locally built GitHub Pages distribution', () => {
-  it('serves the custom domain with GitHub processing disabled and complete static assets', () => {
-    expect(readFileSync(join(directory!, 'CNAME'), 'utf8').trim()).toBe('plot-it.litsquare.com');
+  it('serves a portable server root with GitHub processing disabled and complete static assets', () => {
+    expect(existsSync(join(directory!, 'CNAME'))).toBe(false);
     expect(existsSync(join(directory!, '.nojekyll'))).toBe(true);
     const html = readFileSync(join(directory!, 'index.html'), 'utf8');
     const references = [...html.matchAll(/(?:src|href)="(\/[^"\s]+)"/g)].map(match => match[1]!);

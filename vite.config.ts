@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig(({ mode }) => ({
+  base: mode === 'site' ? '/Plot-It/' : '/',
   root: mode === 'site' ? 'site' : '.',
   publicDir: mode === 'site' ? '../public' : 'public',
   appType: mode === 'site' ? 'mpa' : 'spa',

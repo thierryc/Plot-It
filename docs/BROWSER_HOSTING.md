@@ -1,6 +1,6 @@
 # Browser-only GitHub Pages release
 
-The online app at **https://plot-it.litsquare.com/app/** connects to an EBB using
+The online app at **https://thierryc.github.io/Plot-It/app/** connects to an EBB using
 the user's computer and Chrome/Edge Web Serial. Simulation is also available.
 Users do not install Node, a server, or a PWA. The browser asks them to select
 their USB plotter. HTTPS is required. Close any other connection to that EBB
@@ -23,18 +23,11 @@ scripts/node-lts.sh --npm run test:browser-build
 ```
 
 The locally compiled site is **dist-browser/**. The ready-to-upload archive is
-**output/plot-it-browser.zip**. It includes `CNAME` for `plot-it.litsquare.com`
-and `.nojekyll`, plus fonts, WASM, workers, icons and the corresponding source
-archive. Upload the contents of the directory, including hidden `.nojekyll`,
-to the root of your Pages publishing branch. Do not upload the enclosing
-`dist-browser` folder. The custom domain serves the app at `/`; this build is
-not configured for a repository-name URL subdirectory.
-
-In the repository's **Settings → Pages**, select **Deploy from a branch** and
-choose your publishing branch and **/(root)**. Set the custom domain to
-`plot-it.litsquare.com`, configure its DNS CNAME to your account's
-`<owner>.github.io` hostname, and enable **Enforce HTTPS** once the certificate
-is available. Keep the domain configured on GitHub as well as in `CNAME`.
+**output/plot-it-browser.zip**. It includes `.nojekyll`, fonts, WASM, workers,
+icons and corresponding source, without a `CNAME`. This portable standalone
+build targets a server root. To publish at the default GitHub Pages project URL
+`https://thierryc.github.io/Plot-It/`, use `build:site` and `dist-site` as described
+in [site hosting](SITE_HOSTING.md). The custom domain and DNS are deferred.
 
 No application build or custom GitHub Actions workflow is needed or included.
 Rebuild locally and replace the published static files for each release.

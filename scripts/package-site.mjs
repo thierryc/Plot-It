@@ -14,7 +14,7 @@ for (const file of readdirSync(join(directory, 'assets'), { recursive: true, enc
 // an app-scoped worker and manifest.
 for (const file of ['sw.js', 'manifest.webmanifest']) rmSync(join(directory, file), { force: true });
 for (const file of ['sw.js', 'manifest.webmanifest']) cpSync(resolve('site/app', file), join(directory, 'app', file));
-writeFileSync(join(directory, 'CNAME'), 'plot-it.litsquare.com\n');
+rmSync(join(directory, 'CNAME'), { force: true });
 writeFileSync(join(directory, '.nojekyll'), '');
 let sourceCommit = null;
 try { sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { /* Before initial repository publication. */ }

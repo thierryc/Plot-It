@@ -1,3 +1,4 @@
+import { publicAssetUrl } from './app-deployment';
 import type { ArtworkItem, TextOptions } from './model';
 import { makeId } from './model';
 import { markupRoot, parsePath, pathData, type PathCommand } from './editor';
@@ -28,7 +29,7 @@ export function initializeTypography(): Promise<void> {
 }
 export interface LoadedFont { id: string; name: string; features: string[]; axes: Record<string, HB.AxisInfo>; face?: HB.Face; openplotfont?: OpenPlotFontData; prepared?: OpenPlotFont; bundled?: boolean; noticeUrl?: string; kind?: 'openplotfont' | 'outline'; group?: string; coverageHint?: string }
 interface BundledFontAsset { id: string; name: string; kind: 'openplotfont' | 'outline'; group: string; url: string; noticeUrl: string; sha256: string; coverageHint: string }
-export const bundledFontCatalog = catalog as BundledFontAsset[];
+export const bundledFontCatalog = catalog.map(asset => ({...asset, url: publicAssetUrl(asset.url), noticeUrl: publicAssetUrl(asset.noticeUrl)})) as BundledFontAsset[];
 export const DEFAULT_FONT_ID = 'hershey-roman-simplex';
 const bundledSources = [
   [DEFAULT_FONT_ID, hersheySource], ['hershey-roman-duplex', duplexSource],
@@ -40,8 +41,8 @@ const fonts = new Map<string, LoadedFont>(bundledSources.map(([id, source]) => {
   return [id, { id, name: `${openplotfont.familyName} ${openplotfont.styleName}`, openplotfont, prepared: openplotfont.layout ? undefined : createOpenPlotFont(openplotfont),
     features: openplotfont.layout?.features.map(f => f.tag).sort() ?? [], axes: {}, bundled: true, kind: 'openplotfont',
     group: id.startsWith('hershey-') ? 'Hershey' : id.startsWith('pf-ems-') ? 'EMS' : 'Other stroke fonts',
-    noticeUrl: id.startsWith('hershey-') ? '/fonts/HERSHEY_NOTICE.txt'
-      : id === 'pf-ems-spacerocks' ? '/fonts/ems-spacerocks/ATTRIBUTION.txt' : '/fonts/OPENPLOTFONT_LICENSE.txt' }];
+    noticeUrl: publicAssetUrl(id.startsWith('hershey-') ? '/fonts/HERSHEY_NOTICE.txt'
+      : id === 'pf-ems-spacerocks' ? '/fonts/ems-spacerocks/ATTRIBUTION.txt' : '/fonts/OPENPLOTFONT_LICENSE.txt') }];
 }));
 for (const asset of bundledFontCatalog) {
   if (!fonts.has(asset.id)) fonts.set(asset.id, { id: asset.id, name: asset.name, kind: asset.kind, group: asset.group,

@@ -10,7 +10,7 @@ USB ownership, with an explicit idle-only USB release for handoff. Server pen
 tests carry edited calibration, refresh the target and explicitly enable servo
 power; job calibration remains immutable through pauses and Stop cleanup.
 
-A separately compiled browser-only release targets **plot-it.litsquare.com**
+A separately compiled browser-only release targets **https://thierryc.github.io/Plot-It/**
 on GitHub Pages. It is built locally, contains Direct USB and Simulation only,
 and includes no server discovery or network client. See
 [local build and hosting](BROWSER_HOSTING.md).

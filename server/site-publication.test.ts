@@ -16,7 +16,7 @@ it('publishes and restores a static release without changing the source checkout
     git(['init', '--bare', remote]);
     const before = git(['rev-parse', 'HEAD']);
     writeFileSync(join(artifact, 'index.html'), 'first release');
-    writeFileSync(join(artifact, 'CNAME'), 'plot-it.litsquare.com');
+    writeFileSync(join(artifact, '.nojekyll'), '');
     const first = publishStaticTree({ root: source, remote, directory: artifact });
     writeFileSync(join(artifact, 'index.html'), 'second release');
     writeFileSync(join(artifact, 'new.html'), 'new page');
