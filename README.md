@@ -2,7 +2,10 @@
 
 Plot-it is a local-first Chrome PWA for preparing SVG artwork and sending it to an EBB-based pen plotter over USB or through a Raspberry Pi on your LAN. It combines a deliberately small SVG editor with single-line and loaded OpenType fonts, so a drawing can go from file or text to paper without installing a desktop driver.
 
-**Beta · Active development.** [Open the browser app](https://plot-it.litsquare.com/app/),
+**Alpha · Active development. This project is not viable yet.**
+It is experimental and is not ready for production use.
+
+[Open the browser app](https://plot-it.litsquare.com/app/),
 [read the documentation](https://plot-it.litsquare.com/docs/), or
 [get support on GitHub](https://github.com/thierryc/Plot-It/issues).
 AxiDraw is untested by the author; NextDraw compatibility is not established,

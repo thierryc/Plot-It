@@ -12,7 +12,7 @@ describe('hosted site contract', () => {
       expect(html).toContain('href="/docs/"');
       expect(html).toContain('Another Planet Creative eXperience');
       expect(html).toContain('https://ap.cx/');
-      expect(html).toContain('Beta · Active development');
+      expect(html).toContain('Alpha · Active development');
       const document = new JSDOM(html).window.document;
       expect(document.querySelector('#main')?.getAttribute('tabindex')).toBe('-1');
       const banner = document.querySelector('footer [data-apcx-marquee]');

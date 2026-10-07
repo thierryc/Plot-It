@@ -1,4 +1,4 @@
-# Hosted beta website
+# Hosted alpha website
 
 The public site is https://plot-it.litsquare.com. Its landing page is `/`,
 the browser-only editor is `/app/`, and documentation is under `/docs/`.
