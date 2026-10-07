@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Little Princess
+OpenPlotFont conversion of PF EMS Little Princess
 
 Font name:               EMS Little Princess
 License:                 SIL Open Font License http://scripts.sil.org/OFL

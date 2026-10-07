@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS SpaceRocks
+OpenPlotFont conversion of PF EMS SpaceRocks
 
 Font name:               EMS SpaceRocks
 License:                 SIL Open Font License http://scripts.sil.org/OFL

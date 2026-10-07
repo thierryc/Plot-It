@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Pancakes
+OpenPlotFont conversion of PF EMS Pancakes
 
 Font name:               EMS Pancakes
 License:                 SIL Open Font License http://scripts.sil.org/OFL

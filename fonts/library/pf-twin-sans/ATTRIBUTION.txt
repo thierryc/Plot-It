@@ -1,4 +1,4 @@
-PlotFont conversion of PF Twin Sans
+OpenPlotFont conversion of PF Twin Sans
 
 Font name:       Twin Sans
 License:         SIL Open Font License http://scripts.sil.org/OFL

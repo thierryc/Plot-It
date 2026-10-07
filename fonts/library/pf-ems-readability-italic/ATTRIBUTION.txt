@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Readability Italic
+OpenPlotFont conversion of PF EMS Readability Italic
 
 Font name:               EMS Readability Italic
 License:                 SIL Open Font License http://scripts.sil.org/OFL

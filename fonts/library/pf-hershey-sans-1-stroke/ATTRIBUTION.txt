@@ -1,4 +1,4 @@
-PlotFont conversion of PF Hershey Sans 1-stroke
+OpenPlotFont conversion of PF Hershey Sans 1-stroke
 
 Font name: Hershey Sans 1-stroke
 

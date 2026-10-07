@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Capitol
+OpenPlotFont conversion of PF EMS Capitol
 
 Font name:               EMS Capitol
 License:                 SIL Open Font License http://scripts.sil.org/OFL

@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Casual Hand
+OpenPlotFont conversion of PF EMS Casual Hand
 
 Font name:               EMS Casual Hand
 License:                 SIL Open Font License http://scripts.sil.org/OFL

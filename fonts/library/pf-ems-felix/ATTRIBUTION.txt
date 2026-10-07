@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Felix
+OpenPlotFont conversion of PF EMS Felix
 
 Font name:               EMS Felix
 License:                 SIL Open Font License http://scripts.sil.org/OFL

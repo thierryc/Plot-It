@@ -1,4 +1,4 @@
-PlotFont conversion of Hershey Futuram
+OpenPlotFont conversion of Hershey Futuram
 
 Glyph data: Dr. A. V. Hershey; JHF representation: James Hurt, Cognition, Inc. See HERSHEY-NOTICE.txt for the complete required acknowledgments and use restriction.
 

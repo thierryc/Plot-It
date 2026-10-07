@@ -1,4 +1,4 @@
-PlotFont conversion of PF CutlingsSingularis
+OpenPlotFont conversion of PF CutlingsSingularis
 
 Font name:               Cutlings Singularis
 License:                 SIL Open Font License http://scripts.sil.org/OFL

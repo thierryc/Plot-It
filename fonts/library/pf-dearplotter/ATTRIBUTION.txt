@@ -1,4 +1,4 @@
-PlotFont conversion of PF DearPlotter
+OpenPlotFont conversion of PF DearPlotter
 
 Font name: DearPlotter
 Format: SVG 1.1 single-line font

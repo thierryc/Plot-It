@@ -1,4 +1,4 @@
-PlotFont conversion of PF Hershey Sans medium
+OpenPlotFont conversion of PF Hershey Sans medium
 
 Font name: Hershey Sans medium
 

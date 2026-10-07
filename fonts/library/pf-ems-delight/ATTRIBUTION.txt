@@ -1,4 +1,4 @@
-PlotFont conversion of PF EMS Delight
+OpenPlotFont conversion of PF EMS Delight
 
 Font name:               EMS Delight
 License:                 SIL Open Font License http://scripts.sil.org/OFL
