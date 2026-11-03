@@ -33,7 +33,11 @@
     "plot:cli": "npm run build:cli && node dist-cli/plot-cli.js",
     "build:companion": "npm run build:lib && tsc -p tsconfig.companion.json && node scripts/build-companion.mjs",
     "build:mac": "npm run build:companion && node scripts/package-mac.mjs",
-    "test:companion": "npm run build:companion && vitest run companion"
+    "test:companion": "npm run build:companion && vitest run companion",
+    "build:mac:universal": "npm run build:mac -- --arch universal",
+    "verify:mac": "node scripts/verify-mac.mjs",
+    "prepare:mac:release": "node scripts/prepare-mac-release.mjs",
+    "preview:mac": "node scripts/preview-plot-progress.mjs"
   },
   "devDependencies": {
     "@types/clipper-lib": "^6.4.0",
@@ -47,6 +51,7 @@
   },
   "dependencies": {
     "@ap.cx/gl-marquee": "0.1.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
     "@modelcontextprotocol/sdk": "1.32.2",
     "@resvg/resvg-js": "2.6.2",
     "@thierryc/openplotfont": "0.1.0",

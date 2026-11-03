@@ -2,6 +2,51 @@ import XCTest
 @testable import PlotItApp
 
 final class ModelsTests: XCTestCase {
+    @MainActor
+    func testMachineEditorPreservesDraftAndDetectsConcurrentChanges() {
+        let editor = MachineEditor()
+        var status = CompanionStatus(version: "0.1.0", configured: true, config: Machine(), armed: false, agents: [], preparing: false)
+        status.configDigest = "first"
+        editor.receive(status)
+        editor.draft.penUp = 42
+        editor.receive(status)
+        XCTAssertEqual(editor.draft.penUp, 42)
+        XCTAssertTrue(editor.hasChanges)
+        status.config.penUp = 35; status.configDigest = "second"
+        editor.receive(status)
+        XCTAssertEqual(editor.draft.penUp, 42)
+        XCTAssertTrue(editor.remoteChanged)
+        XCTAssertEqual(editor.configDigest, "first")
+        editor.receive(status, force: true)
+        XCTAssertEqual(editor.draft.penUp, 35)
+        XCTAssertFalse(editor.hasChanges)
+        XCTAssertFalse(editor.remoteChanged)
+    }
+    @MainActor
+    func testUnconfiguredSetupNeedsSaveAndCustomValidationSurvivesStatusUpdates() {
+        let editor = MachineEditor()
+        let status = CompanionStatus(version: "0.1.0", configured: false, config: Machine(), armed: false, agents: [], preparing: false)
+        editor.receive(status)
+        XCTAssertTrue(editor.needsSave)
+        editor.customWidth = ""
+        editor.receive(status)
+        XCTAssertFalse(editor.validPaper)
+        XCTAssertEqual(editor.customWidth, "")
+    }
+    func testCustomPaperDimensionsRejectInvalidOrIncompleteInput() {
+        XCTAssertEqual(PaperDimension.parse("215.9"), 215.9)
+        XCTAssertEqual(PaperDimension.parse(" 297 "), 297)
+        for value in ["", "-1", "0", "1001", "nan", "inf", "210 mm", "210 297"] { XCTAssertNil(PaperDimension.parse(value), value) }
+    }
+    func testPaperPresetMatchesDimensionsWithoutSwappingOrientation() {
+        let preset = PaperPreset(name: "A4 portrait", width: 210, height: 297)
+        var machine = Machine()
+        XCTAssertTrue(preset.matches(machine))
+        machine.widthMm = 297; machine.heightMm = 210
+        XCTAssertFalse(preset.matches(machine))
+        machine.widthMm = 215.9; machine.heightMm = 279.4
+        XCTAssertFalse(preset.matches(machine))
+    }
     func testReadinessRequiresConfigurationConnectionAndOrigin() {
         let json = """
         {"version":"0.1.0","configured":true,"config":{"profile":"axidraw","rotation":90,"servo":"standard","penUp":50,"penDown":60,"speed":35,"travelSpeed":60,"widthMm":210,"heightMm":297,"firmware":"2.8.1","device":""},"armed":false,"runner":{"connected":true,"status":"idle","origin":"unset"},"agents":[],"preparing":false}

@@ -8,7 +8,7 @@ import { expectDistributionNotices } from './test-fixtures/build-notices';
 const directory = process.env.PLOT_SITE_BUILD_DIR;
 describe.skipIf(!directory)('hosted production artifact', () => {
   it('resolves every page and its local links without an SPA fallback', () => {
-    for (const route of ['', 'app/', 'docs/', 'docs/self-hosted/', 'contributors/']) {
+    for (const route of ['', 'app/', 'docs/', 'docs/self-hosted/', 'macos/', 'docs/macos/', 'contributors/']) {
       const html = readFileSync(join(directory!, route, 'index.html'), 'utf8');
       const document = new JSDOM(html).window.document;
       expect(document.title).toContain('Plot-it');

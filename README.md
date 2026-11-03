@@ -24,7 +24,7 @@ scripts/node-lts.sh --npm start
 
 Open `http://127.0.0.1:8787`. The launcher starts the API and runner; USB connection remains manual. For frontend development, use `scripts/node-lts.sh --npm run dev` and Vite's printed URL; it does not start the plotter server.
 
-[Development](docs/DEVELOPMENT.md) · [Node/Pi setup](docs/NETWORK_PLOTTER.md) · [Mac companion](docs/PLOTIT_MCP.md) · [Website hosting](docs/SITE_HOSTING.md)
+[Development](docs/DEVELOPMENT.md) · [Node/Pi setup](docs/NETWORK_PLOTTER.md) · [Mac companion](docs/PLOTIT_MCP.md) · [Mac releases](docs/MAC_RELEASE.md) · [Website hosting](docs/SITE_HOSTING.md)
 
 ## Contribute and license
 

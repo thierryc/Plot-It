@@ -7,22 +7,24 @@ import {
   readdir,
   chmod,
   symlink,
+  stat,
 } from "node:fs/promises";
 import { resolve, join, dirname } from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { Resvg } from "@resvg/resvg-js";
+import { mergeUniversal, makeIcon, componentInventory, notarize, hashFile, exists, capture } from "./mac-bundle.mjs";
 
 if (process.platform !== "darwin")
   throw new Error("Build the Mac app on macOS.");
 const args = process.argv.slice(2),
   requested = args[args.indexOf("--arch") + 1] ?? process.arch;
 const architectures =
-  requested === "all"
-    ? ["arm64", "x64"]
+  ["all", "universal"].includes(requested)
+    ? ["arm64", "x64", "universal"]
     : [args.includes("--arch") ? requested : process.arch];
-if (architectures.some((a) => !["arm64", "x64"].includes(a)))
-  throw new Error("Use --arch arm64, x64, or all.");
+if (architectures.some((a) => !["arm64", "x64", "universal"].includes(a)))
+  throw new Error("Use --arch arm64, x64, universal, or all.");
+const packageArchitectures = requested === "universal" ? ["universal"] : architectures;
 const release = args.includes("--release"),
   identity = process.env.PLOTIT_SIGN_IDENTITY,
   notary = process.env.PLOTIT_NOTARY_PROFILE;
@@ -30,14 +32,39 @@ if (release && (!identity || !notary))
   throw new Error(
     "Release packaging requires PLOTIT_SIGN_IDENTITY and PLOTIT_NOTARY_PROFILE.",
   );
+const config = JSON.parse(await readFile("macos/release.json", "utf8"));
+const version = process.env.PLOTIT_MAC_VERSION ?? config.version;
+const buildNumber = process.env.PLOTIT_MAC_BUILD ?? config.build;
+if (!/^\d+\.\d+\.\d+$/.test(version) || !/^\d+(\.\d+){0,2}$/.test(buildNumber)) throw new Error("Set a numeric macOS version and build number.");
+const icon = process.env.PLOTIT_APP_ICON ? resolve(process.env.PLOTIT_APP_ICON)
+  : await exists("macos/Assets/AppIcon.icon") ? resolve("macos/Assets/AppIcon.icon")
+  : await exists("macos/Assets/AppIcon.icns") ? resolve("macos/Assets/AppIcon.icns")
+  : await exists("macos/Assets/AppIcon.png") ? resolve("macos/Assets/AppIcon.png") : null;
+if (release && !icon) throw new Error("Add the final app icon before release: macos/Assets/AppIcon.icon, AppIcon.icns or AppIcon.png, or PLOTIT_APP_ICON.");
+const artifacts = [];
+const builtAt = new Date().toISOString();
+let sourceCommit = null, sourceDirty = true;
+try {
+  sourceCommit = capture("git", ["rev-parse", "HEAD"]);
+  sourceDirty = capture("git", ["status", "--porcelain"]).length > 0;
+} catch { /* Corresponding-source archives intentionally do not include .git. */ }
+if (release && (!sourceCommit || sourceDirty)) throw new Error("Commit reviewed source before creating a signed public release.");
+function verifySourceCommit() {
+  if (release && (capture("git", ["rev-parse", "HEAD"]) !== sourceCommit || capture("git", ["status", "--porcelain"]).length > 0)) throw new Error("Source changed during the release build. Commit the changes and rebuild.");
+}
 const root = resolve("."),
   pin = (await readFile(".nvmrc", "utf8")).trim();
 if (process.versions.node !== pin)
   throw new Error(`Build with the repository-pinned Node ${pin}.`);
 const run = (command, args, options = {}) =>
   execFileSync(command, args, { stdio: "inherit", ...options });
-const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 run(process.execPath, ["scripts/source-archive.mjs"]);
+const sourceArchiveSha256 = await hashFile("public/plot-it-source.tar.gz");
+// Compile once so every CPU slice includes identical artwork and asset catalog bytes.
+const iconResources = resolve("output/plotit-icon-assets");
+await rm(iconResources, { recursive: true, force: true });
+await mkdir(iconResources, { recursive: true });
+await makeIcon(icon, join(iconResources, "AppIcon.icns"), iconResources);
 for (const arch of architectures) {
   const out = resolve("output", `plotit-mcp-${arch}`),
     app = join(out, "PlotIt MCP.app"),
@@ -47,6 +74,9 @@ for (const arch of architectures) {
   await rm(out, { recursive: true, force: true });
   await mkdir(join(contents, "MacOS"), { recursive: true });
   await mkdir(runtime, { recursive: true });
+  if (arch === "universal") {
+    await mergeUniversal(resolve("output/plotit-mcp-arm64/PlotIt MCP.app"), resolve("output/plotit-mcp-x64/PlotIt MCP.app"), app);
+  } else {
   run("swift", [
     "build",
     "--package-path",
@@ -76,6 +106,8 @@ for (const arch of architectures) {
   ).trim();
   await cp(join(bin, "PlotItMCP"), join(contents, "MacOS", "PlotItMCP"));
   await cp(join(bin, "plotit-mcp"), join(contents, "MacOS", "plotit-mcp"));
+  for (const file of await readdir(bin))
+    if (file.endsWith(".bundle")) await cp(join(bin, file), join(resources, file), { recursive: true });
   for (const file of await readdir("dist-companion"))
     if (file.endsWith(".mjs"))
       await cp(join("dist-companion", file), join(runtime, file));
@@ -149,33 +181,21 @@ for (const arch of architectures) {
     await rm(join(out, `node-v${pin}-darwin-${arch}`), { recursive: true });
     await rm(archive);
   }
+  }
   await chmod(join(runtime, "node"), 0o755);
-  const version = packageJson.version.replace(/-.*/, "");
   await writeFile(
     join(contents, "Info.plist"),
-    `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>cx.ap.plotit.mcp</string><key>CFBundleName</key><string>PlotIt MCP</string><key>CFBundleDisplayName</key><string>PlotIt MCP</string><key>CFBundleExecutable</key><string>PlotItMCP</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>${version}</string><key>CFBundleVersion</key><string>1</string><key>LSMinimumSystemVersion</key><string>14.0</string><key>LSUIElement</key><true/><key>NSHighResolutionCapable</key><true/><key>CFBundleIconFile</key><string>AppIcon</string></dict></plist>`,
+    `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${config.bundleIdentifier}</string><key>CFBundleName</key><string>PlotIt MCP</string><key>CFBundleDisplayName</key><string>PlotIt MCP</string><key>CFBundleExecutable</key><string>PlotItMCP</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>${version}</string><key>CFBundleVersion</key><string>${buildNumber}</string><key>LSMinimumSystemVersion</key><string>${config.minimumMacOS}</string><key>NSHumanReadableCopyright</key><string>${config.copyright}</string><key>LSUIElement</key><true/><key>NSHighResolutionCapable</key><true/><key>CFBundleIconFile</key><string>AppIcon</string></dict></plist>`,
   );
-  const iconset = join(out, "AppIcon.iconset");
-  await mkdir(iconset);
-  const logo =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect x="80" y="80" width="864" height="864" rx="192" fill="#137b75"/><path d="M284 700V324h240c170 0 170 234 0 234H388M388 700V324" fill="none" stroke="#fff" stroke-width="65" stroke-linecap="round" stroke-linejoin="round"/><circle cx="722" cy="700" r="32" fill="#afe2cc"/></svg>';
-  for (const size of [16, 32, 128, 256, 512])
-    for (const scale of [1, 2])
-      await writeFile(
-        join(iconset, `icon_${size}x${size}${scale === 2 ? "@2x" : ""}.png`),
-        new Resvg(logo, { fitTo: { mode: "width", value: size * scale } })
-          .render()
-          .asPng(),
-      );
-  run("iconutil", [
-    "-c",
-    "icns",
-    iconset,
-    "-o",
-    join(resources, "AppIcon.icns"),
-  ]);
-  await rm(iconset, { recursive: true });
-  for (const file of ["LICENSE", "THIRD_PARTY_NOTICES.md"])
+  await cp(join(iconResources, "AppIcon.icns"), join(resources, "AppIcon.icns"));
+  if (await exists(join(iconResources, "Assets.car"))) {
+    await cp(join(iconResources, "Assets.car"), join(resources, "Assets.car"));
+    run("/usr/libexec/PlistBuddy", ["-c", "Add :CFBundleIconName string AppIcon", join(contents, "Info.plist")]);
+  }
+  const info = { name: config.displayName, version, build: buildNumber, channel: config.channel, architecture: arch, sourceCommit, sourceDirty, sourceArchiveSha256, builtAt, nodeVersion: pin, finalIcon: !!icon, liquidGlassIcon: await exists(join(resources, "Assets.car")), signingMode: release ? "developer-id" : "ad-hoc" };
+  await writeFile(join(resources, "BUILD-INFO.json"), JSON.stringify(info, null, 2) + "\n");
+  await writeFile(join(resources, "THIRD-PARTY-COMPONENTS.json"), JSON.stringify(await componentInventory(runtime), null, 2) + "\n");
+  for (const file of ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"])
     await cp(file, join(resources, file));
   await cp(
     "public/plot-it-source.tar.gz",
@@ -183,12 +203,14 @@ for (const arch of architectures) {
   );
   await writeFile(
     join(resources, "COMPANION-NOTICES.txt"),
-    "PlotIt MCP is Apache-2.0. Corresponding source is included as plot-it-source.tar.gz.\nMCP SDK: MIT; smol-toml: MIT; resvg-js: MPL-2.0; Node.js and npm dependencies retain their bundled LICENSE/NOTICE files in runtime/node_modules.\n",
+    "PlotIt MCP is Apache-2.0. Corresponding source is included as plot-it-source.tar.gz.\nMCP SDK: MIT; MCP Apps SDK: MIT; MCP client/core: Apache-2.0; smol-toml: MIT; resvg-js: MPL-2.0; Node.js and npm dependencies retain their bundled LICENSE/NOTICE files in runtime/node_modules.\n",
   );
   const entitlements = join(out, "runtime.entitlements");
   await writeFile(
     entitlements,
-    '<?xml version="1.0"?><plist version="1.0"><dict><key>com.apple.security.cs.allow-jit</key><true/></dict></plist>',
+    '<?xml version="1.0"?><plist version="1.0"><dict><key>com.apple.security.cs.allow-jit</key><true/>' +
+      (arch === "arm64" ? "" : '<key>com.apple.security.cs.allow-unsigned-executable-memory</key><true/>') +
+      '</dict></plist>',
   );
   // Sign nested Mach-O code first; never disable library validation globally.
   async function signNative(path) {
@@ -231,18 +253,25 @@ for (const arch of architectures) {
     app,
   ]);
   run("codesign", ["--verify", "--deep", "--strict", app]);
+  if (!packageArchitectures.includes(arch)) {
+    console.info(`Verified ${arch} input for the universal package: ${app}`);
+    continue;
+  }
   if (release) {
+    // Exercise the signed runtime before uploading. Intel V8 needs its legacy JIT
+    // entitlement as well as MAP_JIT; an ad-hoc smoke test cannot catch this.
+    let crossArchitecture = false;
+    if (process.arch === "arm64") {
+      try { capture("/usr/bin/arch", ["-x86_64", "/usr/bin/true"]); crossArchitecture = true; } catch { /* Rosetta is optional. */ }
+    }
+    run(process.execPath, ["scripts/verify-mac.mjs", app, ...(crossArchitecture ? [] : ["--host-only"])]);
+    verifySourceCommit();
     const zip = join(out, "notarization.zip");
     run("ditto", ["-c", "-k", "--keepParent", app, zip]);
-    run("xcrun", [
-      "notarytool",
-      "submit",
-      zip,
-      "--keychain-profile",
-      notary,
-      "--wait",
-    ]);
+    await notarize(zip, notary, join(out, "notarization-app.json"), false);
     run("xcrun", ["stapler", "staple", app]);
+    run("xcrun", ["stapler", "validate", app]);
+    run("spctl", ["--assess", "--type", "execute", "--verbose", app]);
     await rm(zip);
   }
   const dmg = resolve(
@@ -252,10 +281,8 @@ for (const arch of architectures) {
   await rm(dmg, { force: true });
   const staging = join(out, "dmg");
   await mkdir(staging);
-  await cp(app, join(staging, "PlotIt MCP.app"), {
-    recursive: true,
-    verbatimSymlinks: true,
-  });
+  // Preserve macOS metadata and stapled tickets when staging the signed bundle.
+  run("ditto", [app, join(staging, "PlotIt MCP.app")]);
   await symlink("/Applications", join(staging, "Applications"));
   run("hdiutil", [
     "create",
@@ -271,17 +298,20 @@ for (const arch of architectures) {
   await rm(staging, { recursive: true });
   if (release) {
     run("codesign", ["--sign", identity, "--timestamp", dmg]);
-    run("xcrun", [
-      "notarytool",
-      "submit",
-      dmg,
-      "--keychain-profile",
-      notary,
-      "--wait",
-    ]);
-    run("xcrun", ["stapler", "staple", dmg]);
+    await notarize(dmg, notary, join(out, "notarization-dmg.json"));
   }
+  const zipArtifact = resolve("output", `PlotIt-MCP-${arch}${release ? "" : "-development"}.zip`);
+  await rm(zipArtifact, { force: true });
+  run("ditto", ["-c", "-k", "--keepParent", app, zipArtifact]);
+  const files = [];
+  for (const file of [dmg, zipArtifact]) files.push({ name: file.split("/").at(-1), sha256: await hashFile(file), bytes: (await stat(file)).size });
+  artifacts.push({ ...info, notarized: release, app: `plotit-mcp-${arch}/PlotIt MCP.app`, files });
   console.info(
     `${release ? "Signed release" : "Ad-hoc development build"}: ${app}\n${dmg}`,
   );
 }
+
+verifySourceCommit();
+const manifest = { name: config.displayName, version, build: buildNumber, channel: config.channel, distributionStatus: release ? "signed-and-notarized" : "development", artifacts };
+await writeFile(resolve("output/PlotIt-MCP-release-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+await writeFile(resolve("output/PlotIt-MCP-SHA256SUMS.txt"), artifacts.flatMap(a => a.files.map(f => `${f.sha256}  ${f.name}`)).join("\n") + "\n");

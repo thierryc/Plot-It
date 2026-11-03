@@ -1,0 +1,30 @@
+{
+  "fill": {
+    "solid": "extended-srgb:1.00000,0.00000,0.65098,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "litsquare.plot-it.svg",
+          "name": "litsquare.plot-it"
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.3
+      },
+      "name": "PlotIt / Regular-S / Liquid Glass"
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}

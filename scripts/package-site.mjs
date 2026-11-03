@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, write
 import { resolve, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 const directory = resolve('dist-site');
-for (const path of ['index.html', 'app/index.html', 'docs/index.html', 'docs/self-hosted/index.html', 'contributors/index.html', '404.html']) {
+for (const path of ['index.html', 'app/index.html', 'docs/index.html', 'docs/self-hosted/index.html', 'macos/index.html', 'docs/macos/index.html', 'contributors/index.html', '404.html']) {
   if (!existsSync(join(directory, path))) throw new Error(`Missing hosted route: ${path}`);
 }
 for (const file of readdirSync(join(directory, 'assets'), { recursive: true, encoding: 'utf8' }).filter(file => file.endsWith('.js'))) {

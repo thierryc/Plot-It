@@ -6,8 +6,9 @@ import type { PlotSettings } from "../src/model";
 import { initialState } from "../src/model";
 import { coreOptions } from "../src/core-settings";
 import { validateSettings } from "../src/network-protocol";
+import nativeRelease from "../macos/release.json";
 
-export const VERSION = "0.1.0";
+export const VERSION = process.env.PLOTIT_MAC_VERSION ?? nativeRelease.version;
 export const MAX_BYTES = 32 * 1024 * 1024;
 export const PROFILES = [
   "axidraw",

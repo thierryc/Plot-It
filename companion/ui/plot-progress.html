@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlotIt drawing progress</title>
+  <style>
+    :root { color-scheme: light dark; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif); color: var(--color-text-primary, #202c2b); background: transparent; --accent: #087e78; --muted: var(--color-text-secondary, #647571); --surface: var(--color-background-primary, #fff); --line: var(--color-border-primary, #e0e8e5); }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 4px; }
+    .card { max-width: 640px; margin: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+    header, .content, footer { padding: 18px 22px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .brand { font-size: 12px; font-weight: 700; letter-spacing: .12em; display: flex; align-items: center; gap: 8px; }
+    .brand svg { width: 23px; height: 23px; color: var(--accent); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .preview { position: relative; margin: 0 14px; min-height: 168px; height: 208px; display: grid; place-items: center; background: #f0f4f1; border: 1px solid #e6ece7; border-radius: 12px; overflow: hidden; }
+    .preview::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(#c8d5cd 1px, transparent 1px); background-size: 14px 14px; opacity: .55; }
+    .preview img { position: relative; display: block; max-width: 90%; max-height: 172px; object-fit: contain; background: white; padding: 10px; border-radius: 2px; box-shadow: 0 3px 12px #263e3012; }
+    .preview-label { position: absolute; bottom: 8px; right: 10px; font-size: 10px; color: #51675c; background: #f0f4f1e8; border-radius: 4px; padding: 3px 5px; }
+    #preview-placeholder { position: relative; color: #64776c; font-size: 13px; padding: 18px; text-align: center; }
+    .heading { display: flex; align-items: baseline; gap: 12px; justify-content: space-between; margin-bottom: 13px; }
+    h1 { font-size: 18px; font-weight: 600; line-height: 1.3; margin: 0; letter-spacing: -.025em; }
+    #percentage { font-size: 26px; font-weight: 500; letter-spacing: -.055em; color: var(--accent); font-variant-numeric: tabular-nums; }
+    progress { display: block; width: 100%; height: 6px; border: 0; border-radius: 8px; overflow: hidden; appearance: none; background: var(--line); accent-color: var(--accent); }
+    progress::-webkit-progress-bar { background: var(--line); border-radius: 8px; }
+    progress::-webkit-progress-value { background: var(--accent); border-radius: 8px; transition: width .5s ease; }
+    progress::-moz-progress-bar { background: var(--accent); border-radius: 8px; }
+    progress:not([value]) { opacity: .45; }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    dt { color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+    dd { margin: 0; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    #detail { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+    #connection-error { margin: 12px 0 0; color: #a34324; font-size: 12px; line-height: 1.5; }
+    footer { border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+    #freshness { color: var(--muted); font-size: 11px; margin-right: auto; }
+    button { font: inherit; font-size: 12px; font-weight: 500; border: 1px solid var(--line); padding: 7px 12px; border-radius: 8px; background: var(--surface); color: inherit; cursor: pointer; }
+    button:hover { background: var(--color-background-secondary, #f2f6f4); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    button:disabled { opacity: .5; cursor: default; }
+    #stop { color: #ae3f32; }
+    [hidden] { display: none !important; }
+    .card[data-phase="finished"] .badge { color: var(--accent); }
+    .card[data-phase="paused"], .card[data-phase="tool-change"] { --accent: #a16b17; }
+    .card[data-phase="failed"], .card[data-phase="interrupted"] { --accent: #b34537; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --surface: var(--color-background-primary, #1c2423); --line: var(--color-border-primary, #35433e); --muted: var(--color-text-secondary, #a4b5ae); color: var(--color-text-primary, #e4ede7); --accent: #66d5be; } }
+    :root[data-theme="dark"] { --surface: var(--color-background-primary, #1c2423); --line: var(--color-border-primary, #35433e); --muted: var(--color-text-secondary, #a4b5ae); color: var(--color-text-primary, #e4ede7); --accent: #66d5be; }
+    :root[data-theme="dark"] .card:is([data-phase="paused"], [data-phase="tool-change"]) { --accent: #e2b45b; }
+    :root[data-theme="dark"] .card:is([data-phase="failed"], [data-phase="interrupted"]) { --accent: #f28b7b; }
+    :root[data-theme="dark"] #stop, :root[data-theme="dark"] #connection-error { color: #f28b7b; }
+    @media (prefers-reduced-motion: reduce) { progress::-webkit-progress-value { transition: none; } }
+    @media (max-width: 350px) { header, .content, footer { padding-left: 15px; padding-right: 15px; } h1 { font-size: 16px; } .preview { height: 176px; } .preview img { max-height: 140px; } footer { flex-wrap: wrap; } }
+    @media (forced-colors: active) { .card, button { border: 1px solid CanvasText; } progress { appearance: auto; } }
+  </style>
+</head>
+<body>
+  <article class="card" data-phase="loading" aria-label="PlotIt drawing progress">
+    <header>
+      <div class="brand"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 17 5-13 5 13M9 12h6M5 21h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>PLOTIT</div>
+      <span class="badge"><span class="dot" aria-hidden="true"></span><span id="phase">Connecting</span></span>
+    </header>
+    <div class="preview">
+      <p id="preview-placeholder">Your drawing preview will appear here</p>
+      <img id="preview" alt="Full preview of the prepared drawing" hidden>
+      <span class="preview-label">Full drawing preview</span>
+    </div>
+    <div class="content">
+      <div class="heading"><h1 id="title" aria-live="polite">Getting your drawing</h1><span id="percentage" aria-hidden="true">—</span></div>
+      <progress id="progress" max="1" aria-label="Estimated drawing progress"></progress>
+      <dl class="metrics"><div><dt>Elapsed</dt><dd id="elapsed">—</dd></div><div><dt>Est. remaining</dt><dd id="remaining">—</dd></div><div><dt id="third-label">Plot</dt><dd id="third-value">—</dd></div></dl>
+      <p id="detail">Connecting to PlotIt MCP…</p>
+      <p id="connection-error" role="status" hidden></p>
+    </div>
+    <footer><span id="freshness">Waiting for live data</span><button id="refresh" type="button">Refresh</button><button id="pause" type="button" hidden>Pause</button><button id="stop" type="button" hidden>Stop…</button></footer>
+  </article>
+  <script type="module">/* PLOTIT_APP_SCRIPT */</script>
+</body>
+</html>

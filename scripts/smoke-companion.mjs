@@ -13,6 +13,10 @@ const app = resolve(
   node = join(resources, "runtime/node");
 const temp = await mkdtemp("/tmp/pi-package-"),
   socket = join(temp, "sock");
+const requestedArchitecture = process.env.PLOTIT_SMOKE_ARCH;
+if (requestedArchitecture && !["arm64", "x86_64"].includes(requestedArchitecture)) throw new Error("PLOTIT_SMOKE_ARCH must be arm64 or x86_64.");
+const command = requestedArchitecture ? "/usr/bin/arch" : node;
+const prefix = requestedArchitecture ? [`-${requestedArchitecture}`, node] : [];
 const env = {
   ...process.env,
   PLOTIT_RESOURCES: resources,
@@ -20,7 +24,7 @@ const env = {
   PLOTIT_SOCKET_DIR: socket,
   PLOTIT_UI_SESSION: randomUUID(),
 };
-const ui = spawn(node, [join(resources, "runtime/ui-client.mjs")], {
+const ui = spawn(command, [...prefix, join(resources, "runtime/ui-client.mjs")], {
   env,
   stdio: ["pipe", "pipe", "pipe"],
 });
@@ -62,14 +66,21 @@ try {
   assert.equal(test.ok, true);
   await client.connect(
     new StdioClientTransport({
-      command: node,
-      args: [join(resources, "runtime/stdio.mjs")],
+      command,
+      args: [...prefix, join(resources, "runtime/stdio.mjs")],
       env: Object.fromEntries(
         Object.entries(env).filter(([, v]) => v !== undefined),
       ),
     }),
   );
-  assert.equal((await client.listTools()).tools.length, 8);
+  assert.equal((await client.listTools()).tools.length, 16);
+  const cardResource = await client.readResource({ uri: "ui://plotit/plot-progress-v1.html" });
+  assert.equal(cardResource.contents[0].mimeType, "text/html;profile=mcp-app");
+  assert(cardResource.contents[0].text.includes("Estimated drawing progress"));
+  const setupResource = await client.readResource({ uri: "ui://plotit/plotter-setup-v1.html" });
+  assert(setupResource.contents[0].text.includes("Set up your plotter"));
+  assert.equal(status.agentControlEnabled, true);
+  assert(status.paperPresets.some((paper) => paper.name === "A4 portrait"));
   async function call(name, args = {}) {
     const r = await client.callTool({ name, arguments: args });
     if (r.isError) throw new Error(r.content[0].text);
@@ -113,7 +124,7 @@ try {
   });
   assert.equal(started.isError, true);
   console.info(
-    `Packaged runtime passed: ${app}\n8 tools, text preparation, PNG preview, simulation, and disarmed Start verified. No USB was opened.`,
+    `Packaged runtime passed: ${app}${requestedArchitecture ? " (" + requestedArchitecture + ")" : ""}\n16 tools, setup/progress cards, paper presets, text preparation, PNG preview, simulation, and blocked Start verified. No USB was opened.`,
   );
 } finally {
   await client.close().catch(() => undefined);

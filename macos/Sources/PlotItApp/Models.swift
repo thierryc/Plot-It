@@ -15,6 +15,21 @@ struct Machine: Codable, Equatable {
     static let profiles: [(String, String)] = [("axidraw", "AxiDraw A4"), ("axidraw-a3", "AxiDraw A3"), ("xylodraw", "XyloDraw"), ("nextdraw-8511", "NextDraw 8511"), ("nextdraw-1117", "NextDraw 1117"), ("nextdraw-2234", "NextDraw 2234")]
     var displayName: String { Self.profiles.first { $0.0 == profile }?.1 ?? profile }
 }
+struct PaperPreset: Decodable, Equatable, Identifiable {
+    let name: String
+    let width: Double
+    let height: Double
+    var id: String { name }
+    func matches(_ machine: Machine) -> Bool { abs(width - machine.widthMm) < 0.005 && abs(height - machine.heightMm) < 0.005 }
+}
+enum PaperDimension {
+    static func parse(_ text: String) -> Double? {
+        let scanner = Scanner(string: text.trimmingCharacters(in: .whitespacesAndNewlines))
+        scanner.locale = Locale.current
+        guard let value = scanner.scanDouble(), scanner.isAtEnd, value.isFinite, (1...1000).contains(value) else { return nil }
+        return value
+    }
+}
 struct RunnerSnapshot: Decodable, Equatable {
     var connected: Bool
     var firmware: String?
@@ -26,10 +41,13 @@ struct RunnerSnapshot: Decodable, Equatable {
     var progress: ProgressSnapshot?
 }
 struct ProgressSnapshot: Decodable, Equatable {
+    var completed: Double?
+    var total: Double?
     var fraction: Double?
     var progress: Double?
     var remainingMs: Double?
     var copy: Int?
+    var copies: Int?
 }
 struct Job: Decodable, Equatable {
     var id: String
@@ -49,8 +67,12 @@ struct CompanionStatus: Decodable, Equatable {
     var agents: [ConnectedAgent]
     var lastJob: Job?
     var preparing: Bool
+    var paperPresets: [PaperPreset]?
+    var agentControlEnabled: Bool?
+    var controlBlocker: String?
+    var configDigest: String?
     var active: Bool { guard let runner else { return false }; return !["idle", "pending", "finished", "stopped", "failed", "interrupted"].contains(runner.status) }
-    var ready: Bool { configured && runner?.connected == true && runner?.origin != "unset" }
+    var ready: Bool { configured && runner?.connected == true && ["automatic", "explicit"].contains(runner?.origin ?? "unset") }
 }
 struct AgentInstallation: Decodable, Identifiable, Equatable {
     var id: String; var path: String; var configured: Bool; var cli: String?; var error: String?
@@ -72,7 +94,10 @@ struct AgentChange: Decodable, Identifiable {
     var command: [String]?
 }
 struct ServerEntry: Codable { var command: String; var args: [String] }
-struct Device: Decodable, Identifiable { var path: String; var manufacturer: String?; var vendorId: String?; var id: String { path } }
+struct Device: Decodable, Identifiable {
+    var path: String; var manufacturer: String?; var vendorId: String?; var productId: String?; var id: String { path }
+    var compatible: Bool { vendorId?.lowercased() == "04d8" && productId?.lowercased() == "fd92" }
+}
 
 enum CompanionError: LocalizedError {
     case message(String)

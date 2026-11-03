@@ -9,6 +9,9 @@ final class UISnapshotTests: XCTestCase {
         _ = NSApplication.shared
         let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true
         model.status = CompanionStatus(version: "0.1.0", configured: false, config: Machine(), armed: false, agents: [], preparing: false)
+        model.status?.paperPresets = [PaperPreset(name: "A4 portrait", width: 210, height: 297), PaperPreset(name: "US Letter portrait", width: 215.9, height: 279.4)]
+        model.status?.agentControlEnabled = true
+        model.status?.controlBlocker = "Save your machine settings."
         model.agents = [
             AgentInstallation(id: "codex", path: "~/.codex/config.toml", configured: true),
             AgentInstallation(id: "claude-code", path: "~/.claude.json", configured: false),
@@ -19,13 +22,24 @@ final class UISnapshotTests: XCTestCase {
             try capture(SetupWindow(model: model, initialStep: step), name: "setup-\(step)", size: NSSize(width: 746, height: 680))
         }
         try capture(MenuPanel(model: model), name: "menu", size: NSSize(width: 350, height: 360))
+        model.status?.config.widthMm = 222
+        model.status?.config.heightMm = 333
+        try capture(SetupWindow(model: model), name: "setup-custom", size: NSSize(width: 746, height: 680))
+        try capture(SetupWindow(model: model), name: "setup-dark", size: NSSize(width: 746, height: 680), colorScheme: .dark)
+        model.status?.configured = true
+        model.status?.armed = true
+        model.status?.controlBlocker = nil
+        model.status?.lastJob = Job(id: "snapshot", status: "running", durationMs: 120000)
+        model.status?.runner = RunnerSnapshot(connected: true, jobId: "snapshot", status: "running", origin: "explicit", elapsedMs: 30000, progress: ProgressSnapshot(completed: 45, total: 100))
+        try capture(MenuPanel(model: model), name: "menu-running", size: NSSize(width: 350, height: 460))
+        try capture(MenuPanel(model: model), name: "menu-running-dark", size: NSSize(width: 350, height: 460), colorScheme: .dark)
     }
     @MainActor
-    private func capture<Content: View>(_ content: Content, name: String, size: NSSize) throws {
-        let view = NSHostingView(rootView: content.environment(\.colorScheme, .light).background(Color.white))
+    private func capture<Content: View>(_ content: Content, name: String, size: NSSize, colorScheme: ColorScheme = .light) throws {
+        let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme).background(colorScheme == .dark ? Color.black : Color.white))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .aqua)
+        window.appearance = NSAppearance(named: colorScheme == .dark ? .darkAqua : .aqua)
         window.contentView = view; view.frame = NSRect(origin: .zero, size: size)
         view.layoutSubtreeIfNeeded(); view.displayIfNeeded()
         guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return XCTFail("Cannot render \(name)") }
