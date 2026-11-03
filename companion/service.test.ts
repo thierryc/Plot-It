@@ -10,6 +10,9 @@ import { defaultMachine } from "./common";
 import { atomicJson } from "../server/jobs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { PAPERS } from "../src/model";
+import { PROGRESS_URI, PROGRESS_MIME } from "./progress";
+import { SETUP_URI } from "./setup";
 const cleanup: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
   for (const fn of cleanup.splice(0).reverse()) await fn();
@@ -24,7 +27,7 @@ async function waitFor<T>(read: () => Promise<T>, done: (v: T) => boolean) {
   }
 }
 describe("local companion integration", () => {
-  it("revokes a stale session before accepting its next heartbeat and rejects duplicate services", async () => {
+  it("grants control only while ready with a fresh native session and remembers Off", async () => {
     const directory = await mkdtemp("/tmp/pi-lease-");
     cleanup.push(() => rm(directory, { recursive: true, force: true }));
     await atomicJson(join(directory, "machine.json"), defaultMachine);
@@ -38,7 +41,7 @@ describe("local companion integration", () => {
     const runner = {
       snapshot,
       close() {},
-      request: async () => ({ ok: true, value: {} }),
+      request: vi.fn(async () => ({ ok: true, value: {} })),
     } as unknown as RunnerClient;
     const options = {
       directory,
@@ -48,20 +51,42 @@ describe("local companion integration", () => {
       runner,
       home: directory,
     };
-    const service = await startCompanion(options);
+    let service = await startCompanion(options);
     cleanup.push(() => service.close());
+    expect((await service.status()).armed).toBe(false);
     await service.handleUI("heartbeat", { session: "native" });
-    await service.handleUI("arm", { session: "native", enabled: true });
     expect((await service.status()).armed).toBe(true);
+    expect((await service.status()).paperPresets).toEqual(PAPERS);
     const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6000);
     try {
       expect((await service.status()).armed).toBe(false);
       await service.handleUI("heartbeat", { session: "native" });
-      expect((await service.status()).armed).toBe(false);
+      expect((await service.status()).armed).toBe(true);
     } finally {
       clock.mockRestore();
     }
     await expect(startCompanion(options)).rejects.toThrow("already running");
+    snapshot.origin = "unset";
+    expect((await service.status()).armed).toBe(false);
+    snapshot.origin = "explicit";
+    expect((await service.status()).armed).toBe(true);
+    expect(runner.request).not.toHaveBeenCalled();
+    await service.handleUI("origin", { session: "native" });
+    expect((await service.status()).armed).toBe(false);
+    runner.snapshot = { ...snapshot } as unknown as typeof runner.snapshot;
+    expect((await service.status()).armed).toBe(true);
+    await service.handleUI("suspend_control", { session: "native" });
+    expect((await service.status()).armed).toBe(false);
+    await service.handleUI("heartbeat", { session: "replacement" });
+    expect((await service.status()).armed).toBe(true);
+    await service.handleUI("arm", { session: "replacement", enabled: false });
+    await service.handleUI("heartbeat", { session: "third" });
+    expect((await service.status()).armed).toBe(false);
+    expect(runner.request).toHaveBeenCalledTimes(1);
+    await service.close();
+    service = await startCompanion(options);
+    await service.handleUI("heartbeat", { session: "restarted" });
+    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
   });
   it("recovers unfinished preparation and simulation without replay", async () => {
     const directory = await mkdtemp("/tmp/pi-recover-");
@@ -89,6 +114,21 @@ describe("local companion integration", () => {
     expect(recovered.status).toBe("failed");
     expect(recovered.simulation.status).toBe("interrupted");
     expect(recovered.error).toContain("restarted");
+  });
+  it("blocks agent setup during a drawing and never changes a remembered Off choice", async () => {
+    const directory = await mkdtemp("/tmp/pi-setup-");
+    cleanup.push(() => rm(directory, { recursive: true, force: true }));
+    await atomicJson(join(directory, "machine.json"), defaultMachine);
+    const runner = { snapshot: { connected: true, origin: "explicit", status: "running" }, close() {}, request: vi.fn(async () => ({ ok: true, value: {} })) } as unknown as RunnerClient;
+    const service = await startCompanion({ directory, socketDirectory: join(directory, "sock"), resources: resolve("."), runner, home: directory, listDevices: async () => [] });
+    cleanup.push(() => service.close());
+    await service.handleUI("heartbeat", { session: "native" });
+    for (const [name, args] of [["configure_plotter", { settings: { widthMm: 220 } }], ["connect_plotter", {}], ["disconnect_plotter", {}], ["test_pen", { down: true }], ["set_plotter_origin", { currentPositionConfirmed: true }]] as const) await expect(service.handleMcp(name, args)).rejects.toThrow("settled");
+    expect(runner.request).not.toHaveBeenCalled();
+    runner.snapshot!.status = "idle";
+    await service.handleUI("arm", { session: "native", enabled: false });
+    await service.handleMcp("configure_plotter", { settings: {} });
+    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
   });
   it("serves real MCP clients, enforces local arming and origin, shares a runner and deduplicates starts", async () => {
     const directory = await mkdtemp("/tmp/pi-service-");
@@ -118,25 +158,37 @@ describe("local companion integration", () => {
     cleanup.push(() => service.close());
     const ui = (action: string, params: Record<string, unknown> = {}) =>
       service.handleUI(action, { ...params, session: "native-session" });
+    await expect(service.handleMcp("configure_plotter", { settings: { widthMm: 200 } })).rejects.toThrow("Open PlotIt MCP");
     await ui("heartbeat");
     await ui("save_machine", { config: defaultMachine });
+    const setup = await service.handleMcp("get_setup", {});
+    expect(setup.nativeSessionActive).toBe(true);
+    expect(setup.machineProfiles).toHaveLength(6);
+    await service.handleMcp("configure_plotter", { settings: { widthMm: 215.9, heightMm: 279.4 }, expectedConfigDigest: setup.configDigest });
+    expect((await service.status()).config).toMatchObject({ widthMm: 215.9, heightMm: 279.4, profile: "axidraw" });
+    await expect(service.handleMcp("configure_plotter", { settings: { penUp: 40 }, expectedConfigDigest: setup.configDigest })).rejects.toThrow("changed elsewhere");
+    await expect(service.handleMcp("configure_plotter", { settings: { widthMm: 0 } })).rejects.toThrow("paper width");
     await expect(service.handleMcp("arm", { enabled: true })).rejects.toThrow(
       "Unsupported",
     );
-    await expect(ui("arm", { enabled: true })).rejects.toThrow("origin");
-    await ui("connect");
+    await ui("arm", { enabled: true });
+    expect((await service.status()).armed).toBe(false);
+    await service.handleMcp("connect_plotter", {});
     await waitFor(
       () => service.status(),
       (s) => s.runner?.connected === true,
     );
-    await ui("origin");
+    await expect(service.handleMcp("set_plotter_origin", {})).rejects.toThrow("Confirm");
+    await service.handleMcp("test_pen", { down: false });
+    await service.handleMcp("set_plotter_origin", { currentPositionConfirmed: true });
     await waitFor(
       () => service.status(),
       (s) => s.runner?.origin === "explicit",
     );
+    await waitFor(() => service.status(), (s) => s.armed);
     const clients: Client[] = [];
     for (const name of ["codex-test", "claude-code-test"]) {
-      const client = new Client({ name, version: "1.0" });
+      const client = new Client({ name, version: "1.0" }, name === "claude-code-test" ? { capabilities: { extensions: { "io.modelcontextprotocol/ui": { mimeTypes: [PROGRESS_MIME] } } } } : {});
       clients.push(client);
       await client.connect(
         new StdioClientTransport({
@@ -153,7 +205,9 @@ describe("local companion integration", () => {
         }),
       );
       cleanup.push(() => client.close());
-      expect((await client.listTools()).tools).toHaveLength(8);
+      const advertised = (await client.listTools()).tools;
+      expect(advertised).toHaveLength(16);
+      expect(advertised.find(t => t.name === "show_plot_progress")?._meta?.ui).toEqual(name === "claude-code-test" ? { resourceUri: PROGRESS_URI } : undefined);
     }
     const call = async (
       client: Client,
@@ -184,6 +238,7 @@ describe("local companion integration", () => {
       () => call(clients[0]!, "get_job", { id: prepared.id }),
       (j) => j.status !== "preparing",
     );
+    await ui("arm", { enabled: false });
     await expect(
       call(clients[0]!, "start_job", { id: prepared.id }),
     ).rejects.toThrow("Enable agent control");
@@ -201,12 +256,18 @@ describe("local companion integration", () => {
     await service.handleUI("heartbeat", { session: "replacement-session" });
     expect((await service.status()).armed).toBe(false);
     const preview = await clients[1]!.callTool({
-      name: "get_job",
-      arguments: { id: prepared.id, includePreview: true },
+      name: "show_plot_progress",
+      arguments: { id: prepared.id },
     });
     expect((preview.content as any[]).some((c) => c.type === "image")).toBe(
       true,
     );
+    expect((preview.structuredContent as any).monitor).toMatchObject({ terminal: true, fraction: 1, title: "Drawing complete" });
+    const resource = await clients[1]!.readResource({ uri: PROGRESS_URI });
+    expect(resource.contents[0]?.mimeType).toBe(PROGRESS_MIME);
+    expect((resource.contents[0] as { text: string }).text).toContain("Estimated drawing progress");
+    const setupResource = await clients[1]!.readResource({ uri: SETUP_URI });
+    expect((setupResource.contents[0] as { text: string }).text).toContain("Set up your plotter");
     expect(fake.commands.some((c) => c.startsWith("SM,"))).toBe(true);
   }, 30000);
 });

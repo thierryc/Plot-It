@@ -1,0 +1,39 @@
+name: Build PlotIt MCP for macOS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: plotit-mcp-development
+  cancel-in-progress: false
+jobs:
+  macos:
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test:companion
+      - run: swift test --package-path macos
+      - name: Build Apple Silicon, Intel and universal development packages
+        run: npm run build:mac -- --arch all
+        env:
+          PLOTIT_MAC_BUILD: ${{ github.run_number }}
+      - name: Verify signatures, slices, native addons and packaged resources
+        run: |
+          for arch in arm64 x64 universal; do
+            node scripts/verify-mac.mjs "output/plotit-mcp-$arch/PlotIt MCP.app" --host-only
+          done
+          node scripts/smoke-companion.mjs 'output/plotit-mcp-universal/PlotIt MCP.app'
+      - run: node scripts/prepare-mac-release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlotIt-MCP-development-${{ github.run_number }}
+          path: output/plotit-mcp-release
+          retention-days: 14

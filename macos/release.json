@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "build": "5",
+  "channel": "alpha",
+  "minimumMacOS": "14.0",
+  "bundleIdentifier": "cx.ap.plotit.mcp",
+  "displayName": "PlotIt MCP",
+  "copyright": "Copyright © Another Planet Creative eXperience"
+}

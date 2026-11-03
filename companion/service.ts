@@ -26,11 +26,15 @@ import {
   fingerprint,
   identity,
   text,
+  object,
 } from "./common";
 import { listenRpc } from "./rpc";
 import { AgentSetup, type Agent } from "./agents";
 import type { JobInfo } from "./artwork";
 import { claimService } from "./ownership";
+import { PAPERS } from "../src/model";
+import { plotProgress } from "./progress";
+import { machineProfiles, setupActions, type SetupAction } from "./setup";
 
 export interface CompanionOptions {
   directory: string;
@@ -59,10 +63,17 @@ export async function startCompanion(options: CompanionOptions) {
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
   }
+  let agentControlEnabled = true;
+  try {
+    const saved = JSON.parse(await readFile(join(directory, "control-preferences.json"), "utf8"));
+    if (typeof saved.agentControlEnabled === "boolean") agentControlEnabled = saved.agentControlEnabled;
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
   const releaseLock = await claimService(socketDirectory);
   let uiSession = "",
     lastHeartbeat = 0,
-    armed = false,
+    controlSuspended = false,
     lastJob: JobInfo | undefined,
     closing = false;
   const connectedAgents = new Map<string, { name: string; at: number }>();
@@ -95,7 +106,19 @@ export async function startCompanion(options: CompanionOptions) {
       codexHome: setup.codexHome,
     });
   const assetRoot = options.assetRoot ?? join(resources, "assets");
-  const isArmed = () => armed && Date.now() - lastHeartbeat < 5000 && !closing;
+  let changingHardware = false;
+  let readinessBarrier: typeof runner.snapshot = null;
+  const controlBlocker = () => {
+    if (!agentControlEnabled) return "Agent control is turned off.";
+    if (closing || controlSuspended) return "Agent control is suspended while quitting.";
+    if (!uiSession || Date.now() - lastHeartbeat >= 5000) return "Open PlotIt MCP to allow agent control.";
+    if (!configured) return "Save your machine settings.";
+    if (changingHardware || (readinessBarrier && readinessBarrier === runner.snapshot)) return "Waiting for the plotter’s current state.";
+    if (!runner.snapshot?.connected) return "Connect your plotter.";
+    if (!["automatic", "explicit"].includes(runner.snapshot.origin)) return "Set the drawing origin.";
+    return null;
+  };
+  const isArmed = () => controlBlocker() === null;
   const active = () =>
     !!runner.snapshot &&
     ![
@@ -180,14 +203,17 @@ export async function startCompanion(options: CompanionOptions) {
     runnerChild = undefined;
   }
   async function command(action: any, fields: Record<string, unknown> = {}) {
-    const r = await runner.request({
-      version: 1,
-      requestId: randomUUID(),
-      action,
-      ...fields,
-    });
-    if (!r.ok) throw new Error(r.error ?? "Plotter command failed.");
-    return r.value ?? {};
+    const changesReadiness = ["disconnect-ebb", "connect-ebb", "set-origin"].includes(action);
+    if (changesReadiness) changingHardware = true;
+    try {
+      const r = await runner.request({ version: 1, requestId: randomUUID(), action, ...fields });
+      if (!r.ok) throw new Error(r.error ?? "Plotter command failed.");
+      return r.value ?? {};
+    } finally {
+      // Control replies and telemetry use separate sockets. Wait for a fresh
+      // snapshot after the reply before automatically granting control again.
+      if (changesReadiness) { readinessBarrier = runner.snapshot; changingHardware = false; }
+    }
   }
   async function job(id: string): Promise<JobInfo> {
     const info = JSON.parse(
@@ -213,6 +239,10 @@ export async function startCompanion(options: CompanionOptions) {
       version: VERSION,
       configured,
       config,
+      configDigest: fingerprint(config),
+      paperPresets: PAPERS,
+      agentControlEnabled,
+      controlBlocker: controlBlocker(),
       armed: isArmed(),
       runner: runner.snapshot ?? null,
       agents: connected,
@@ -220,6 +250,52 @@ export async function startCompanion(options: CompanionOptions) {
       preparing: tasks.size > 0,
       hardwareExperimental: true,
     };
+  }
+  async function devices() {
+    const list = await (options.listDevices ? options.listDevices() : SerialPort.list());
+    return list.flatMap(item => {
+      if (!item || typeof item !== "object" || !("path" in item) || typeof item.path !== "string") return [];
+      const value = item as Record<string, unknown>;
+      return [{ path: item.path, ...Object.fromEntries(["manufacturer", "vendorId", "productId"].filter(key => typeof value[key] === "string").map(key => [key, value[key]])) }];
+    });
+  }
+  async function setupStatus() {
+    return { ...await status(), machineProfiles, devices: await devices(), nativeSessionActive: !!uiSession && Date.now() - lastHeartbeat < 5000 && !closing && !controlSuspended };
+  }
+  const requireNativeSession = () => {
+    if (!uiSession || Date.now() - lastHeartbeat >= 5000 || closing || controlSuspended) throw new Error("Open PlotIt MCP on this Mac before changing plotter setup.");
+  };
+  async function performSetup(action: SetupAction, p: Record<string, unknown>) {
+    requireNativeSession();
+    return exclusive(async () => {
+      requireNativeSession();
+      idle();
+      if (action === "save_machine") {
+        if (p.expectedConfigDigest !== undefined && p.expectedConfigDigest !== fingerprint(config)) throw new Error("Machine settings changed elsewhere. Refresh and review them before saving.");
+        const patch = object(p.settings ?? p.config);
+        if (Object.keys(patch).some(key => !Object.hasOwn(defaultMachine, key))) throw new Error("Unknown machine setting.");
+        const next = machine(p.settings ? { ...config, ...patch } : patch);
+        if (configured && fingerprint(next) === fingerprint(config)) return status();
+        if (runner.snapshot?.connected) await command("disconnect-ebb", { settings: settings(config) });
+        if (next.device !== config.device) await stopRunner();
+        await atomicJson(join(directory, "machine.json"), next);
+        config = next;
+        configured = true;
+      } else if (action === "connect") {
+        if (!configured) throw new Error("Save machine settings first.");
+        if (!runner.snapshot?.connected) { await ensureRunner(); await command("connect-ebb"); }
+      } else if (action === "disconnect") {
+        if (runner.snapshot?.connected) await command("disconnect-ebb", { settings: settings(config) });
+      } else {
+        if (!configured || !runner.snapshot?.connected) throw new Error("Save settings and connect the plotter first.");
+        if (action === "origin") await command("set-origin", { profile: settings(config).profile, settings: settings(config) });
+        else {
+          if (typeof p.down !== "boolean") throw new Error("Choose pen up or pen down.");
+          await command("pen", { percent: p.down ? config.penDown : config.penUp, settings: settings(config) });
+        }
+      }
+      return status();
+    });
   }
   function worker(
     action: string,
@@ -284,6 +360,12 @@ export async function startCompanion(options: CompanionOptions) {
       return {};
     }
     if (action === "get_status") return status();
+    if (action === "get_setup" || action === "show_plotter_setup") return setupStatus();
+    if (setupActions[action]) {
+      if (action === "set_plotter_origin" && p.currentPositionConfirmed !== true) throw new Error("Confirm that the carriage is at the intended drawing origin first.");
+      await performSetup(setupActions[action]!, p);
+      return setupStatus();
+    }
     if (action === "list_fonts") {
       const list = JSON.parse(
         await readFile(join(assetRoot, "src/fonts/catalog.json"), "utf8"),
@@ -357,13 +439,15 @@ export async function startCompanion(options: CompanionOptions) {
       }
       return { id, status: "preparing" };
     }
-    if (action === "get_job") {
+    if (action === "get_job" || action === "show_plot_progress") {
       const info = await job(identity(p.id));
+      const live = runner.snapshot?.jobId === info.id && runner.snapshot.connected ? runner.snapshot : null;
       return {
         ...info,
-        ...(runner.snapshot?.jobId === info.id
-          ? { progress: runner.snapshot.progress }
+        ...(live
+          ? { progress: live.progress, elapsedMs: live.elapsedMs }
           : {}),
+        monitor: plotProgress({ ...info, telemetryAvailable: !!live, progress: live?.progress, elapsedMs: live?.elapsedMs }),
         previewUri: info.previewPath
           ? `plotit://jobs/${info.id}/preview`
           : undefined,
@@ -469,7 +553,7 @@ export async function startCompanion(options: CompanionOptions) {
     if (action === "heartbeat") {
       const session = identity(p.session);
       if (uiSession !== session || Date.now() - lastHeartbeat >= 5000) {
-        armed = false;
+        controlSuspended = false;
         uiSession = session;
       }
       lastHeartbeat = Date.now();
@@ -478,12 +562,8 @@ export async function startCompanion(options: CompanionOptions) {
     if (p.session !== uiSession || Date.now() - lastHeartbeat >= 5000)
       throw new Error("Reconnect the native companion window.");
     if (action === "status") return status();
-    if (action === "devices")
-      return {
-        devices: await (options.listDevices
-          ? options.listDevices()
-          : SerialPort.list()),
-      };
+    if (action === "devices") return { devices: await devices() };
+    if (["save_machine", "connect", "disconnect", "origin", "pen"].includes(action)) return performSetup(action as SetupAction, p);
     if (action === "agent_status")
       return { agents: await setup.status(), entry: setup.entry() };
     if (action === "plan_agent")
@@ -518,65 +598,15 @@ export async function startCompanion(options: CompanionOptions) {
     }
     if (action === "arm")
       return exclusive(async () => {
-        if (p.enabled === true) {
-          if (
-            !configured ||
-            !runner.snapshot?.connected ||
-            runner.snapshot.origin === "unset"
-          )
-            throw new Error(
-              "Save settings, connect the plotter, and establish origin first.",
-            );
-        }
-        armed = p.enabled === true;
+        if (typeof p.enabled !== "boolean") throw new Error("Choose whether agent control is allowed.");
+        await atomicJson(join(directory, "control-preferences.json"), { agentControlEnabled: p.enabled });
+        agentControlEnabled = p.enabled;
         return status();
       });
-    if (action === "save_machine")
-      return exclusive(async () => {
-        idle();
-        const next = machine(p.config);
-        armed = false;
-        if (runner.snapshot?.connected)
-          await command("disconnect-ebb", { settings: settings(config) });
-        if (next.device !== config.device) await stopRunner();
-        config = next;
-        configured = true;
-        await atomicJson(join(directory, "machine.json"), config);
-        return status();
-      });
-    if (action === "connect")
-      return exclusive(async () => {
-        if (!configured) throw new Error("Save machine settings first.");
-        await ensureRunner();
-        await command("connect-ebb");
-        return status();
-      });
-    if (action === "disconnect")
-      return exclusive(async () => {
-        idle();
-        armed = false;
-        await command("disconnect-ebb", { settings: settings(config) });
-        return status();
-      });
-    if (action === "origin")
-      return exclusive(async () => {
-        idle();
-        armed = false;
-        await command("set-origin", {
-          profile: settings(config).profile,
-          settings: settings(config),
-        });
-        return status();
-      });
-    if (action === "pen")
-      return exclusive(async () => {
-        idle();
-        await command("pen", {
-          percent: p.down === true ? config.penDown : config.penUp,
-          settings: settings(config),
-        });
-        return status();
-      });
+    if (action === "suspend_control") {
+      controlSuspended = true;
+      return status();
+    }
     if (action === "control")
       return exclusive(async () => {
         if (!["pause", "resume", "continue", "stop"].includes(String(p.action)))
@@ -609,7 +639,7 @@ export async function startCompanion(options: CompanionOptions) {
       try {
         await client.connect(transport);
         const advertised = await client.listTools();
-        if (advertised.tools.length !== 8)
+        if (advertised.tools.length !== 16)
           throw new Error(
             "The MCP server did not advertise the expected tools.",
           );
@@ -626,7 +656,7 @@ export async function startCompanion(options: CompanionOptions) {
     if (action === "quit")
       return exclusive(async () => {
         idle();
-        armed = false;
+        controlSuspended = true;
         closing = true;
         await close();
         return { quit: true };
@@ -665,12 +695,6 @@ export async function startCompanion(options: CompanionOptions) {
   }
   let logTick = 0;
   const lease = setInterval(() => {
-    if (
-      Date.now() - lastHeartbeat >= 5000 ||
-      !runner.snapshot?.connected ||
-      runner.snapshot.origin === "unset"
-    )
-      armed = false;
     if (++logTick % 60 === 0)
       for (const name of ["service.log", "runner.log", "native-client.log"]) {
         const path = join(directory, name);
@@ -684,7 +708,7 @@ export async function startCompanion(options: CompanionOptions) {
   async function close() {
     closing = true;
     clearInterval(lease);
-    armed = false;
+    controlSuspended = true;
     for (const w of tasks.values()) await w.terminate();
     if (runner.snapshot?.connected && !active())
       await command("disconnect-ebb", { settings: settings(config) }).catch(

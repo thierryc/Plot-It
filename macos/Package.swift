@@ -4,7 +4,7 @@ let package = Package(name: "PlotItMCP", platforms: [.macOS(.v14)], products: [
     .executable(name: "PlotItMCP", targets: ["PlotItApp"]),
     .executable(name: "plotit-mcp", targets: ["MCPLauncher"])
 ], targets: [
-    .executableTarget(name: "PlotItApp"),
+    .executableTarget(name: "PlotItApp", resources: [.process("Resources")]),
     .executableTarget(name: "MCPLauncher"),
     .testTarget(name: "PlotItAppTests", dependencies: ["PlotItApp"])
 ])

@@ -21,7 +21,7 @@ struct PlotItApplication: App {
         MenuBarExtra {
             MenuPanel(model: model)
         } label: {
-            Image(systemName: model.active ? "scribble.variable" : "pencil.tip.crop.circle")
+            Image(nsImage: PlotItIcons.menuBar(plotting: model.active))
                 .accessibilityLabel("PlotIt MCP: \(model.statusText)")
         }
         .menuBarExtraStyle(.window)
@@ -29,7 +29,29 @@ struct PlotItApplication: App {
         Window("Set up PlotIt MCP", id: "setup") {
             SetupWindow(model: model)
         }
-        .defaultSize(width: 740, height: 650)
-        .windowResizability(.contentSize)
+        .defaultSize(width: 800, height: 720)
+        .windowResizability(.contentMinSize)
+
+        Window("About PlotIt MCP", id: "about") { AboutView() }
+            .windowResizability(.contentSize)
+    }
+}
+
+struct AboutView: View {
+    private var version: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Development" }
+    private var build: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "local" }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 14) {
+                Image(nsImage: NSApplication.shared.applicationIconImage).resizable().frame(width: 64, height: 64).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 5) { Text("PlotIt MCP").font(.title2.weight(.semibold)); Text("Version \(version) · build \(build)").font(.caption).foregroundStyle(.secondary) }
+            }
+            Text("A local bridge between your agent and your USB pen plotter. macOS 14 or later.").font(.callout)
+            Text("PlotIt stores settings, drawings and logs on this Mac. Your chosen agent receives the tool results and previews you request. No PlotIt account is required.").font(.caption).foregroundStyle(.secondary)
+            Link("Setup and troubleshooting", destination: URL(string: "https://github.com/thierryc/Plot-It/blob/main/docs/PLOTIT_MCP.md")!)
+            Link("Report an issue", destination: URL(string: "https://github.com/thierryc/Plot-It/issues")!)
+            Button("Open Local Data Folder", systemImage: "folder") { NSWorkspace.shared.open(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/PlotIt MCP")) }
+            Text("Apache License 2.0. Source and third-party notices are included in the application bundle. Hardware profiles remain experimental pending physical acceptance.").font(.caption2).foregroundStyle(.secondary)
+        }.padding(26).frame(width: 430)
     }
 }
