@@ -1,0 +1,159 @@
+{
+  "format": "plot-it-dynamic-physical-fixtures-v1",
+  "status": "prepared-unexecuted",
+  "plannedDate": "2026-11-01",
+  "timezone": "America/New_York",
+  "target": {
+    "firmware": "3.1.7",
+    "backend": "t3",
+    "nativeCommands": [
+      "T3",
+      "TD"
+    ],
+    "strategies": [
+      "standard",
+      "dynamic"
+    ]
+  },
+  "origin": "Original deterministic geometry authored for Plot-It on 2026-11-01; no vendor-output targets, fonts or images.",
+  "verification": {
+    "physicalCommandsSent": false,
+    "analyticCircleLengths": true,
+    "cubicLengthSamplesPerSegment": 10000,
+    "limitations": "Source geometry and file hashes only. Import/preparation checks are separate software evidence; no physical quality or compatibility result."
+  },
+  "files": [
+    {
+      "file": "01-flow-curves.svg",
+      "sha256": "7d2614b272bc0fd1636f0962df9423975742ec4adbf7f8365a4f3a029592c4b3",
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 3,
+      "boundsMm": [
+        10,
+        12,
+        70,
+        60
+      ],
+      "paths": [
+        {
+          "id": "broad-circle-r12",
+          "centerMm": [
+            22,
+            24
+          ],
+          "radiusMm": 12,
+          "startMm": [
+            34,
+            24
+          ],
+          "endMm": [
+            34,
+            24
+          ],
+          "boundsMm": [
+            10,
+            12,
+            34,
+            36
+          ],
+          "sourceLengthMm": 75.39822368615503,
+          "lengthMethod": "analytic circle"
+        },
+        {
+          "id": "tight-circle-r3",
+          "centerMm": [
+            55,
+            24
+          ],
+          "radiusMm": 3,
+          "startMm": [
+            58,
+            24
+          ],
+          "endMm": [
+            58,
+            24
+          ],
+          "boundsMm": [
+            52,
+            21,
+            58,
+            27
+          ],
+          "sourceLengthMm": 18.84955592153876,
+          "lengthMethod": "analytic circle"
+        },
+        {
+          "id": "straight-s-bend-straight",
+          "startMm": [
+            10,
+            60
+          ],
+          "endMm": [
+            70,
+            60
+          ],
+          "boundsMm": [
+            10,
+            45,
+            70,
+            60
+          ],
+          "sourceLengthMm": 78.31555896370185,
+          "lengthMethod": "two exact15mm lines plus independent10000-sample cubic lengths"
+        }
+      ]
+    }
+  ],
+  "reusedFixtures": [
+    {
+      "file": "../plotter-acceptance/01-starter.svg",
+      "sha256": "d97bf65f5fe46d26d91d59d58918dc2f91b33f34f5dbd28a785d74bca8f07e63",
+      "testId": "M00"
+    },
+    {
+      "file": "../plotter-acceptance/02-raised-travel.svg",
+      "sha256": "50ccdac19ec2f2275cff8838e962dc6dc959cc7d3c42f1cddc188e6efa577eaa",
+      "testId": "M01"
+    },
+    {
+      "file": "../plotter-acceptance/03-tiny-marks.svg",
+      "sha256": "a3a30a5f955b053339bac92d5d1549d547bbac7d0def534e89ec667d09c0443d",
+      "testId": "M01"
+    },
+    {
+      "file": "../plotter-acceptance/04-curves-corners-reversal.svg",
+      "sha256": "478fdfdc229193baef8680e3d6581a3f382a1a7f4962ca3f236dfd75e7461e5c",
+      "testId": "D03"
+    },
+    {
+      "file": "../plotter-acceptance/05-reload.svg",
+      "sha256": "e778e999dd4fe7a74de4a3187c2e058a4ec74e67fb3126ea9cd4bff4619197d8",
+      "testId": "D04"
+    },
+    {
+      "file": "../plotter-acceptance/06-pause-resume.svg",
+      "sha256": "52561f781bc63657b066c7a9946e69a35d1957fe6f7bab2f39b00fbf42487669",
+      "testId": "D04"
+    },
+    {
+      "file": "../sm-cruise-acceptance/01-long-cruises.svg",
+      "sha256": "7344f9069e5ee18f9783b8cc98510f9db69b421a983cd826ed7b697babd095f1",
+      "testId": "D01"
+    },
+    {
+      "file": "../dense-t3-acceptance/dense-18000.svg",
+      "sha256": "a728f6da74bb16230fe912ff50f8d373c38aa51cb0729f01589a8b4098fb72db",
+      "testId": "D05"
+    }
+  ]
+}

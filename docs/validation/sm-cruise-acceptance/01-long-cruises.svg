@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 80 80">
+  <title>Plot-It SM cruise acceptance 01-long-cruises</title>
+  <desc>Original millimetre centerlines prepared 2026-11-01. Unexecuted physical fixture; no text, fill or font dependencies.</desc>
+  <g fill="none" stroke="#000000" stroke-width="0.2" stroke-linecap="butt" stroke-linejoin="miter">
+    <path id="horizontal" d="M 10 10 L 70 10"/>
+    <path id="vertical" d="M 10 20 L 10 70"/>
+    <path id="diagonal-positive" d="M 20 20 L 70 70"/>
+    <path id="diagonal-negative" d="M 70 20 L 20 70"/>
+  </g>
+</svg>

@@ -1,0 +1,336 @@
+{
+  "fileKey": "pB3xCCLSiRu6EGJurHeJMF",
+  "url": "https://www.figma.com/design/pB3xCCLSiRu6EGJurHeJMF",
+  "team": "AnotherPlanet.io",
+  "pages": {
+    "Overview": "0:1",
+    "Foundations": "3:2",
+    "Components": "3:3",
+    "App Examples": "3:4"
+  },
+  "collections": {
+    "Primitives": {
+      "id": "VariableCollectionId:2:66",
+      "modes": {
+        "Value": "2:6"
+      }
+    },
+    "Color": {
+      "id": "VariableCollectionId:2:67",
+      "modes": {
+        "Light": "2:7",
+        "Dark": "2:8"
+      }
+    },
+    "Dimensions": {
+      "id": "VariableCollectionId:2:68",
+      "modes": {
+        "Desktop": "2:9",
+        "Touch": "2:10"
+      }
+    },
+    "Typography": {
+      "id": "VariableCollectionId:2:69",
+      "modes": {
+        "Value": "2:11"
+      }
+    },
+    "Motion": {
+      "id": "VariableCollectionId:14:555",
+      "modes": {
+        "Value": "14:2"
+      }
+    }
+  },
+  "styles": {
+    "Body": "S:5e1d46374715d59b387a1b44b3f657f8a57e35e8,",
+    "Label": "S:c208c97ee69cf6c548bea2406d2adcf740929105,",
+    "Heading": "S:d2b61a957b0344f9c8d0ceec16e1cd034a1fddca,",
+    "Secondary": "S:a3d5629d089e05b3c9a27224981160cb49af1731,",
+    "Secondary strong": "S:b5f0d1bbf33c16483d607edc885f90c274823431,"
+  },
+  "components": {
+    "Button": {
+      "id": "4:210",
+      "variants": {
+        "Kind=Primary, State=Default": "4:194",
+        "Kind=Primary, State=Hover": "4:195",
+        "Kind=Primary, State=Focus": "4:196",
+        "Kind=Primary, State=Disabled": "4:197",
+        "Kind=Secondary, State=Default": "4:198",
+        "Kind=Secondary, State=Hover": "4:199",
+        "Kind=Secondary, State=Focus": "4:200",
+        "Kind=Secondary, State=Disabled": "4:201",
+        "Kind=Ghost, State=Default": "4:202",
+        "Kind=Ghost, State=Hover": "4:203",
+        "Kind=Ghost, State=Focus": "4:204",
+        "Kind=Ghost, State=Disabled": "4:205",
+        "Kind=Danger, State=Default": "4:206",
+        "Kind=Danger, State=Hover": "4:207",
+        "Kind=Danger, State=Focus": "4:208",
+        "Kind=Danger, State=Disabled": "4:209"
+      }
+    },
+    "Icon button": {
+      "id": "4:231",
+      "variants": {
+        "State=Default": "4:227",
+        "State=Selected": "4:228",
+        "State=Focus": "4:229",
+        "State=Disabled": "4:230"
+      }
+    },
+    "Field": {
+      "id": "4:263",
+      "variants": {
+        "Kind=Text, State=Default": "4:248",
+        "Kind=Text, State=Focus": "4:249",
+        "Kind=Text, State=Invalid": "4:250",
+        "Kind=Text, State=Disabled": "4:251",
+        "Kind=Text, State=Mixed": "4:252",
+        "Kind=Numeric, State=Default": "4:253",
+        "Kind=Numeric, State=Focus": "4:254",
+        "Kind=Numeric, State=Invalid": "4:255",
+        "Kind=Numeric, State=Disabled": "4:256",
+        "Kind=Numeric, State=Mixed": "4:257",
+        "Kind=Select, State=Default": "4:258",
+        "Kind=Select, State=Focus": "4:259",
+        "Kind=Select, State=Invalid": "4:260",
+        "Kind=Select, State=Disabled": "4:261",
+        "Kind=Select, State=Mixed": "4:262"
+      }
+    },
+    "Slider row": {
+      "id": "4:308",
+      "variants": {
+        "State=Default": "4:304",
+        "State=Focus": "4:305",
+        "State=Mixed": "4:306",
+        "State=Disabled": "4:307"
+      }
+    },
+    "Text area": {
+      "id": "4:341",
+      "variants": {
+        "State=Default": "4:337",
+        "State=Selection": "4:338",
+        "State=Invalid": "4:339",
+        "State=Disabled": "4:340"
+      }
+    },
+    "Checkbox": {
+      "id": "4:353",
+      "variants": {
+        "State=Off": "4:349",
+        "State=On": "4:350",
+        "State=Mixed": "4:351",
+        "State=Disabled": "4:352"
+      }
+    },
+    "Feature toggle": {
+      "id": "4:372",
+      "variants": {
+        "State=Off": "4:368",
+        "State=On": "4:369",
+        "State=Mixed": "4:370",
+        "State=Disabled": "4:371"
+      }
+    },
+    "Navigation": {
+      "id": "4:413",
+      "variants": {
+        "Kind=Tabs": "4:410",
+        "Kind=Scope": "4:411",
+        "Kind=Workspace": "4:412"
+      }
+    },
+    "Disclosure heading": {
+      "id": "4:434",
+      "variants": {
+        "Level=Primary": "4:432",
+        "Level=Nested": "4:433"
+      }
+    },
+    "Feedback": {
+      "id": "4:450",
+      "variants": {
+        "Tone=Warning": "4:448",
+        "Tone=Error": "4:449"
+      }
+    },
+    "Resize affordance": {
+      "id": "4:466",
+      "variants": {
+        "Axis=Horizontal": "4:463",
+        "Axis=Vertical": "4:464",
+        "Axis=Corner": "4:465"
+      }
+    }
+  },
+  "composites": {
+    "Toolbar": "5:60",
+    "Aside": "5:117",
+    "Dialog": "5:185"
+  },
+  "reviewId": "5:254",
+  "account": "thierry@anotherplanet.io",
+  "refreshed": "2026-10-31",
+  "branch": "lit/monochrome-design-system",
+  "font": {
+    "family": "SF Pro",
+    "styles": [
+      "Regular",
+      "Medium",
+      "Semibold"
+    ]
+  },
+  "authority": "Project files; explicit refresh only",
+  "semanticVariableIds": {
+    "--ink": "VariableID:2:139",
+    "--accent": "VariableID:2:140",
+    "--warning": "VariableID:2:141",
+    "--error": "VariableID:2:142",
+    "--line": "VariableID:2:143",
+    "--muted": "VariableID:2:144",
+    "--text-secondary": "VariableID:2:145",
+    "--text-quiet": "VariableID:2:146",
+    "--app-background": "VariableID:2:147",
+    "--surface": "VariableID:2:148",
+    "--surface-subtle": "VariableID:2:149",
+    "--control": "VariableID:2:150",
+    "--button": "VariableID:2:151",
+    "--hover": "VariableID:2:152",
+    "--active": "VariableID:2:153",
+    "--slider-track-color": "VariableID:2:154",
+    "--control-border": "VariableID:2:155",
+    "--hover-border": "VariableID:2:156",
+    "--focus": "VariableID:2:157",
+    "--accent-text": "VariableID:2:158",
+    "--focus-ring": "VariableID:2:159",
+    "--selection-background": "VariableID:2:160",
+    "--selection-neutral": "VariableID:2:161",
+    "--stage": "VariableID:2:162",
+    "--stage-dot": "VariableID:2:163",
+    "--note": "VariableID:2:164",
+    "--primary": "VariableID:2:165",
+    "--on-primary": "VariableID:2:166",
+    "--primary-hover": "VariableID:2:167",
+    "--control-accent": "VariableID:2:168",
+    "--status": "VariableID:2:169",
+    "--status-halo": "VariableID:2:170",
+    "--progress-track": "VariableID:2:171",
+    "--dialog": "VariableID:2:172",
+    "--backdrop": "VariableID:2:173",
+    "--toast": "VariableID:2:174",
+    "--toast-text": "VariableID:2:175",
+    "--danger": "VariableID:2:176",
+    "--error-background": "VariableID:2:177",
+    "--warning-background": "VariableID:2:178",
+    "--on-signal": "VariableID:2:179",
+    "--toast-error": "VariableID:2:180",
+    "--canvas-ui-ink": "VariableID:2:181",
+    "--canvas-ui-fill": "VariableID:2:182",
+    "--canvas-ui-active-fill": "VariableID:2:183",
+    "--space-1": "VariableID:2:184",
+    "--space-2": "VariableID:2:185",
+    "--space-3": "VariableID:2:186",
+    "--space-4": "VariableID:2:187",
+    "--space-5": "VariableID:2:188",
+    "--field-height": "VariableID:2:189",
+    "--action-height": "VariableID:2:190",
+    "--control-height": "VariableID:2:191",
+    "--button-height": "VariableID:2:192",
+    "--touch-target": "VariableID:2:193",
+    "--checkbox-size": "VariableID:2:194",
+    "--toolbar-size": "VariableID:2:195",
+    "--field-gap": "VariableID:2:196",
+    "--control-gap": "VariableID:2:197",
+    "--group-gap": "VariableID:2:198",
+    "--panel-gap": "VariableID:2:199",
+    "--panel-padding": "VariableID:2:200",
+    "--control-padding-inline": "VariableID:2:201",
+    "--control-padding-block": "VariableID:2:202",
+    "--unit-width": "VariableID:2:203",
+    "--slider-track-size": "VariableID:2:204",
+    "--slider-thumb-size": "VariableID:2:205",
+    "--slider-hit-size": "VariableID:2:206",
+    "--slider-value-width": "VariableID:2:207",
+    "--focus-width": "VariableID:2:208",
+    "--focus-offset": "VariableID:2:209",
+    "--border-width": "VariableID:2:210",
+    "--icon-stroke": "VariableID:2:211",
+    "--icon-size": "VariableID:2:212",
+    "--icon-small": "VariableID:2:213",
+    "--heading-height": "VariableID:2:214",
+    "--radius-button": "VariableID:2:215",
+    "--radius-control": "VariableID:2:216",
+    "--radius-surface": "VariableID:2:217",
+    "--sidebar-default": "VariableID:2:218",
+    "--sidebar-tablet": "VariableID:2:219",
+    "--text-editor-width": "VariableID:2:220",
+    "--text-editor-height-default": "VariableID:2:221",
+    "--text-input-height": "VariableID:2:222",
+    "--font-size-ui": "VariableID:2:223",
+    "--font-size-secondary": "VariableID:2:224",
+    "--line-height-ui": "VariableID:2:225",
+    "--line-height-secondary": "VariableID:2:226",
+    "--font-ui": "VariableID:2:227",
+    "--motion-panel-duration": "VariableID:14:557",
+    "--motion-dialog-duration": "VariableID:14:558",
+    "--motion-exit-duration": "VariableID:14:560",
+    "--motion-render-duration": "VariableID:14:562",
+    "--motion-progress-show-delay": "VariableID:14:563",
+    "--motion-progress-hide-delay": "VariableID:14:564",
+    "--motion-progress-min-visible": "VariableID:14:565",
+    "--motion-panel-easing": "VariableID:14:567",
+    "--motion-settle-easing": "VariableID:14:569",
+    "--motion-panel-offset": "VariableID:14:570",
+    "--motion-dialog-offset": "VariableID:14:571",
+    "--motion-dialog-scale": "VariableID:14:573",
+    "--canvas-selection": "VariableID:19:58",
+    "--workspace-ink": "VariableID:19:59",
+    "--workspace-focus": "VariableID:20:49"
+  },
+  "exampleFrames": [
+    {
+      "id": "7:599",
+      "name": "Light / App example",
+      "width": 1420,
+      "height": 932
+    },
+    {
+      "id": "7:949",
+      "name": "Dark / App example",
+      "width": 1420,
+      "height": 932
+    }
+  ],
+  "foundationFrame": "7:79",
+  "overviewFrame": "7:2",
+  "sourceSha256": {
+    "src/ui/design-system/tokens.css": "a2c784757e943e57c14e3bbd11f5ad6c1f7895869f4581af4a01aeafca27ed0c",
+    "src/ui/design-system/foundations.ts": "dfe53dd264a14e3e2602fafc637e479d6332e89a3a5749b2aa39eeada2f6e047",
+    "src/ui/design-system/slider.ts": "fba6e451a05175b1d515c1f9a6bd637195a612951e6c307a51ecf66ce8d1e804",
+    "src/ui/design-system/slider.module.css": "ea553aca63c02d583cbcd0be19be81cfd26e9d257c9298f7b67f0a4d97ba3e82",
+    "src/ui/app/canvas.module.css": "91947739e27b5d2ae1aab22d7ede4380b563d83583a03ad6815fa008bce6248a",
+    "src/ui/app/canvas-text-editor.ts": "0b8477794ad2aa938fdda3959c694724b9223a9f1a2004e97926f41564be4b3b",
+    "src/ui/design-system/motion.ts": "78d82aab1a9381880cd579002f977a1791dcf330a8011d5d9262acb7bb1b1482"
+  },
+  "componentPropertyNotes": {
+    "Field": "Text uses Value; numeric fields use Number and Unit; font fields use Font. Mixed values stay literal Mixed.",
+    "Feedback": "Warning uses Message; error uses Error message."
+  },
+  "validation": {
+    "semanticComparisons": 176,
+    "mismatches": 0,
+    "fonts": [
+      "SF Pro"
+    ],
+    "rasterUiNodes": 0,
+    "motionComparisons": 12,
+    "numericTolerance": 1e-06,
+    "motionMismatches": 0,
+    "contrastColorComparisons": 7,
+    "contrastColorMismatches": 0
+  }
+}

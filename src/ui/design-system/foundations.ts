@@ -1,0 +1,3 @@
+/** Keep CSS media queries aligned with these app-independent dimensions. */
+export const dimensions = { mobileMax: 639, tabletMax: 950, sidebarDefault: 288, sidebarTablet: 260, sidebarMinimum: 260, sidebarMaximum: 420, canvasMinimum: 360, checkbox: 16, field: 30, button: 32, touch: 44, panelPadding: 12, fieldGap: 4, controlGap: 6, groupGap: 12, sliderTrack: 1, sliderThumb: 10, icon: 18, iconStroke: 1.5, textArea: 180, editorWidth: 400, editorHeight: 700 } as const;
+export const motion = { panelDuration:320, dialogDuration:180, exitDuration:130, renderDuration:120, progressShowDelay:180, progressHideDelay:260, progressMinimum:320 } as const;

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "origin": "Original millimetre geometry for behavior and resource measurement; no vendor outputs or reference implementation fixtures.",
+  "small": [
+    {"id":"long-line","points":[[10,10],[210,10]]},
+    {"id":"tiny-single-step","points":[[1,1],[1.01,1.01],[1.02,1.02],[1.04,1.02]]},
+    {"id":"repeated-substep","points":[[4,4],[4,4],[4.00001,4],[4.02,4.02],[5,4.02]]},
+    {"id":"reversal","points":[[10,20],[30,20],[10,20],[10,40]]},
+    {"id":"corners","points":[[40,40],[60,40],[60,60],[40,60],[40,40]]},
+    {"id":"multi-pen","paths":[{"tool":"black","points":[[5,5],[15,5]]},{"tool":"red","points":[[20,10],[25,15],[30,10]]},{"tool":"black","points":[[30,20],[40,20]]}]},
+    {"id":"reload","maxPenDownMm":8,"points":[[2,2],[32,2],[32,12]]},
+    {"id":"no-return","returnToOrigin":false,"points":[[10,10],[20,20],[35,20]]},
+    {"id":"constant-target","drawingMode":"constant","points":[[10,10],[40,10],[40,40]]}
+  ],
+  "dense": {"id":"dense-18000","count":18000,"stepX":0.01,"offsetX":10,"offsetY":50,"amplitude":8,"radiansPerPoint":0.04}
+}

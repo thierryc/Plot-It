@@ -1,0 +1,3 @@
+import {it,expect} from 'vitest';
+import {orderedLayerRuns} from './ordered-layers.js';
+it('retains implicit paths between explicit layers and anchors empty waits',()=>{const line=(sourceOrder:number,layerId?:string)=>({sourceOrder,layerId,tool:'black',points:[{x:sourceOrder,y:0},{x:sourceOrder+1,y:0}]});const paths=[line(0),line(1,'a'),line(2),line(4,'b')],layers=[{id:'a',name:'A',paths:[],sourceOrder:1},{id:'dry',name:'Dry',paths:[],sourceOrder:3,delayMs:100},{id:'b',name:'B',paths:[],sourceOrder:4}];const runs=orderedLayerRuns(paths,layers);expect(runs.map(l=>l.sourceLayerId??l.id)).toEqual(['default','a','default','dry','b']);expect(runs.filter(l=>l.paths.length).flatMap(l=>l.paths)).toEqual(paths);expect(new Set(runs.map(l=>l.id)).size).toBe(runs.length);});

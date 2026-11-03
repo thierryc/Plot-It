@@ -1,0 +1,56 @@
+{
+  "name": "@thierryc/openplotfont",
+  "version": "0.1.0",
+  "description": "Load OpenPlotFont 0.2/0.3 and turn text into ordered SVG and Canvas paths.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Thierry Charbonnel",
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./canvas": {
+      "types": "./dist/canvas.d.ts",
+      "import": "./dist/canvas.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run --config vitest.config.ts",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "harfbuzzjs": "^1.6.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "openplotfont",
+    "svg",
+    "canvas",
+    "font",
+    "text",
+    "plotter",
+    "opentype",
+    "harfbuzz"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "alexrudd2/saxi": "2640a3dd6c7a5261985f334255b827edb30e3109",
+  "evil-mad/axidraw": "a0df054f41f8e3ae8d408e08e7b2656968e375f1",
+  "evil-mad/plotink": "4976b86080c25a10a9f979b870669dc62a1741fa",
+  "fogleman/axi": "a5a12f01633076232be84a4e3321c80c7b9656b5",
+  "ebb": "8f7fb319ec6507b2f1a60d9a9acd4e5f1ff95f71",
+  "nextdraw": {
+    "version": "1.7.4",
+    "released": "2026-10-02",
+    "archive_sha256": "809e9c276243cd67f58440b5699359ecfdff556a409225bb04bb0f3adf050688",
+    "wheel_sha256": "8b7e5090d704f0158cd9dc893d185a19c1cf379fb65cdfae5f6563511a4d3945"
+  }
+}

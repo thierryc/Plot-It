@@ -1,0 +1,13 @@
+.button { min-height:var(--button-height); border:1px solid var(--control-border); background:var(--button); color:var(--ink); border-radius:var(--radius-button); padding:var(--control-padding-block) var(--control-padding-inline); font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); display:inline-flex; align-items:center; justify-content:center; gap:var(--control-gap); cursor:pointer; }
+.button:hover:not(:disabled) { border-color:var(--hover-border); background:var(--hover); }
+.button:focus-visible { outline:var(--focus-width) solid var(--focus); outline-offset:var(--focus-offset); }
+.button:disabled { opacity:.38; cursor:default; }
+.primary { color:var(--on-primary); background:var(--primary); border-color:var(--primary); padding-inline:12px; }
+.primary:hover:not(:disabled) { background:var(--primary-hover); }
+.ghost { border-color:transparent; background:transparent; box-shadow:none; }
+.danger { color:var(--danger); }
+.icon-button { border-radius:var(--radius-control); width:var(--toolbar-size); height:var(--toolbar-size); padding:0; flex:none; }
+.button svg { width:var(--icon-size); height:var(--icon-size); flex:none; fill:none; stroke:currentColor; stroke-width:var(--icon-stroke); stroke-linecap:round; stroke-linejoin:round; }
+.button:focus-visible { box-shadow:0 0 0 calc(var(--focus-offset) + var(--focus-width)) var(--focus-ring); }
+.danger:hover:not(:disabled) { background:var(--error-background); border-color:var(--error); }
+@media(max-width:639px), (pointer:coarse) { .button { min-height:var(--touch-target); } .icon-button { border-radius:var(--radius-control); width:var(--touch-target); height:var(--touch-target); } }

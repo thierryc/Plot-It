@@ -1,0 +1,11 @@
+{
+  "allowedLicenses": [
+    "Hershey permissive terms; not MIT",
+    "SIL OFL 1.1",
+    "SIL OFL 1.1; Apache 2.0 ancestor notice retained",
+    "SIL OFL 1.1; Hershey ancestor notice retained",
+    "CC0 1.0",
+    "SIL OFL 1.1 (font); CC BY-SA 4.0 generator/adaptation credits retained"
+  ],
+  "excludedFontIds": ["pf-cad-iso3098", "pf-cad-iso3098-i"]
+}

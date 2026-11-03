@@ -1,0 +1,15 @@
+# LAN origin must exactly match the HTTPS hostname/IP used by the browser.
+PLOT_ORIGINS=https://plot-it.local:8443,http://127.0.0.1:8787,http://localhost:8787
+PLOT_DATA_DIR=/var/lib/plot-it/jobs
+PLOT_SOCKET_DIR=/run/plot-it
+PLOT_STATIC_DIR=/opt/plot-it/dist
+PLOT_TLS_CERT=/etc/plot-it/lan.pem
+PLOT_TLS_KEY=/etc/plot-it/lan-key.pem
+PLOT_MAX_BYTES=33554432
+PLOT_MAX_EVENTS=100000
+# Prefer a stable /dev/serial/by-id/... path. Blank selects exactly one EBB.
+EBB_DEVICE=
+
+# Dedicated Pi: auto. Shared desktop: manual (the application default).
+# An explicit Disconnect EBB always suspends automatic reconnect.
+PLOT_CONNECTION_POLICY=auto

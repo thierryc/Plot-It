@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 80 80">
+  <title>Plot-It Dynamic broad and tight curves</title>
+  <desc>Original deterministic millimetre centerlines prepared 2026-11-01; physically unexecuted. Broad radius12 circle at22,24, tight radius3 circle at55,24, tangent-connected straight/S-bend/straight. No fonts, fill, images or labels.</desc>
+  <g fill="none" stroke="#000000" stroke-width="0.2" stroke-linecap="butt" stroke-linejoin="miter">
+    <path id="broad-circle-r12" d="M 34 24 A 12 12 0 1 0 10 24 A 12 12 0 1 0 34 24 Z"/>
+    <path id="tight-circle-r3" d="M 58 24 A 3 3 0 1 0 52 24 A 3 3 0 1 0 58 24 Z"/>
+    <path id="straight-s-bend-straight" d="M 10 60 L 25 60 C 35 60 25 45 40 45 C 55 45 45 60 55 60 L 70 60"/>
+  </g>
+</svg>

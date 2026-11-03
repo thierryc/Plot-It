@@ -1,0 +1,100 @@
+.plot-summary { display:grid; grid-template-columns:repeat(3, 1fr); border:1px solid var(--line); border-radius:9px; overflow:hidden; margin-bottom:18px; }
+.plot-summary>div { display:grid; gap:5px; padding:11px; border-right:1px solid var(--line); }
+.plot-summary>div:last-child { border:0; }
+.plot-summary span { color:var(--text-quiet); font-size:var(--font-size-secondary);  line-height:var(--line-height-secondary); }
+.plot-summary strong { font-size:var(--font-size-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;  line-height:var(--line-height-secondary); }
+.machine-actions { display:flex;flex-wrap:wrap;gap:var(--control-gap); }
+.machine-actions :global(.button) { flex:1 1 100px; }
+:global(.simulation-overlay) { pointer-events:none;fill:none;stroke-linecap:round;stroke-linejoin:round; }
+:global(.simulation-travel) { stroke:#c9cdd2;stroke-width:.4; }
+:global(.simulation-drawing) { stroke-width:.45; }
+:global(.simulation-marker) path { fill:none;stroke:#717680;stroke-width:.55;stroke-linecap:butt; }
+:global(.simulation-marker):global(.pen-down) path { stroke:#171717; }
+.plot-status { min-width:130px; display:grid; gap:5px; font:400 var(--font-size-secondary) var(--font-ui); color:var(--muted); }
+:global(.plot-mode) #paper { cursor:default; }
+.plot-pen-counter { position:absolute; left:16px; top:64px; z-index:1; display:flex; flex-wrap:wrap; gap:var(--field-gap) 14px; padding:6px 10px; max-width:100%; width:max-content; box-sizing:border-box; border-radius:6px; background:var(--surface); color:var(--text-secondary); font:var(--font-size-secondary)/var(--line-height-secondary) var(--font-ui); font-variant-numeric:tabular-nums; pointer-events:none; }
+.plot-pen-counter span { white-space:nowrap; }
+.plot-pen-counter b { color:var(--ink); }
+.plot-pen-counter[hidden] { display:none; }
+:global(.plot-mode) #artwork-layer { opacity:.12; pointer-events:none; }
+:global(.plot-mode) :global(.empty-state) { pointer-events:none; }
+:global(.plot-mode) :global(.inspector):global(.plot-sidebar) { display:flex; flex-direction:column; overflow:hidden; padding:0; min-height:0; }
+.plot-scroll { padding-top:0; scroll-padding-top:0; flex:1; overscroll-behavior:contain; min-height:0; overflow:auto; scrollbar-gutter:stable; }
+.plot-section-title { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--control-gap); }
+.plot-section-title :global(.button) { flex:none; height:24px; padding:0 4px; font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+:global(.plot-sidebar) input[aria-invalid=true] { border-color:var(--error) !important; outline:var(--focus-width) solid var(--focus); }
+:global(.plot-sidebar) :global(.field-help) { margin:0; line-height:var(--line-height-secondary); font-size:var(--font-size-secondary); }
+:global(.plot-sidebar) details summary { font-size:var(--font-size-ui); cursor:pointer; color:var(--text-secondary); padding:3px 0;  line-height:var(--line-height-ui); }
+.plot-detail-content { display:grid; gap:var(--panel-gap); padding-top:var(--group-gap); }
+.plot-choices { display:grid; gap:var(--control-gap); }
+.plot-connection { display:flex; align-items:center; justify-content:space-between; gap:var(--control-gap); font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+.plot-connection :global(.button) { height:26px; padding:0 5px; font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+.plot-pens { display:grid; gap:var(--group-gap); }
+.plot-pen-row { padding:0; display:grid; gap:var(--control-gap); }
+.plot-pen-main { display:flex; align-items:center; gap:var(--control-gap); }
+.plot-pen-main .pen-hex { font-variant-numeric:tabular-nums; text-align:right; flex:1; min-width:0; }
+.pen-order { display:flex; flex:none; }
+.pen-order :global(.button) { width:24px; height:28px; padding:0; }
+.plot-pen-name { display:flex; gap:var(--control-gap); align-items:center; }
+.plot-pen-name input { flex:1;  font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+.plot-pen-name :global(.button) { flex:none; padding:0 5px; height:26px; font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+.plot-pass-list { display:grid; gap:var(--control-gap); margin:0; padding-left:20px; font-size:var(--font-size-ui);  line-height:var(--line-height-ui); }
+.plot-pass-list li { padding:4px 0; }
+.plot-pass-list small { display:block; margin-left:20px; color:var(--text-quiet); font-size:var(--font-size-secondary);  line-height:var(--line-height-secondary); }
+.plot-pass-list li[data-state=current] { font-weight:750; }
+.plot-pass-list li[data-state=completed] { opacity:.65; }
+.pen-swatch { display:inline-block; width:11px; height:11px; margin-right:6px; border:1px solid var(--control-border); border-radius:3px; vertical-align:middle; }
+.plot-origin-state { font-size:var(--font-size-ui); margin:0; font-weight:650;  line-height:var(--line-height-ui); }
+:global(.plot-sidebar) .machine-actions { display:grid; grid-template-columns:1fr 1fr; gap:var(--control-gap); }
+:global(.plot-sidebar) .machine-actions :global(.button) { width:100%; font-size:var(--font-size-ui); padding:0 7px;  line-height:var(--line-height-ui); }
+:global(.plot-sidebar) :global(.two-col) { margin:0; }
+.plot-scroll > :global(.field-help) { padding:12px 16px; }
+.plot-player-status { font-size:var(--font-size-ui); font-weight:750; line-height:var(--line-height-ui); }
+.plot-current-pen { margin:0; font-size:var(--font-size-ui); line-height:var(--line-height-ui); }
+.plot-time { margin:0; font-size:var(--font-size-secondary); color:var(--text-quiet); font-variant-numeric:tabular-nums;  line-height:var(--line-height-secondary); }
+.plot-player progress { width:100%; height:5px; accent-color:var(--primary); }
+.plot-playback-actions { display:flex; gap:var(--control-gap); flex-wrap:wrap; margin-top:4px; }
+.plot-playback-actions :global(.primary) { flex:1; padding:0 10px; min-width:150px; }
+.plot-sim-controls { display:flex; align-items:center; gap:var(--group-gap); }
+.plot-sim-controls input[type=range] { width:100%; min-width:0; accent-color:var(--primary); }
+.plot-sim-controls label { display:flex; align-items:center; gap:5px; font-size:var(--font-size-secondary);  line-height:var(--line-height-secondary); }
+.plot-sim-controls select { width:54px; padding:4px; }
+:global(.plot-sidebar) [hidden] { display:none !important; }
+:global(.plot-sidebar) button:focus-visible,:global(.plot-sidebar) summary:focus-visible,:global(.plot-sidebar) input:focus-visible,:global(.plot-sidebar) select:focus-visible { outline:var(--focus-width) solid var(--focus); outline-offset:var(--focus-offset); }
+@media (max-width:760px) { .plot-section,.plot-player { padding:12px; } }
+:global(.plot-origin-marker) circle { stroke:var(--canvas-ui-ink); stroke-width:.4; fill:var(--canvas-ui-fill); }
+:global(.plot-origin-marker) text { fill:var(--canvas-ui-ink); stroke:none; font:3px var(--font-ui); }
+:global(.plot-playing) .plot-pens,:global(.plot-playing) [data-plot-action=all],:global(.plot-playing) .plot-settings-section { display:none; }
+:global(.plot-playing) .plot-motor-section,:global(.plot-playing) [data-pen-heights] { display:none; }
+:global(.plot-playing):not(:global(.plot-paused)) .plot-pen-section { display:none; }
+:global([data-plot-mode]) :global([data-edit-control][inert]) { opacity:.35; }
+:global([data-plot-mode]) :global([data-ui="inspector"]) { display:flex; flex-direction:column; overflow:hidden; }
+.plot-section { padding:var(--panel-padding); display:block; border-bottom:1px solid var(--line); }
+.plot-section-body { display:grid; gap:var(--panel-gap); }
+:global(.plot-sidebar) .plot-section > summary { color:var(--ink); }
+.plot-player { flex:none; padding:var(--panel-padding); display:grid; gap:var(--control-gap); border-top:1px solid var(--line); background:var(--surface); box-shadow:none; max-height:55%; overflow:auto; }
+.plot-error { font-size:var(--font-size-ui); padding:8px; margin:0; background:var(--note); border-left:2px solid var(--ink); line-height:var(--line-height-ui); border-color:var(--danger); }
+[data-power-status][data-state=low]::before { content:""; display:inline-block; width:var(--icon-size); height:var(--icon-size); vertical-align:middle; margin-right:var(--field-gap); background:var(--warning); mask:url("../design-system/icons/warning.svg") center/contain no-repeat; }
+[data-power-status][data-state=low] { color:var(--ink); border-left:2px solid var(--warning); padding:var(--field-gap) var(--control-padding-inline); background:var(--warning-background); }
+.pen-include { display:flex; align-items:center; justify-content:center; flex:none; min-width:24px; min-height:28px; cursor:pointer; }
+@media(max-width:639px), (pointer:coarse) {
+  .pen-include { min-width:44px; min-height:44px; }
+  .pen-order :global(.button) { width:44px; height:44px; }
+  .plot-pen-main { flex-wrap:wrap; }
+  .plot-pen-main .pen-hex { flex:1 1 70px; }
+  .plot-section-title :global(.button), .plot-connection :global(.button), .plot-pen-name :global(.button) { min-height:44px; height:auto; }
+}
+
+.plot-secondary-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:var(--control-gap); }
+.plot-secondary-actions :global(.button) { min-width:0; padding-inline:4px; white-space:nowrap; }
+
+.plot-pass-list[data-single-pass] { display:none; }
+:global(.plot-playing) .plot-pass-list[data-single-pass] { display:grid; }
+.plot-diagnostics { display:grid; grid-template-columns:auto minmax(0,1fr); gap:var(--control-gap) 10px; margin:0; font-size:var(--font-size-secondary); line-height:var(--line-height-secondary); }
+.plot-diagnostics dt { color:var(--text-secondary); }
+.plot-diagnostics dd { margin:0; overflow-wrap:anywhere; }
+
+.jog-controls { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)) minmax(64px,1.7fr); gap:var(--field-gap); align-items:center; margin:8px 0; }
+.jog-controls :global(.button) { width:100%; min-width:0; padding:0; }
+.jog-controls [data-property-field] { height:var(--toolbar-size); padding:0 6px; gap:3px; }
+@media(max-width:639px), (pointer:coarse) { .jog-controls [data-property-field] { height:var(--touch-target); } }

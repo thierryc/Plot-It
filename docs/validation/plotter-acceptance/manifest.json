@@ -1,0 +1,1202 @@
+{
+  "format": "plot-it-physical-acceptance-fixtures-v1",
+  "status": "prepared-unexecuted",
+  "plannedDate": "2026-11-01",
+  "timezone": "America/New_York",
+  "origin": "Original deterministic geometry authored2026-10-31 for this acceptance pack; no vendor-output fixtures, fonts or images.",
+  "verification": {
+    "xmlParsed": true,
+    "svgCount": 6,
+    "totalPathCount": 38,
+    "dimensionsChecked": true,
+    "finiteSampledBoundsInside10To70Mm": true,
+    "allowedCommands": [
+      "M",
+      "L",
+      "C",
+      "Z"
+    ],
+    "cubicSamplesPerSegment": 1000,
+    "linearLengthExact": true,
+    "allRaisedTravelSourceGapsAtLeast50MmInP03": true,
+    "noTextImagesOrUseElements": true,
+    "physicalCommandsSent": false,
+    "limitations": "Sampled source geometry only; quantization, placement, clipping, optimization and physical mechanism must be checked separately in the prepared plan and actual run.",
+    "appImportPreparation": {
+      "testFile": "src/physical-acceptance.test.ts",
+      "passedFixtureTests": 6,
+      "softwareBackends": [
+        "sm",
+        "t3"
+      ],
+      "pipeline": [
+        "parseSvg",
+        "renderItem at80mm identity placement",
+        "flattenPlotPathsAsync at0.05mm",
+        "preparePenPaths",
+        "buildMotionPlan",
+        "validateNativePreview"
+      ],
+      "geometryMocks": false,
+      "environmentStub": "jsdom missing screen CTM only; identity transform asserted before supplying identity CTMs",
+      "limitations": "No browser layout or Worker transport, physical plotting or ink validation."
+    }
+  },
+  "requiredEvidenceFields": [
+    "runId",
+    "testId",
+    "baselineOrCandidate",
+    "backend",
+    "repetition",
+    "actualTimestampWithOffset",
+    "appRevision",
+    "actualConnectedFirmware",
+    "profileAndCalibrationSnapshot",
+    "fixtureSha256",
+    "savedDocument",
+    "preparedPreviewPaths",
+    "log",
+    "overviewPhoto",
+    "detailPhotos",
+    "scaleReference",
+    "physicalObservations",
+    "statusAndReason"
+  ],
+  "manualOnlyTestIds": [
+    "P00"
+  ],
+  "files": [
+    {
+      "file": "01-starter.svg",
+      "sha256": "d97bf65f5fe46d26d91d59d58918dc2f91b33f34f5dbd28a785d74bca8f07e63",
+      "testIds": [
+        "P01",
+        "P02"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 3,
+      "sampledBoundsMm": [
+        10.0,
+        10.0,
+        60.0,
+        60.0
+      ],
+      "sourceOrderRaisedGapsMm": [
+        30.0,
+        10.0
+      ],
+      "paths": [
+        {
+          "id": "square",
+          "commands": [
+            "M",
+            "L",
+            "L",
+            "L",
+            "Z"
+          ],
+          "segments": 4,
+          "startMm": [
+            10.0,
+            10.0
+          ],
+          "endMm": [
+            10.0,
+            10.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            10.0,
+            30.0,
+            30.0
+          ],
+          "sourceLengthMm": 80.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-forward",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            40.0,
+            10.0
+          ],
+          "endMm": [
+            60.0,
+            30.0
+          ],
+          "sampledBoundsMm": [
+            40.0,
+            10.0,
+            60.0,
+            30.0
+          ],
+          "sourceLengthMm": 28.284271247461902,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-back",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            60.0,
+            40.0
+          ],
+          "endMm": [
+            40.0,
+            60.0
+          ],
+          "sampledBoundsMm": [
+            40.0,
+            40.0,
+            60.0,
+            60.0
+          ],
+          "sourceLengthMm": 28.284271247461902,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    },
+    {
+      "file": "02-raised-travel.svg",
+      "sha256": "50ccdac19ec2f2275cff8838e962dc6dc959cc7d3c42f1cddc188e6efa577eaa",
+      "testIds": [
+        "P03"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 4,
+      "sampledBoundsMm": [
+        10.0,
+        10.0,
+        70.0,
+        70.0
+      ],
+      "sourceOrderRaisedGapsMm": [
+        58.0,
+        83.45058418010026,
+        58.0
+      ],
+      "paths": [
+        {
+          "id": "mark-a",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            10.0
+          ],
+          "endMm": [
+            12.0,
+            10.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            10.0,
+            12.0,
+            10.0
+          ],
+          "sourceLengthMm": 2.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "mark-b",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            70.0,
+            10.0
+          ],
+          "endMm": [
+            68.0,
+            10.0
+          ],
+          "sampledBoundsMm": [
+            68.0,
+            10.0,
+            70.0,
+            10.0
+          ],
+          "sourceLengthMm": 2.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "mark-c",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            70.0
+          ],
+          "endMm": [
+            12.0,
+            70.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            70.0,
+            12.0,
+            70.0
+          ],
+          "sourceLengthMm": 2.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "mark-d",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            70.0,
+            70.0
+          ],
+          "endMm": [
+            68.0,
+            70.0
+          ],
+          "sampledBoundsMm": [
+            68.0,
+            70.0,
+            70.0,
+            70.0
+          ],
+          "sourceLengthMm": 2.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    },
+    {
+      "file": "03-tiny-marks.svg",
+      "sha256": "a3a30a5f955b053339bac92d5d1549d547bbac7d0def534e89ec667d09c0443d",
+      "testIds": [
+        "P04"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 18,
+      "sampledBoundsMm": [
+        10.0,
+        10.0,
+        50.707106781,
+        61.0
+      ],
+      "sourceOrderRaisedGapsMm": [
+        19.975,
+        20.000015624993896,
+        41.24392422163576,
+        19.95,
+        20.000062499902345,
+        41.2568033218764,
+        19.9,
+        20.00024999843752,
+        41.28259488791816,
+        19.8,
+        20.00099997500125,
+        41.334311187678765,
+        19.5,
+        20.006249023742555,
+        41.49051944071772,
+        19.0,
+        20.024984394500787
+      ],
+      "paths": [
+        {
+          "id": "horizontal-0p025mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            10.0
+          ],
+          "endMm": [
+            10.025,
+            10.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            10.0,
+            10.025,
+            10.0
+          ],
+          "sourceLengthMm": 0.025000000000000355,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-0p025mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            10.0
+          ],
+          "endMm": [
+            30.0,
+            10.025
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            10.0,
+            30.0,
+            10.025
+          ],
+          "sourceLengthMm": 0.025000000000000355,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-0p025mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            10.0
+          ],
+          "endMm": [
+            50.01767767,
+            10.01767767
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            10.0,
+            50.01767767,
+            10.01767767
+          ],
+          "sourceLengthMm": 0.02500000066515392,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "horizontal-0p05mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            20.0
+          ],
+          "endMm": [
+            10.05,
+            20.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            20.0,
+            10.05,
+            20.0
+          ],
+          "sourceLengthMm": 0.05000000000000071,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-0p05mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            20.0
+          ],
+          "endMm": [
+            30.0,
+            20.05
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            20.0,
+            30.0,
+            20.05
+          ],
+          "sourceLengthMm": 0.05000000000000071,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-0p05mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            20.0
+          ],
+          "endMm": [
+            50.035355339,
+            20.035355339
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            20.0,
+            50.035355339,
+            20.035355339
+          ],
+          "sourceLengthMm": 0.049999999916096674,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "horizontal-0p1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            30.0
+          ],
+          "endMm": [
+            10.1,
+            30.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            30.0,
+            10.1,
+            30.0
+          ],
+          "sourceLengthMm": 0.09999999999999964,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-0p1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            30.0
+          ],
+          "endMm": [
+            30.0,
+            30.1
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            30.0,
+            30.0,
+            30.1
+          ],
+          "sourceLengthMm": 0.10000000000000142,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-0p1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            30.0
+          ],
+          "endMm": [
+            50.070710678,
+            30.070710678
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            30.0,
+            50.070710678,
+            30.070710678
+          ],
+          "sourceLengthMm": 0.09999999983219586,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "horizontal-0p2mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            40.0
+          ],
+          "endMm": [
+            10.2,
+            40.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            40.0,
+            10.2,
+            40.0
+          ],
+          "sourceLengthMm": 0.1999999999999993,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-0p2mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            40.0
+          ],
+          "endMm": [
+            30.0,
+            40.2
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            40.0,
+            30.0,
+            40.2
+          ],
+          "sourceLengthMm": 0.20000000000000284,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-0p2mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            40.0
+          ],
+          "endMm": [
+            50.141421356,
+            40.141421356
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            40.0,
+            50.141421356,
+            40.141421356
+          ],
+          "sourceLengthMm": 0.19999999966439674,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "horizontal-0p5mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            50.0
+          ],
+          "endMm": [
+            10.5,
+            50.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            50.0,
+            10.5,
+            50.0
+          ],
+          "sourceLengthMm": 0.5,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-0p5mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            50.0
+          ],
+          "endMm": [
+            30.0,
+            50.5
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            50.0,
+            30.0,
+            50.5
+          ],
+          "sourceLengthMm": 0.5,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-0p5mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            50.0
+          ],
+          "endMm": [
+            50.353553391,
+            50.353553391
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            50.0,
+            50.353553391,
+            50.353553391
+          ],
+          "sourceLengthMm": 0.5000000005751954,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "horizontal-1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            60.0
+          ],
+          "endMm": [
+            11.0,
+            60.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            60.0,
+            11.0,
+            60.0
+          ],
+          "sourceLengthMm": 1.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "vertical-1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            30.0,
+            60.0
+          ],
+          "endMm": [
+            30.0,
+            61.0
+          ],
+          "sampledBoundsMm": [
+            30.0,
+            60.0,
+            30.0,
+            61.0
+          ],
+          "sourceLengthMm": 1.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "diagonal-1mm",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            50.0,
+            60.0
+          ],
+          "endMm": [
+            50.707106781,
+            60.707106781
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            60.0,
+            50.707106781,
+            60.707106781
+          ],
+          "sourceLengthMm": 0.9999999997361823,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    },
+    {
+      "file": "04-curves-corners-reversal.svg",
+      "sha256": "478fdfdc229193baef8680e3d6581a3f382a1a7f4962ca3f236dfd75e7461e5c",
+      "testIds": [
+        "P05"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 4,
+      "sampledBoundsMm": [
+        10.0,
+        12.5,
+        70.0,
+        68.025
+      ],
+      "sourceOrderRaisedGapsMm": [
+        63.245553203367585,
+        40.0,
+        40.792156108742276
+      ],
+      "paths": [
+        {
+          "id": "cubic-wave",
+          "commands": [
+            "M",
+            "C",
+            "C",
+            "C"
+          ],
+          "segments": 3,
+          "startMm": [
+            10.0,
+            20.0
+          ],
+          "endMm": [
+            70.0,
+            20.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            12.5,
+            70.0,
+            27.5
+          ],
+          "sourceLengthMm": 83.67937920785985,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "corners",
+          "commands": [
+            "M",
+            "L",
+            "L",
+            "L",
+            "Z"
+          ],
+          "segments": 4,
+          "startMm": [
+            10.0,
+            40.0
+          ],
+          "endMm": [
+            10.0,
+            40.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            40.0,
+            35.0,
+            60.0
+          ],
+          "sourceLengthMm": 90.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "reversal",
+          "commands": [
+            "M",
+            "L",
+            "L",
+            "L"
+          ],
+          "segments": 3,
+          "startMm": [
+            50.0,
+            40.0
+          ],
+          "endMm": [
+            50.0,
+            60.0
+          ],
+          "sampledBoundsMm": [
+            50.0,
+            40.0,
+            70.0,
+            60.0
+          ],
+          "sourceLengthMm": 60.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "near-horizontal",
+          "commands": [
+            "M",
+            "L",
+            "L"
+          ],
+          "segments": 2,
+          "startMm": [
+            10.0,
+            68.0
+          ],
+          "endMm": [
+            70.0,
+            68.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            68.0,
+            70.0,
+            68.025
+          ],
+          "sourceLengthMm": 60.000020833329714,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    },
+    {
+      "file": "05-reload.svg",
+      "sha256": "e778e999dd4fe7a74de4a3187c2e058a4ec74e67fb3126ea9cd4bff4619197d8",
+      "testIds": [
+        "P06"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 1,
+      "sampledBoundsMm": [
+        10.0,
+        10.0,
+        70.0,
+        70.0
+      ],
+      "sourceOrderRaisedGapsMm": [],
+      "paths": [
+        {
+          "id": "reload-polyline",
+          "commands": [
+            "M",
+            "L",
+            "L"
+          ],
+          "segments": 2,
+          "startMm": [
+            10.0,
+            10.0
+          ],
+          "endMm": [
+            70.0,
+            70.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            10.0,
+            70.0,
+            70.0
+          ],
+          "sourceLengthMm": 120.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    },
+    {
+      "file": "06-pause-resume.svg",
+      "sha256": "52561f781bc63657b066c7a9946e69a35d1957fe6f7bab2f39b00fbf42487669",
+      "testIds": [
+        "P07",
+        "P08",
+        "P09"
+      ],
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 8,
+      "sampledBoundsMm": [
+        10.0,
+        10.0,
+        60.0,
+        66.0
+      ],
+      "sourceOrderRaisedGapsMm": [
+        50.635955604688654,
+        50.635955604688654,
+        50.635955604688654,
+        50.635955604688654,
+        50.635955604688654,
+        50.635955604688654,
+        50.635955604688654
+      ],
+      "paths": [
+        {
+          "id": "stroke-01",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            10.0
+          ],
+          "endMm": [
+            60.0,
+            10.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            10.0,
+            60.0,
+            10.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-02",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            18.0
+          ],
+          "endMm": [
+            60.0,
+            18.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            18.0,
+            60.0,
+            18.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-03",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            26.0
+          ],
+          "endMm": [
+            60.0,
+            26.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            26.0,
+            60.0,
+            26.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-04",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            34.0
+          ],
+          "endMm": [
+            60.0,
+            34.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            34.0,
+            60.0,
+            34.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-05",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            42.0
+          ],
+          "endMm": [
+            60.0,
+            42.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            42.0,
+            60.0,
+            42.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-06",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            50.0
+          ],
+          "endMm": [
+            60.0,
+            50.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            50.0,
+            60.0,
+            50.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-07",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            58.0
+          ],
+          "endMm": [
+            60.0,
+            58.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            58.0,
+            60.0,
+            58.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        },
+        {
+          "id": "stroke-08",
+          "commands": [
+            "M",
+            "L"
+          ],
+          "segments": 1,
+          "startMm": [
+            10.0,
+            66.0
+          ],
+          "endMm": [
+            60.0,
+            66.0
+          ],
+          "sampledBoundsMm": [
+            10.0,
+            66.0,
+            60.0,
+            66.0
+          ],
+          "sourceLengthMm": 50.0,
+          "lengthMethod": "exact linear segments; cubic1000 uniform samples per segment"
+        }
+      ]
+    }
+  ],
+  "activePrimaryTarget": {
+    "firmware": "3.1.7",
+    "backend": "t3",
+    "strategy": "standard",
+    "actualConnectedVersionRequired": true
+  }
+}

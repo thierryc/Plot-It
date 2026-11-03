@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"], "incremental": false },
+  "include": ["server"],
+  "exclude": ["server/**/*.test.ts", "server/test-fixtures"]
+}

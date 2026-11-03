@@ -1,0 +1,20 @@
+.surface { position:relative; display:block; min-width:0; background:var(--control); border-radius:var(--radius-control); }
+.surface > textarea { position:relative; display:block; z-index:1; background:transparent; }
+.surface > textarea:not(:focus)::selection { background:transparent; color:inherit; }
+.layer { position:absolute; overflow:hidden; border-radius:calc(var(--radius-control) - 1px); pointer-events:none; user-select:none; }
+.layer[hidden] { display:none; }
+.mirror { position:absolute; display:block; box-sizing:border-box; height:auto; min-height:0; margin:0; border:0; color:transparent; pointer-events:none; user-select:none; }
+/* WebKit paints an inactive native selection over backgrounds. While blurred,
+   present the same plain-text mirror above it; all input still reaches textarea. */
+.surface:not(:focus-within) .layer { z-index:2; background:var(--control); }
+.surface:not(:focus-within) .mirror { color:var(--ink); z-index:1; }
+.paint { position:absolute; inset:0; pointer-events:none; }
+.selection, .override { position:absolute; pointer-events:none; }
+.selection { border-radius:2px; background:var(--selection-background); }
+.paint[data-decoration-scope="block"] .selection { background:var(--selection-neutral); }
+.override { height:1px; background:color-mix(in srgb,var(--text-quiet) 65%,transparent); }
+@media(forced-colors:active) {
+  .selection { forced-color-adjust:none; background:transparent; outline:1px solid Highlight; outline-offset:-1px; }
+  .paint[data-decoration-scope="block"] .selection { background:transparent; outline-color:GrayText; }
+  .override { forced-color-adjust:none; background:CanvasText; }
+}

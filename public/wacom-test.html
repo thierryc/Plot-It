@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plot-It · Pen input lab</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3ee;color:#24332e;font:16px/1.5 system-ui,sans-serif}main{max-width:1120px;margin:40px auto;padding:0 24px}h1{font-size:36px;letter-spacing:-1px;margin:8px 0}p{max-width:780px;color:#53635c}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#39755e}.layout{display:grid;grid-template-columns:1fr 280px;gap:20px}.panel{background:white;border:1px solid #d8dfd7;border-radius:16px;padding:20px}#pad{display:block;width:100%;height:380px;background:#f8faf7;border:1px solid #d8dfd7;border-radius:10px;touch-action:none;cursor:crosshair}#pad:focus{outline:2px solid #39755e}dl{margin:0}dl div{display:flex;justify-content:space-between;border-bottom:1px solid #edf0ea;padding:9px 0}dt{color:#53635c}dd{margin:0;font-variant-numeric:tabular-nums}label{display:block;margin:14px 0}input{width:100%}button{background:#243f33;color:white;border:0;border-radius:8px;padding:10px 16px;font:inherit;cursor:pointer}.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.speed{font-size:36px;font-variant-numeric:tabular-nums}.track{height:10px;border-radius:8px;background:#e5ece5;overflow:hidden}.fill{height:100%;width:0;background:#39755e}small{display:block;color:#53635c;margin:10px 0}#status{min-height:48px}#simulation{height:70px;width:100%}@media(max-width:780px){.layout{grid-template-columns:1fr}main{margin:20px auto}}
+</style>
+<main>
+<div class="eyebrow">Plot-It / experiment 01</div>
+<h1>Your pen as a live control</h1>
+<p>Draw on the pad with your Wacom pen. Watch the input values and a simulated plotter respond to pressure. This experiment sends no commands to a plotter.</p>
+<div class="layout">
+<section class="panel">
+<svg id="pad" tabindex="0" aria-label="Pen test drawing pad" viewBox="0 0 800 380" preserveAspectRatio="none"><g id="ink" fill="none" stroke="#39755e" stroke-linecap="round" stroke-linejoin="round"></g></svg>
+<p id="status" role="status">Waiting for input. Connect your tablet, then touch the pad with the pen.</p>
+<dl>
+<div><dt>Input type</dt><dd id="type">—</dd></div>
+<div><dt>Pressure</dt><dd id="pressure">—</dd></div>
+<div><dt>Position (pad pixels)</dt><dd id="position">—</dd></div>
+<div><dt>Movement (pixels/sec)</dt><dd id="movement">—</dd></div>
+<div><dt>Tilt X / Y</dt><dd id="tilt">—</dd></div>
+<div><dt>Rotation / tangential pressure</dt><dd id="rotation">—</dd></div>
+<div><dt>Buttons (raw bitmask)</dt><dd id="buttons">—</dd></div>
+<div><dt>Observed pen pressure range</dt><dd id="range">—</dd></div>
+<div><dt>Recorded samples</dt><dd id="count">0</dd></div>
+</dl>
+<div class="actions"><button id="clear">Clear and reset</button><button id="export">Export input JSON</button></div>
+<small>Recording keeps the latest 20,000 samples; the drawing keeps the latest 3,000 marks. Mouse input can test the pad, but only pen input drives the speed preview. Zero tilt or rotation may mean a neutral pen or an unsupported signal.</small>
+</section>
+<aside class="panel">
+<div class="eyebrow">Simulated drawing speed</div>
+<div class="speed"><span id="speed">0.0</span> <span style="font-size:16px">mm/s</span></div>
+<div class="track"><div class="fill" id="speed-bar"></div></div>
+<svg id="simulation" viewBox="0 0 240 70" aria-label="Simulated plotter movement"><path d="M10 35H230" stroke="#d8dfd7"/><circle id="carriage" cx="10" cy="35" r="7" fill="#39755e"/></svg>
+<label>Minimum speed: <output id="min-label">5</output> mm/s<input id="min" aria-label="Minimum simulated speed" type="range" min="1" max="50" value="5"></label>
+<label>Maximum speed: <output id="max-label">40</output> mm/s<input id="max" aria-label="Maximum simulated speed" type="range" min="1" max="100" value="40"></label>
+<label><input id="reverse" type="checkbox" style="width:auto"> More pressure → slower</label>
+<small>Speed changes are smoothed over about 120 ms. Lift the pen, leave the pad, or stop sending input for 500 ms to stop the preview.</small>
+<p>Try light and firm strokes, tilt the pen, and press its side buttons. Look for <strong>pen</strong> as the input type and a pressure value that varies.</p>
+<small>Movement is measured in screen pixels, not tablet millimetres. This is hand input, not feedback from the physical plotting pen.</small>
+</aside>
+</div>
+</main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const pad = $('pad'), ink = $('ink');
+  let samples = [], previous = null, low = Infinity, high = -Infinity;
+  let activeId = null, target = 0, speed = 0, pressure = 0, lastInput = 0, phase = 0, lastFrame = 0;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function stop() { activeId = null; previous = null; target = speed = 0; $('speed').textContent = '0.0'; $('speed-bar').style.width = '0%'; }
+  function mapSpeed() {
+    const a = Math.min(Number($('min').value), Number($('max').value));
+    const b = Math.max(Number($('min').value), Number($('max').value));
+    target = a + ($('reverse').checked ? 1 - pressure : pressure) * (b - a);
+  }
+  function read(e) {
+    if (activeId !== null && e.pointerId !== activeId) return;
+    const rect = pad.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const p = clamp(e.pressure || 0, 0, 1);
+    const dt = previous ? e.timeStamp - previous.time : 0;
+    const movement = dt > 0 && dt < 500 ? Math.hypot(x - previous.x, y - previous.y) / dt * 1000 : 0;
+    const contact = e.buttons !== 0 && p > 0 && !['pointerup', 'pointercancel'].includes(e.type);
+    const sample = {timeMs:e.timeStamp, input:e.pointerType, x, y, pressure:p, movementPixelsPerSecond:movement, tiltX:e.tiltX, tiltY:e.tiltY, twist:e.twist, tangentialPressure:e.tangentialPressure, buttons:e.buttons, event:e.type};
+    samples.push(sample); if (samples.length > 20000) samples.shift();
+    $('type').textContent = e.pointerType || 'unknown';
+    $('pressure').textContent = p.toFixed(3);
+    $('position').textContent = `${x.toFixed(0)}, ${y.toFixed(0)}`;
+    $('movement').textContent = movement.toFixed(0);
+    $('tilt').textContent = `${e.tiltX}° / ${e.tiltY}°`;
+    $('rotation').textContent = `${e.twist}° / ${(e.tangentialPressure || 0).toFixed(3)}`;
+    $('buttons').textContent = String(e.buttons);
+    $('count').textContent = String(samples.length);
+    if (e.pointerType === 'pen' && contact) {
+      low = Math.min(low, p); high = Math.max(high, p);
+      $('range').textContent = `${low.toFixed(3)} – ${high.toFixed(3)}`;
+      pressure = p; lastInput = performance.now(); mapSpeed();
+      $('status').textContent = 'Pen detected. Vary pressure to control the simulated speed.';
+    } else {
+      target = 0;
+      $('status').textContent = e.pointerType === 'pen' ? 'Pen lifted or hovering. Preview stopped.' : 'Input is reported as ' + (e.pointerType || 'unknown') + '. If this is your Wacom, check the driver and try another browser.';
+    }
+    if (contact && rect.width && rect.height) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const from = previous?.contact ? previous : {x:x + .1, y};
+      line.setAttribute('d', `M${from.x / rect.width * 800},${from.y / rect.height * 380}L${x / rect.width * 800},${y / rect.height * 380}`);
+      line.setAttribute('stroke-width', String(1 + p * 7)); ink.append(line);
+      if (ink.childElementCount > 3000) ink.firstElementChild.remove();
+    }
+    previous = {x, y, time:e.timeStamp, contact};
+    if (!contact) speed = 0;
+  }
+  pad.addEventListener('pointerdown', e => { if (activeId !== null) return; activeId = e.pointerId; previous = null; pad.setPointerCapture(e.pointerId); read(e); e.preventDefault(); });
+  pad.addEventListener('pointermove', e => {
+    const events = e.getCoalescedEvents?.() || [];
+    for (const event of events.length ? events : [e]) read(event);
+  });
+  for (const name of ['pointerup', 'pointercancel']) pad.addEventListener(name, e => { if (e.pointerId !== activeId) return; read(e); stop(); });
+  pad.addEventListener('lostpointercapture', stop);
+  pad.addEventListener('pointerleave', () => { stop(); $('status').textContent = 'Outside the pad. Preview stopped.'; });
+  pad.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('blur', stop);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+  for (const id of ['min', 'max', 'reverse']) $(id).addEventListener('input', () => {
+    $('min-label').textContent = $('min').value; $('max-label').textContent = $('max').value;
+    if (Number($('min').value) > Number($('max').value)) {
+      $(id === 'max' ? 'min' : 'max').value = $(id === 'max' ? 'max' : 'min').value;
+      $('min-label').textContent = $('min').value; $('max-label').textContent = $('max').value;
+    }
+    if (target > 0) mapSpeed();
+  });
+  $('clear').addEventListener('click', () => {
+    stop(); samples = []; low = Infinity; high = -Infinity; ink.replaceChildren();
+    for (const id of ['type', 'pressure', 'position', 'movement', 'tilt', 'rotation', 'buttons', 'range']) $(id).textContent = '—';
+    $('count').textContent = '0'; $('status').textContent = 'Reset. Touch the pad with your pen.';
+  });
+  $('export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({version:1, userAgent:navigator.userAgent, exportedAt:new Date().toISOString(), samples}, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'plot-it-pen-input.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  function frame(now) {
+    const dt = lastFrame ? Math.min((now - lastFrame) / 1000, .1) : 0; lastFrame = now;
+    if (now - lastInput > 500) { target = speed = 0; }
+    speed += (target - speed) * (1 - Math.exp(-dt / .12));
+    $('speed').textContent = speed.toFixed(1);
+    $('speed-bar').style.width = `${clamp(speed / Number($('max').value) * 100, 0, 100)}%`;
+    phase = (phase + speed * dt / 100) % 2;
+    $('carriage').setAttribute('cx', String(10 + (phase <= 1 ? phase : 2 - phase) * 220));
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</html>

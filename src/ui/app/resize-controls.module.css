@@ -1,0 +1,10 @@
+.handle { border:0; background:transparent; color:var(--text-quiet); padding:0; touch-action:none; flex:none; cursor:row-resize; display:grid; place-items:center; }
+.handle::after { content:''; width:26px; height:3px; border-radius:3px; background:var(--control-border); }
+.handle:hover::after,.handle:focus-visible::after { background:var(--text-quiet); }
+.handle:focus-visible { outline:var(--focus-width) solid var(--focus); outline-offset:var(--focus-offset); border-radius:var(--radius-control); }
+.vertical { height:12px; width:100%; }
+.horizontal { width:12px; height:100%; cursor:col-resize; }
+.horizontal::after { width:3px; height:26px; }
+.corner { position:absolute; right:3px; bottom:3px; width:16px; height:16px; cursor:nwse-resize; border-radius:3px; }
+.corner::after { width:8px; height:8px; border-right:1px solid var(--text-quiet); border-bottom:1px solid var(--text-quiet); border-radius:0; background:transparent; }
+@media(max-width:639px),(pointer:coarse) { .vertical { height:44px; } .horizontal { width:24px; } .corner { width:44px; height:44px; right:0; bottom:0; } }

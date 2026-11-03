@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 80 80">
+  <!-- Original Plot-it alpha test geometry. Square: 50 mm; circle: 20 mm diameter. -->
+  <g fill="none" stroke="#000000" stroke-width="0.3">
+    <rect id="square-50mm" x="10" y="10" width="50" height="50"/>
+    <circle id="circle-20mm" cx="35" cy="35" r="10"/>
+    <path id="diagonal" d="M10 10 L60 60"/>
+    <path id="curve" d="M15 55 C15 40 55 70 55 50"/>
+    <path id="short-marks" d="M10 65 h1 M15 65 h2 M22 65 h5 M32 65 h10 M47 65 h13"/>
+    <path id="raised-travel-check" d="M65 10 v5 M65 60 v5"/>
+  </g>
+</svg>

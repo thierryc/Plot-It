@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffffff"><meta name="description" content="Browser plotting, hardware compatibility, and self-hosting documentation for the Plot-it alpha."><link rel="icon" href="%BASE_URL%icon.svg" type="image/svg+xml"><title>Documentation · Plot-it</title><script>(()=>{try{const p=localStorage.getItem('plot-it-theme');document.documentElement.dataset.theme=p==='dark'||(p!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';document.querySelector('meta[name="theme-color"]').content=document.documentElement.dataset.theme==='dark'?'#232329':'#ffffff'}catch{}})();</script><script type="module" src="../site.ts"></script></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header"><a class="brand" href="%BASE_URL%" aria-label="Plot-it home"><span class="brand-mark">P</span>Plot-it</a><nav aria-label="Main navigation"><a href="%BASE_URL%app/">Open app</a><a href="%BASE_URL%docs/">Documentation</a><a href="%BASE_URL%contributors/">Contributors</a><a href="https://github.com/thierryc/Plot-It/issues">Support on GitHub</a></nav><label class="theme-label">Theme <select id="theme-selector" aria-label="Color theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></header><main id="main" tabindex="-1">
+<div class="document">
+  <p class="eyebrow">Alpha · Active development</p>
+  <h1>Start with a drawing.</h1>
+  <p class="lede">Import artwork, simulate its paths, and keep an editable copy. You can try the alpha without a plotter or installation.</p>
+  <nav class="contents" aria-label="On this page"><a href="#first-drawing">First drawing</a><a href="#browser">USB plotting</a><a href="#compatibility">Compatibility</a><a href="#contribute">Help test</a></nav>
+  <section id="first-drawing">
+    <h2>Import, simulate, save</h2>
+    <ol>
+      <li><a href="%BASE_URL%examples/alpha-starter.svg" download>Download the small test drawing</a>, then <a href="%BASE_URL%app/">open Plot-it</a> and choose <strong>Import SVG</strong>. You can also start with <strong>Add text</strong>.</li>
+      <li>Set the selected object's Width and Height to <strong>80 mm</strong> in the inspector. Imports start at a default display size; this restores the intended 50 mm square and 20 mm circle. Keep it inside the paper's safe margin.</li>
+      <li>Choose <strong>Plot</strong> at the top right, wait for preparation, then click <strong>Simulate</strong> in the sidebar footer. No hardware destination is needed.</li>
+      <li>Try Pause, Resume, and Stop. Choose <strong>Edit</strong> to return to your artwork.</li>
+      <li>Use the top-left menu to <strong>Save</strong> an editable <code>.plit.json</code> document or export SVG for other tools.</li>
+    </ol>
+    <p>Artwork and loaded fonts stay in your browser. Save document backups before clearing browser data or changing hostname. SVG export does not preserve every editable text or fill setting.</p>
+    <p><a href="https://github.com/thierryc/Plot-It/blob/main/docs/USER_GUIDE.md">Editing reference</a> · <a href="https://github.com/thierryc/Plot-It/blob/main/docs/README.md">All guides</a></p>
+  </section>
+  <section id="browser">
+    <h2>Before USB plotting</h2>
+    <p>Direct USB needs desktop Chrome or Edge with Web Serial, HTTPS, and permission to select your device. Close other apps or tabs using the same board. Mobile USB plotting is not advertised.</p>
+    <ol>
+      <li>Check your machine's status below and match its actual model, servo, orientation, and scaling.</li>
+      <li>In Plot, select <strong>Direct USB · this computer</strong> and click <strong>Connect</strong>. Connection does not start a drawing.</li>
+      <li>Calibrate Up/Down heights, place the carriage at the physical origin, and use <strong>Set origin</strong>. Paper size does not identify the machine's travel area.</li>
+      <li>Use raised <strong>Preview bounds</strong>. It returns and releases motors; restore the physical reference and set origin again before plotting.</li>
+      <li>Load the indicated pen and choose <strong>Start with this pen</strong>. After a fault or interrupted motion, recover origin and prepare a fresh job.</li>
+    </ol>
+    <p><a href="https://github.com/thierryc/Plot-It/blob/main/docs/GETTING_STARTED.md">First physical test and recovery</a> · <a href="https://developer.chrome.com/docs/capabilities/serial">Web Serial requirements</a></p>
+  </section>
+  <section id="compatibility">
+    <h2>Experimental hardware profiles</h2>
+    <p class="note">Implemented profiles are not support certification. Firmware, board revision, servo, scaling, orientation, and physical limits all matter.</p>
+    <div class="table-scroll"><table>
+      <caption>Alpha status · 9 October 2026</caption>
+      <thead><tr><th>Configuration</th><th>Implemented</th><th>Physical evidence</th></tr></thead>
+      <tbody>
+        <tr><th>Author's EBB setup</th><td>SM and existing calibration</td><td>Earlier limited physical testing; current-core baseline and exact machine identity still need a release record.</td></tr>
+        <tr><th><a href="https://www.axidraw.com/">AxiDraw V3 A4/A3</a></th><td>Model/pen profiles</td><td>untested by the author; independent owners needed.</td></tr>
+        <tr><th><a href="https://bantamtools.com/collections/nextdraw-merge-bundles">Bantam Tools NextDraw</a></th><td>8511/1117/2234, standard/brushless lift, explicit homing</td><td>compatibility not established physically; dedicated lift and homing tests needed.</td></tr>
+        <tr><th>Node / Raspberry Pi</th><td>Separate API and runner; ARM64 installer</td><td>Experimental trusted-LAN setup; Pi hardware acceptance pending.</td></tr>
+      </tbody>
+    </table></div>
+    <p>I do not own an AxiDraw or NextDraw, so I have not tested Plot-it on either. Help testing your exact configuration is welcome.</p>
+    <p>SM compatibility starts at firmware 2.8.1; NextDraw requires 3.0.2 or newer. Explicit S-curve targets 3.1.7; physical Auto stays on SM pending acceptance. Plot-it does not update firmware.</p>
+    <p><a href="https://github.com/thierryc/Plot-It/blob/main/docs/COMPATIBILITY.md">Full compatibility and limitations</a></p>
+    <p class="fine">Protocol/vendor references: <a href="https://www.schmalzhaus.com/EBB/">EBB hardware</a>, <a href="https://evil-mad.github.io/EggBot/ebb.html">EBB commands</a>, and <a href="https://bantam.tools/nd_cli/">NextDraw pen lift and homing</a>. These references do not validate Plot-it on a machine.</p>
+  </section>
+  <section>
+    <h2>Optional local server</h2>
+    <p>The public app provides Direct USB and Simulate. Network plotter appears in the app served by your Node API on port 8787. Frontend development and static preview do not start that server.</p>
+    <a class="button" href="%BASE_URL%docs/self-hosted/">Local and Pi setup →</a>
+  </section>
+  <section id="contribute">
+    <h2>Help test the first alpha</h2>
+    <p>We need AxiDraw and NextDraw owners, first-time users without hardware, and a Pi tester. Start with the example and simulation. A first session is about 30–45 minutes; qualified owners can then check a small physical drawing.</p>
+    <p>Use the alpha test guide for current limitations, issue-tracker reporting and instructions to download or copy logs.</p>
+    <div class="actions"><a class="button primary" href="https://github.com/thierryc/Plot-It/blob/main/docs/ALPHA_TESTING.md">Alpha test guide ↗</a><a class="button" href="https://github.com/thierryc/Plot-It/issues/new?template=hardware-report.yml">Hardware report</a><a class="text-link" href="https://github.com/thierryc/Plot-It/issues/new?template=bug-report.yml">Report a bug</a></div>
+    <p>Photos and name credit are optional. Software tests and physical acceptance are recorded separately.</p>
+  </section>
+  <section>
+    <h2>Fonts and source</h2>
+    <p><a href="https://github.com/thierryc/OpenPlotFont">OpenPlotFont</a> is a separate font-format project. Plot-it reads drafts 0.2/0.3 and ordinary TTF/OTF fonts. Stroke fonts retain their drawing operations; outline fonts produce contours. Each font retains its source license.</p>
+    <p>Use Text → Load a font to import separately obtained fonts locally. The two GPL ISO3098 faces are excluded from the default bundle. See <a href="https://github.com/thierryc/Plot-It/blob/main/docs/OPTIONAL_FONTS.md">optional font packs and licenses</a>.</p>
+    <p>Plot-it application and core are Apache-2.0. <a href="%BASE_URL%plot-it-source.tar.gz" download>Download corresponding application and website source</a>.</p>
+  </section>
+</div></main><footer data-site-footer>
+  <nav data-footer-links aria-label="Footer navigation">
+    <a href="https://ap.cx/about">About ap.cx</a><a href="https://ap.cx/contact">Contact</a><a href="https://ap.cx/tools">Tools</a><a href="https://github.com/thierryc/Plot-It">GitHub</a><a href="https://www.instagram.com/anotherplanetcx/">Instagram</a>
+    <button type="button" data-marquee-motion aria-controls="apcx-marquee" hidden>Pause animation</button>
+  </nav>
+  <div id="apcx-marquee" data-apcx-marquee aria-hidden="true"><span data-marquee-fallback>Another Planet . Creative eXperience</span></div>
+  <div data-footer-bottom>
+    <div><a data-footer-brand href="https://ap.cx/">Another Planet Creative eXperience</a><p data-footer-copyright>© <a href="https://ap.cx/">ap.cx</a></p><p data-footer-license>Plot-It code &amp; documentation: <a href="https://github.com/thierryc/Plot-It/blob/main/LICENSE">Apache-2.0</a>. Fonts retain their source licenses. <a href="%BASE_URL%plot-it-source.tar.gz" download>Download source</a>.</p></div>
+    <p data-footer-privacy>This website does not track you.</p>
+  </div>
+</footer></body></html>

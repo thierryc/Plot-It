@@ -1,0 +1,44 @@
+name: Bug report
+description: Report an editing, simulation, document, or startup problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Read the [alpha testing guide](https://github.com/thierryc/Plot-It/blob/main/docs/ALPHA_TESTING.md) for limitations, reporting and log instructions."
+  - type: input
+    id: candidate
+    attributes:
+      label: Plot-it version and source commit
+      description: Include hosted app or local build; say unknown if unavailable.
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Browser and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: For startup, include the command and app port. Remove personal paths and credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Optional screenshots, small example or machine log
+      description: Review documents and logs for private data or artwork before attaching. Share only material you have permission to publish.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log excerpt
+      description: See docs/ALPHA_TESTING.md for Download log and browser/server logs. Remove private details; leave blank if unavailable.
+      render: text

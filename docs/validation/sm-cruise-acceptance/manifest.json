@@ -1,0 +1,297 @@
+{
+  "format": "plot-it-sm-cruise-physical-fixtures-v1",
+  "status": "prepared-unexecuted",
+  "plannedDate": "2026-11-01",
+  "timezone": "America/New_York",
+  "purpose": "Matched P2 baseline versus P3a SM cruise-coalescing physical quality; no hardware support claim.",
+  "origin": "Original deterministic geometry authored for this pack; no vendor-output targets.",
+  "verification": {
+    "xmlParsed": true,
+    "svgCount": 2,
+    "pathCount": 12,
+    "finitePointsInside10To70Mm": true,
+    "linearLengthsExact": true,
+    "physicalCommandsSent": false,
+    "actualImportPreparation": {
+      "testFile": "src/sm-cruise-physical-acceptance.test.ts",
+      "fixtureTests": 2,
+      "linkedFileCheck": 1,
+      "softwareTargets": [
+        "XyloDraw SM explicit3.1.7",
+        "XyloDraw SM legacy2.8.1"
+      ],
+      "geometryMocks": false,
+      "environmentStub": "Identity screen CTMs only, after asserted80mm1:1rendering",
+      "physicalCommandsSent": false,
+      "limitations": "Pure import/flatten/pen preparation/compiler admission checks; no browser layout, Worker transport, physical quality or firmware support qualification."
+    }
+  },
+  "files": [
+    {
+      "file": "01-long-cruises.svg",
+      "sha256": "7344f9069e5ee18f9783b8cc98510f9db69b421a983cd826ed7b697babd095f1",
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 4,
+      "paths": [
+        {
+          "id": "horizontal",
+          "pointsMm": [
+            [
+              10.0,
+              10.0
+            ],
+            [
+              70.0,
+              10.0
+            ]
+          ],
+          "sourceLengthMm": 60.0
+        },
+        {
+          "id": "vertical",
+          "pointsMm": [
+            [
+              10.0,
+              20.0
+            ],
+            [
+              10.0,
+              70.0
+            ]
+          ],
+          "sourceLengthMm": 50.0
+        },
+        {
+          "id": "diagonal-positive",
+          "pointsMm": [
+            [
+              20.0,
+              20.0
+            ],
+            [
+              70.0,
+              70.0
+            ]
+          ],
+          "sourceLengthMm": 70.71067811865476
+        },
+        {
+          "id": "diagonal-negative",
+          "pointsMm": [
+            [
+              70.0,
+              20.0
+            ],
+            [
+              20.0,
+              70.0
+            ]
+          ],
+          "sourceLengthMm": 70.71067811865476
+        }
+      ]
+    },
+    {
+      "file": "02-mixed-cruises.svg",
+      "sha256": "76c793287e20f7dfc0c884d9630aa41ef6ebf33d5442a3e5cecaaa0b605a5530",
+      "sizeMm": [
+        80,
+        80
+      ],
+      "viewBox": [
+        0,
+        0,
+        80,
+        80
+      ],
+      "pathCount": 8,
+      "paths": [
+        {
+          "id": "corners-and-reversal",
+          "pointsMm": [
+            [
+              10.0,
+              10.0
+            ],
+            [
+              70.0,
+              10.0
+            ],
+            [
+              70.0,
+              30.0
+            ],
+            [
+              45.0,
+              30.0
+            ],
+            [
+              70.0,
+              30.0
+            ],
+            [
+              70.0,
+              50.0
+            ],
+            [
+              50.0,
+              50.0
+            ]
+          ],
+          "sourceLengthMm": 170.0
+        },
+        {
+          "id": "closed-square",
+          "pointsMm": [
+            [
+              10.0,
+              40.0
+            ],
+            [
+              30.0,
+              40.0
+            ],
+            [
+              30.0,
+              60.0
+            ],
+            [
+              10.0,
+              60.0
+            ],
+            [
+              10.0,
+              40.0
+            ]
+          ],
+          "sourceLengthMm": 80.0
+        },
+        {
+          "id": "tiny-0p025mm",
+          "pointsMm": [
+            [
+              10.0,
+              68.0
+            ],
+            [
+              10.025,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 0.025000000000000355
+        },
+        {
+          "id": "tiny-0p05mm",
+          "pointsMm": [
+            [
+              20.0,
+              68.0
+            ],
+            [
+              20.05,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 0.05000000000000071
+        },
+        {
+          "id": "tiny-0p1mm",
+          "pointsMm": [
+            [
+              30.0,
+              68.0
+            ],
+            [
+              30.1,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 0.10000000000000142
+        },
+        {
+          "id": "tiny-0p2mm",
+          "pointsMm": [
+            [
+              40.0,
+              68.0
+            ],
+            [
+              40.2,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 0.20000000000000284
+        },
+        {
+          "id": "tiny-0p5mm",
+          "pointsMm": [
+            [
+              50.0,
+              68.0
+            ],
+            [
+              50.5,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 0.5
+        },
+        {
+          "id": "tiny-1mm",
+          "pointsMm": [
+            [
+              60.0,
+              68.0
+            ],
+            [
+              61.0,
+              68.0
+            ]
+          ],
+          "sourceLengthMm": 1.0
+        }
+      ]
+    }
+  ],
+  "reusedFixtures": [
+    {
+      "file": "../plotter-acceptance/01-starter.svg",
+      "test": "C00",
+      "sha256": "d97bf65f5fe46d26d91d59d58918dc2f91b33f34f5dbd28a785d74bca8f07e63"
+    },
+    {
+      "file": "../plotter-acceptance/02-raised-travel.svg",
+      "test": "C03",
+      "sha256": "50ccdac19ec2f2275cff8838e962dc6dc959cc7d3c42f1cddc188e6efa577eaa"
+    },
+    {
+      "file": "../plotter-acceptance/03-tiny-marks.svg",
+      "test": "C04",
+      "sha256": "a3a30a5f955b053339bac92d5d1549d547bbac7d0def534e89ec667d09c0443d"
+    },
+    {
+      "file": "../plotter-acceptance/04-curves-corners-reversal.svg",
+      "test": "C04",
+      "sha256": "478fdfdc229193baef8680e3d6581a3f382a1a7f4962ca3f236dfd75e7461e5c"
+    },
+    {
+      "file": "../plotter-acceptance/05-reload.svg",
+      "test": "C05",
+      "sha256": "e778e999dd4fe7a74de4a3187c2e058a4ec74e67fb3126ea9cd4bff4619197d8"
+    },
+    {
+      "file": "../plotter-acceptance/06-pause-resume.svg",
+      "test": "C06/C07",
+      "sha256": "52561f781bc63657b066c7a9946e69a35d1957fe6f7bab2f39b00fbf42487669"
+    }
+  ]
+}

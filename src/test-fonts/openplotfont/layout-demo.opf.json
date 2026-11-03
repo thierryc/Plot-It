@@ -1,0 +1,597 @@
+{
+  "format": "OpenPlotFont",
+  "version": "0.3",
+  "id": "org.openplotfont.layout-demo.regular",
+  "familyName": "OpenPlotFont Layout Demo",
+  "styleName": "Regular",
+  "unitsPerEm": 1000,
+  "metrics": {
+    "ascender": 800,
+    "descender": -200,
+    "capHeight": 700,
+    "xHeight": 500,
+    "lineGap": 200
+  },
+  "missingGlyph": ".notdef",
+  "kerning": [
+    {
+      "left": "A",
+      "right": "A",
+      "value": -80
+    }
+  ],
+  "metadata": {
+    "license": "MIT",
+    "author": "Thierry Charbonnel",
+    "purpose": "Original conformance fixture; strokes are intentionally simple."
+  },
+  "glyphs": [
+    {
+      "name": ".notdef",
+      "unicodes": [],
+      "advanceWidth": 600,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              50,
+              0
+            ],
+            [
+              "L",
+              50,
+              700
+            ],
+            [
+              "L",
+              550,
+              700
+            ],
+            [
+              "L",
+              550,
+              0
+            ],
+            [
+              "L",
+              50,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "space",
+      "unicodes": [
+        "0020",
+        "00A0"
+      ],
+      "advanceWidth": 300,
+      "strokes": []
+    },
+    {
+      "name": "A",
+      "unicodes": [
+        "0041"
+      ],
+      "advanceWidth": 600,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              50,
+              0
+            ],
+            [
+              "L",
+              300,
+              700
+            ],
+            [
+              "L",
+              550,
+              0
+            ]
+          ]
+        }
+      ],
+      "anchors": [
+        {
+          "name": "top",
+          "x": 300,
+          "y": 700
+        }
+      ]
+    },
+    {
+      "name": "A.alt",
+      "unicodes": [],
+      "advanceWidth": 600,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              50,
+              0
+            ],
+            [
+              "L",
+              300,
+              600
+            ],
+            [
+              "L",
+              550,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "f",
+      "unicodes": [
+        "0066"
+      ],
+      "advanceWidth": 400,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              100,
+              0
+            ],
+            [
+              "L",
+              100,
+              500
+            ],
+            [
+              "L",
+              300,
+              700
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "i",
+      "unicodes": [
+        "0069"
+      ],
+      "advanceWidth": 250,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              100,
+              0
+            ],
+            [
+              "L",
+              100,
+              500
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "f_i",
+      "unicodes": [],
+      "advanceWidth": 600,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              100,
+              0
+            ],
+            [
+              "L",
+              100,
+              500
+            ],
+            [
+              "L",
+              300,
+              700
+            ],
+            [
+              "L",
+              500,
+              500
+            ],
+            [
+              "L",
+              500,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "i.trk",
+      "unicodes": [],
+      "advanceWidth": 250,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              100,
+              0
+            ],
+            [
+              "L",
+              100,
+              450
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "zero",
+      "unicodes": [
+        "0030"
+      ],
+      "advanceWidth": 450,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              50,
+              0
+            ],
+            [
+              "L",
+              50,
+              700
+            ],
+            [
+              "L",
+              400,
+              700
+            ],
+            [
+              "L",
+              400,
+              0
+            ],
+            [
+              "L",
+              50,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "zero.tnum",
+      "unicodes": [],
+      "advanceWidth": 600,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              100,
+              0
+            ],
+            [
+              "L",
+              100,
+              700
+            ],
+            [
+              "L",
+              500,
+              700
+            ],
+            [
+              "L",
+              500,
+              0
+            ],
+            [
+              "L",
+              100,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "acutecomb",
+      "unicodes": [
+        "0301"
+      ],
+      "advanceWidth": 0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0,
+              0
+            ],
+            [
+              "L",
+              100,
+              100
+            ]
+          ]
+        }
+      ],
+      "anchors": [
+        {
+          "name": "_top",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "name": "top",
+          "x": 0,
+          "y": 150
+        }
+      ]
+    },
+    {
+      "name": "dotcomb",
+      "unicodes": [
+        "0307"
+      ],
+      "advanceWidth": 0,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              -20,
+              0
+            ],
+            [
+              "L",
+              20,
+              0
+            ]
+          ]
+        }
+      ],
+      "anchors": [
+        {
+          "name": "_top",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "name": "u",
+      "unicodes": [
+        "0075"
+      ],
+      "advanceWidth": 500,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0,
+              0
+            ],
+            [
+              "L",
+              0,
+              -100
+            ],
+            [
+              "L",
+              400,
+              100
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "n",
+      "unicodes": [
+        "006E"
+      ],
+      "advanceWidth": 500,
+      "strokes": [
+        {
+          "closed": false,
+          "commands": [
+            [
+              "M",
+              0,
+              0
+            ],
+            [
+              "L",
+              200,
+              400
+            ],
+            [
+              "L",
+              400,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "layout": {
+    "profile": "opentype-static-v1",
+    "font": {
+      "encoding": "base64",
+      "sha256": "b9293922674a3bd95922375e6c04baf7cf05633e4a434aaac0285c8c8b709d37",
+      "data": "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"
+    },
+    "glyphOrder": [
+      ".notdef",
+      "space",
+      "A",
+      "A.alt",
+      "f",
+      "i",
+      "f_i",
+      "i.trk",
+      "zero",
+      "zero.tnum",
+      "acutecomb",
+      "dotcomb",
+      "u",
+      "n"
+    ],
+    "features": [
+      {
+        "tag": "calt"
+      },
+      {
+        "tag": "curs",
+        "recommendedValue": 0
+      },
+      {
+        "tag": "kern"
+      },
+      {
+        "tag": "liga"
+      },
+      {
+        "tag": "locl"
+      },
+      {
+        "tag": "mark"
+      },
+      {
+        "tag": "mkmk"
+      },
+      {
+        "tag": "salt",
+        "recommendedValue": 0
+      },
+      {
+        "tag": "ss01",
+        "label": "Lower apex capitals",
+        "recommendedValue": 0
+      },
+      {
+        "tag": "tnum",
+        "recommendedValue": 0
+      }
+    ],
+    "systems": [
+      {
+        "table": "GPOS",
+        "script": "DFLT",
+        "language": "dflt",
+        "features": [
+          "curs",
+          "kern",
+          "mark",
+          "mkmk"
+        ],
+        "requiredFeature": null
+      },
+      {
+        "table": "GPOS",
+        "script": "latn",
+        "language": "TRK ",
+        "features": [
+          "curs",
+          "kern",
+          "mark",
+          "mkmk"
+        ],
+        "requiredFeature": null
+      },
+      {
+        "table": "GPOS",
+        "script": "latn",
+        "language": "dflt",
+        "features": [
+          "curs",
+          "kern",
+          "mark",
+          "mkmk"
+        ],
+        "requiredFeature": null
+      },
+      {
+        "table": "GSUB",
+        "script": "DFLT",
+        "language": "dflt",
+        "features": [
+          "calt",
+          "liga",
+          "salt",
+          "ss01",
+          "tnum"
+        ],
+        "requiredFeature": null
+      },
+      {
+        "table": "GSUB",
+        "script": "latn",
+        "language": "TRK ",
+        "features": [
+          "calt",
+          "liga",
+          "locl",
+          "salt",
+          "ss01",
+          "tnum"
+        ],
+        "requiredFeature": null
+      },
+      {
+        "table": "GSUB",
+        "script": "latn",
+        "language": "dflt",
+        "features": [
+          "calt",
+          "liga",
+          "salt",
+          "ss01",
+          "tnum"
+        ],
+        "requiredFeature": null
+      }
+    ],
+    "source": {
+      "format": "fea",
+      "content": "languagesystem DFLT dflt;\nlanguagesystem latn dflt;\nlanguagesystem latn TRK;\nmarkClass acutecomb <anchor 0 0> @TOP;\nmarkClass dotcomb <anchor 0 0> @TOP;\nfeature liga {\nsub f i by f_i;\n} liga;\nfeature ss01 {\nsub A by A.alt;\n} ss01;\nfeature salt {\nsub A from [A.alt];\n} salt;\nfeature calt {\nlookupflag IgnoreMarks; sub A A' by A.alt;\n} calt;\nfeature tnum {\nsub zero by zero.tnum;\n} tnum;\nfeature locl {\nscript latn; language TRK; sub i by i.trk;\n} locl;\nfeature kern {\npos A A -80;\n} kern;\nfeature mark {\npos base A <anchor 300 700> mark @TOP;\npos ligature f_i <anchor 250 700> mark @TOP ligComponent <anchor 700 700> mark @TOP;\n} mark;\nfeature mkmk {\npos mark acutecomb <anchor 0 150> mark @TOP;\n} mkmk;\nfeature curs {\npos cursive u <anchor 0 0> <anchor 400 100>; pos cursive n <anchor 0 0> <anchor 400 0>;\n} curs;\n",
+      "sha256": "5fc01060064395e568fa2768611b38d1906f813dcce27f7d74e9fb8a3fdda900",
+      "compiledSha256": "b9293922674a3bd95922375e6c04baf7cf05633e4a434aaac0285c8c8b709d37"
+    }
+  }
+}

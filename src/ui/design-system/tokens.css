@@ -1,0 +1,67 @@
+/* Authoritative interface tokens. Figma is an explicitly refreshed companion. */
+:root:has([data-ui-root]) {
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
+  --field-height:30px; --action-height:32px; --control-height:var(--field-height); --button-height:var(--action-height);
+  --touch-target:44px; --checkbox-size:16px; --toolbar-size:36px;
+  --field-gap:4px; --control-gap:6px; --group-gap:12px; --panel-gap:var(--control-gap); --panel-padding:12px;
+  --control-padding-inline:8px; --control-padding-block:4px; --unit-width:38px;
+  --slider-track-size:1px; --slider-thumb-size:10px; --slider-hit-size:30px; --slider-value-width:64px;
+  --focus-width:1px; --focus-offset:2px; --border-width:1px; --icon-stroke:1.5;
+  --icon-size:18px; --icon-small:14px; --heading-height:24px;
+  --radius-button:6px; --radius-control:6px; --radius-surface:8px;
+  --motion-panel-duration:320ms; --motion-dialog-duration:180ms; --motion-exit-duration:130ms; --motion-render-duration:120ms;
+  --motion-progress-show-delay:180ms; --motion-progress-hide-delay:260ms; --motion-progress-min-visible:320ms;
+  --motion-panel-easing:cubic-bezier(0.22, 1.12, 0.36, 1); --motion-settle-easing:cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-panel-offset:12px; --motion-dialog-offset:6px; --motion-dialog-scale:0.99;
+  --sidebar-default:288px; --sidebar-tablet:260px; --text-editor-width:400px; --text-editor-height-default:700px; --text-input-height:180px;
+  --layer-paper:2; --layer-status:3; --layer-controls:5; --layer-progress:6; --layer-toast:20;
+  --font-size-ui:14px; --font-size-secondary:12px; --line-height-ui:20px; --line-height-secondary:16px;
+  --font-ui:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:var(--font-ui); font-size:var(--font-size-ui); line-height:var(--line-height-ui); font-synthesis:none; color-scheme:light;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink); background:var(--app-background);
+  --ink:#222222; --accent:#00E5FF; --warning:#FF9A00; --error:#FF3B8D;
+  --line:#e2e2e2; --muted:#666666; --text-secondary:#484848; --text-quiet:#666666;
+  --app-background:#f3f3f3; --surface:#fafafa; --surface-subtle:#f5f5f5;
+  --control:#ffffff; --button:#f5f5f5; --hover:#eeeeee; --active:#d6fbff;
+  --slider-track-color:#888888; --control-border:#d9d9d9; --hover-border:#888888; --focus:#222222; --accent-text:#222222;
+  --focus-ring:#00e5ff40; --selection-background:#00e5ff2e; --selection-neutral:#6666661f;
+  --stage:#f3f3f3; --stage-dot:#dedede; --workspace-ink:#555555; --workspace-focus:#555555; --note:#effcff;
+  --plotter-backdrop-opacity:.012; --plotter-backdrop-filter:brightness(0);
+  --primary:#222222; --on-primary:#ffffff; --primary-hover:#3a3a3a; --control-accent:#222222;
+  --status:#00E5FF; --status-halo:#d6fbff; --progress-track:#e2e2e2;
+  --dialog:#fafafa; --backdrop:#22222259; --toast:#222222; --toast-text:#ffffff;
+  --danger:#8b1644; --error-background:#ffe5ef; --warning-background:#fff0d9; --on-signal:#222222;
+  --toast-error:var(--error-background);
+  --canvas-ui-ink:#555555; --canvas-ui-fill:#ffffff; --canvas-ui-active-fill:#e6e6e6; --canvas-selection:#2693ff;
+  --island-shadow:0 0 0 1px #22222208,0 2px 5px #22222206,0 6px 18px #2222220d;
+  --dialog-shadow:0 8px 28px #00000026;
+  --select-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='1.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"]:has([data-ui-root]) {
+  color-scheme:dark;
+  --ink:#eeeeee; --accent:#00E5FF; --warning:#FF9A00; --error:#FF3B8D;
+  --line:#414141; --muted:#b6b6b6; --text-secondary:#d0d0d0; --text-quiet:#b6b6b6;
+  --app-background:#444444; --surface:#252525; --surface-subtle:#2a2a2a;
+  --control:#2e2e2e; --button:#303030; --hover:#383838; --active:#16454a;
+  --slider-track-color:#b6b6b6; --control-border:#505050; --hover-border:#aaaaaa; --focus:#eeeeee; --accent-text:#eeeeee;
+  --focus-ring:#00e5ff40; --selection-background:#00e5ff2e; --selection-neutral:#b6b6b61f;
+  --stage:#444444; --stage-dot:#505050; --workspace-ink:#eeeeee; --workspace-focus:#555555; --note:#283a3d;
+  --plotter-backdrop-opacity:.055; --plotter-backdrop-filter:brightness(0) invert(1);
+  --primary:#eeeeee; --on-primary:#222222; --primary-hover:#d4d4d4; --control-accent:#eeeeee;
+  --status:#00E5FF; --status-halo:#16454a; --progress-track:#484848;
+  --dialog:#252525; --backdrop:#22222259; --toast:#eeeeee; --toast-text:#222222;
+  --danger:#ffafd0; --error-background:#4d2636; --warning-background:#493821; --on-signal:#222222;
+  --island-shadow:0 0 0 1px #ffffff08,0 2px 5px #00000012,0 6px 18px #00000020;
+  --dialog-shadow:0 8px 28px #00000030;
+  --select-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b6b6b6' stroke-width='1.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+@media(max-width:639px), (pointer:coarse) {
+  :root:has([data-ui-root]) {
+    --control-height:var(--touch-target); --button-height:var(--touch-target);
+    --slider-hit-size:var(--touch-target); --panel-gap:12px; --toolbar-size:var(--touch-target);
+  }
+}
+@media(forced-colors:active) {
+  :root:has([data-ui-root]) { --focus:Highlight; --workspace-focus:Highlight; --focus-ring:transparent; --selection-background:Highlight; --canvas-selection:Highlight; --error:CanvasText; --warning:CanvasText; }
+}

@@ -1,0 +1,15 @@
+.row { display:grid; gap:0; min-width:0; margin-block:var(--control-gap) var(--group-gap); }
+.slider { display:block; appearance:none; -webkit-appearance:none; width:100%; min-width:0; height:var(--slider-hit-size); min-height:var(--slider-hit-size); margin:0; padding:0; border:0; border-radius:var(--radius-control); background:transparent; color:var(--control-accent); cursor:pointer; touch-action:pan-y; }
+.slider::-webkit-slider-runnable-track { height:var(--slider-track-size); background:var(--slider-track-color); border:0; }
+.slider::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; box-sizing:border-box; width:var(--slider-thumb-size); height:var(--slider-thumb-size); margin-top:calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2); border:var(--border-width) solid var(--control-accent); border-radius:50%; background:var(--control); }
+.slider::-moz-range-track { height:var(--slider-track-size); background:var(--slider-track-color); border:0; }
+.slider::-moz-range-thumb { box-sizing:border-box; width:var(--slider-thumb-size); height:var(--slider-thumb-size); border:var(--border-width) solid var(--control-accent); border-radius:50%; background:var(--control); }
+.slider:focus { outline:none; box-shadow:none; }
+.slider:is(:focus,:active)::-webkit-slider-thumb { background:var(--control-accent); }
+.slider:is(:focus,:active)::-moz-range-thumb { background:var(--control-accent); }
+.slider:disabled { opacity:.4; cursor:default; }
+.caption { display:flex; align-items:center; justify-content:space-between; gap:var(--control-gap); min-width:0; color:var(--ink); font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); }
+.caption > span { min-width:0; }
+.caption small { font-size:var(--font-size-secondary); color:var(--text-quiet);  line-height:var(--line-height-secondary); }
+.value { flex:0 0 var(--slider-value-width); width:var(--slider-value-width); min-width:0; }
+@media(forced-colors:active) { .slider { appearance:auto; -webkit-appearance:auto; } .slider:focus-visible { outline:var(--focus-width) solid Highlight; outline-offset:var(--focus-offset); } .slider::-webkit-slider-runnable-track,.slider::-moz-range-track { background:CanvasText; } .slider::-webkit-slider-thumb,.slider::-moz-range-thumb { background:CanvasText; } }

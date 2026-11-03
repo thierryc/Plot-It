@@ -1,0 +1,56 @@
+@font-face {
+  font-family: "Square Bot Sans Footer";
+  src: url("/fonts/library/square-bot-sans/square-bot-sans.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.banner {
+  position: relative;
+  height: clamp(180px, 18vw, 320px);
+  overflow: hidden;
+  background: var(--footer-background, var(--surface));
+  color: var(--ink);
+  font-family: "Square Bot Sans Footer", sans-serif;
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+.fallback {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-inline: 20px;
+  white-space: nowrap;
+  font-size: clamp(48px, 8vw, 120px);
+  opacity: .32;
+}
+
+.banner canvas { opacity: 0; }
+.banner[data-ready] canvas { opacity: 1; }
+.banner[data-ready] .fallback { display: none; }
+
+.motion {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--control-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--quiet);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.motion:hover { background: var(--hover); border-color: var(--accent); }
+.motion:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+.motion[hidden] { display: none; }
+
+@media (max-width: 820px) {
+  .banner { height: clamp(140px, 28vw, 220px); }
+}
+
+@media (max-width: 600px) {
+  .motion { min-height: 44px; }
+}

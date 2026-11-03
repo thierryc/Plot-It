@@ -1,0 +1,7 @@
+.popover { position:fixed; inset:auto; margin:0; width:min(300px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); overflow:auto; padding:14px; border:1px solid var(--line); border-radius:var(--radius-surface); background:var(--surface); color:var(--ink); box-shadow:var(--island-shadow); }
+.dialog { width:min(480px,calc(100vw - 28px)); max-height:calc(100dvh - 32px); overflow:auto; border:1px solid var(--line); border-radius:var(--radius-surface); background:var(--surface); color:var(--ink); padding:var(--panel-padding); box-shadow:var(--island-shadow); }
+.dialog::backdrop { background:var(--backdrop); backdrop-filter:blur(3px); }
+.popover,.dialog,:global([data-ui-root]) [popover] { opacity:1; transform:translateY(0) scale(1); transition:opacity var(--motion-dialog-duration) var(--motion-settle-easing),transform var(--motion-dialog-duration) var(--motion-settle-easing),display var(--motion-dialog-duration) allow-discrete,overlay var(--motion-dialog-duration) allow-discrete; }
+.popover:not(:popover-open),.dialog:not([open]),:global([data-ui-root]) [popover]:not(:popover-open) { opacity:0; transform:translateY(var(--motion-dialog-offset)) scale(var(--motion-dialog-scale)); }
+@starting-style { .popover:popover-open,.dialog[open],:global([data-ui-root]) [popover]:popover-open { opacity:0; transform:translateY(var(--motion-dialog-offset)) scale(var(--motion-dialog-scale)); } }
+@media(prefers-reduced-motion:reduce) { .popover,.dialog,:global([data-ui-root]) [popover] { transition:none; } }

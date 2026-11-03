@@ -1,0 +1,63 @@
+name: Hardware report
+description: Share a tested configuration or a hardware problem. This is not a request to try unsupported servo configurations.
+title: "[Hardware] "
+body:
+  - type: markdown
+    attributes:
+      value: "Read the [alpha testing guide](https://github.com/thierryc/Plot-It/blob/main/docs/ALPHA_TESTING.md) for limitations, reporting and log instructions."
+  - type: markdown
+    attributes:
+      value: "Hardware profiles are experimental. NextDraw lift and homing are implemented but not physically validated. Report the exact candidate and tests actually performed; a handshake alone does not validate a machine. Review logs/artwork before attaching and remove passwords, keys and personal/network details."
+  - type: input
+    id: candidate
+    attributes:
+      label: Plot-it version and source commit
+      description: Identify hosted or local candidate; say unknown if unavailable.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Plotter model and modifications
+      description: Include pen-lift servo type if known.
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: EBB hardware revision and firmware version
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Browser and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: Direct USB or Network, profile/model/orientation/resolution, speeds, pen heights, paper/pen, and drawing dimensions.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Test steps and observed results
+      description: Include test IDs, passed/failed/skipped checks, expected vs actual behavior, measurements, unexpected movement and whether a physical drawing completed.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Optional photo and machine log
+      description: After the job stops, use Plot → Diagnostics → Download log. See docs/ALPHA_TESTING.md for copying excerpts and other logs. Review before sharing.
+  - type: dropdown
+    id: photo_permission
+    attributes:
+      label: May the project reuse attached photographs in release material?
+      options:
+        - "No permission granted"
+        - "Yes, with credit agreed separately"
+        - "Yes, without name credit"

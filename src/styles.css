@@ -1,0 +1,8 @@
+@import "./ui/design-system/tokens.css";
+
+/* Document sizing belongs to the editor entry, never the public website. */
+* { box-sizing:border-box; }
+html, body, #app { margin:0; width:100%; height:100%; overflow:hidden; }
+button, input, select, textarea { font:inherit; }
+button { color:inherit; }
+[hidden] { display:none !important; }

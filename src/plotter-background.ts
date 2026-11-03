@@ -1,0 +1,98 @@
+import { publicAssetUrl } from './app-deployment';
+import styles from './ui/app/canvas.module.css';
+import type { PlotSettings, Point } from './model';
+import { setupAngle, setupArmRetracted, setupPen, setupSize } from './plotter-setup';
+
+// Original Figma frame 13:23. SVG layers are used unchanged at their native size.
+const PEN = { x: 50.4546, y: 256.8636 };
+const PEN_RADIUS = 20.4546;
+const CARRIAGE_LEFT = 571.364;
+const CARRIAGE_WIDTH = 131.818;
+// Visible bounds, excluding the empty padding of the original Figma frame.
+const FOOTPRINT = { width: 968.182, height: 1091.773 };
+
+/** Viewport-clipped decoration outside #paper and outside the scrolling stage.
+ * It cannot participate in Fit, hit testing, export, or the plot planner. */
+export class PlotterBackground {
+  private layer: HTMLDivElement;
+  private rig: HTMLDivElement;
+  private arm: HTMLDivElement;
+  private stationary: HTMLDivElement;
+  private carriage: HTMLDivElement;
+  private observer: ResizeObserver;
+  private mutation: MutationObserver;
+  private frame = 0;
+  private position: Point = { x: 0, y: 0 };
+  private planSettings: PlotSettings | undefined;
+  private onPosition = (event: Event): void => {
+    const detail = (event as CustomEvent<{ position: Point; settings?: PlotSettings }>).detail;
+    this.planSettings = detail.settings; this.setPosition(detail.position);
+  };
+
+  constructor(private paper: SVGSVGElement, private settings: () => PlotSettings) {
+    const stage = paper.closest<HTMLElement>('#stage')!;
+    this.layer = document.createElement('div');
+    this.layer.className = `plotter-background ${styles['plotter-background']}`;
+    this.layer.setAttribute('aria-hidden', 'true');
+    this.layer.inert = true;
+    this.layer.innerHTML = `<div class="plotter-rig ${styles["plotter-rig"]}" data-rig="rig">
+      <div data-rig="stationary">
+      <div class="plotter-main-rail ${styles["plotter-main-rail"]}"></div><div class="plotter-main-rail ${styles["plotter-main-rail"]} second ${styles["second"]}"></div>
+      <img class="plotter-motor ${styles["plotter-motor"]} top ${styles["top"]}" src="${publicAssetUrl('/plotter/motor-top.svg')}" alt="" width="234.652" height="123.227" draggable="false">
+      <img class="plotter-motor ${styles["plotter-motor"]} bottom ${styles["bottom"]}" src="${publicAssetUrl('/plotter/motor-bottom.svg')}" alt="" width="90.9091" height="90.9091" draggable="false">
+      </div>
+      <div class="plotter-arm ${styles["plotter-arm"]}" data-rig="arm"><img src="${publicAssetUrl('/plotter/pen-arm.svg')}" alt="" width="968.182" height="80.4546" draggable="false"></div>
+      <div class="plotter-carriage ${styles["plotter-carriage"]}" data-rig="carriage"></div>
+    </div>`;
+    stage.parentElement!.append(this.layer);
+    this.stationary = this.layer.querySelector<HTMLDivElement>('[data-rig="stationary"]')!;
+    this.stationary.style.transformOrigin = `0 ${PEN.y}px`;
+    this.rig = this.layer.querySelector<HTMLDivElement>('[data-rig="rig"]')!;
+    this.arm = this.layer.querySelector<HTMLDivElement>('[data-rig="arm"]')!;
+    this.carriage = this.layer.querySelector<HTMLDivElement>('[data-rig="carriage"]')!;
+    this.observer = new ResizeObserver(this.refresh);
+    this.observer.observe(stage); this.observer.observe(paper);
+    this.mutation = new MutationObserver(this.refresh);
+    this.mutation.observe(paper.parentElement!, { attributes: true, attributeFilter: ['style'] });
+    stage.addEventListener('scroll', this.refresh, { passive: true });
+    paper.addEventListener('plotter-position', this.onPosition);
+    this.refresh();
+  }
+
+  refresh = (): void => {
+    if (this.frame) return;
+    this.frame = requestAnimationFrame(() => { this.frame = 0; this.draw(); });
+  };
+
+  setPosition(position: Point): void { this.position = position; this.refresh(); }
+
+  private draw(): void {
+    const settings = this.planSettings ?? this.settings();
+    // The AxiDraw illustration is not a NextDraw model drawing.
+    this.layer.hidden = settings.profile === 'nextdraw';
+    if (this.layer.hidden) return;
+    const matrix = this.paper.getScreenCTM();
+    if (!matrix) return;
+    const bounds = this.layer.getBoundingClientRect();
+    const size = setupSize(settings), sx = size.width / FOOTPRINT.width, sy = size.height / FOOTPRINT.height;
+    // Preserve square motor/carriage symbols while adapting rail lengths to the model.
+    const symbolScale = sy / sx;
+    this.rig.style.setProperty('--symbol-scale-x', String(symbolScale));
+    this.stationary.style.transform = settings.machineRotation === 270 ? 'scaleY(-1)' : '';
+    const pen = setupPen(this.position, settings);
+    // Retract until the pen head is just outside the carriage. Move the chassis
+    // anchor by the same offset so the pen still tracks the paper's origin.
+    const carriageLeft = CARRIAGE_LEFT + CARRIAGE_WIDTH / 2 * (1 - symbolScale);
+    const rest = setupArmRetracted(settings) ? carriageLeft - PEN_RADIUS - PEN.x : 0;
+    this.rig.style.transform = `translate(${matrix.e - bounds.left}px,${matrix.f - bounds.top}px) scale(${matrix.a},${matrix.d}) rotate(${setupAngle(settings)}deg) scale(${sx},${sy}) translate(${-(PEN.x + rest)}px,${-PEN.y}px)`;
+    this.arm.style.translate = `${rest + pen.x / sx}px ${pen.y / sy}px`;
+    this.carriage.style.translate = `0 ${pen.y / sy}px`;
+  }
+
+  destroy(): void {
+    cancelAnimationFrame(this.frame); this.observer.disconnect(); this.mutation.disconnect();
+    this.paper.closest('#stage')?.removeEventListener('scroll', this.refresh);
+    this.paper.removeEventListener('plotter-position', this.onPosition);
+    this.layer.remove();
+  }
+}

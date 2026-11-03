@@ -1,0 +1,17 @@
+{
+  "format": "dense-t3-physical-fixture-v1",
+  "file": "dense-18000.svg",
+  "sha256": "a728f6da74bb16230fe912ff50f8d373c38aa51cb0729f01589a8b4098fb72db",
+  "widthMm": 200,
+  "heightMm": 80,
+  "pointCount": 18000,
+  "pointsSha256": "2fb9f8b26a9d3708be341e404e1340be33b7302586fe2db5f9a34e38c26d2c34",
+  "bounds": {
+    "minX": 10,
+    "maxX": 189.99,
+    "minY": 42.00000011368776,
+    "maxY": 57.99999992333334
+  },
+  "status": "not-run",
+  "hardwareOpened": false
+}

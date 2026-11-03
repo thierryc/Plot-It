@@ -1,0 +1,8 @@
+Plot-it
+Copyright 2026 Thierry Charbonnel
+
+Original application, core, companion, website and documentation: Apache License 2.0.
+OpenPlotFont code: MIT; see packages/openplotfont/LICENSE.
+Third-party code and font assets retain their own licenses and attributions.
+See THIRD_PARTY_NOTICES.md, public/licenses/, and per-font notices.
+Earlier licensed versions keep their original grants.

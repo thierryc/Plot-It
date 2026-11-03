@@ -1,0 +1,6 @@
+.feedback { position:relative; margin:0; min-width:0; padding:var(--control-padding-inline); padding-left:calc(var(--control-padding-inline) + var(--icon-size) + var(--control-gap)); border-left:calc(2 * var(--border-width)) solid var(--error); border-radius:var(--radius-control); background:var(--error-background); color:var(--ink); font:400 var(--font-size-ui)/var(--line-height-ui) var(--font-ui); overflow-wrap:anywhere; }
+.feedback::before { content:''; position:absolute; left:var(--control-padding-inline); top:calc(var(--control-padding-inline) + var(--border-width)); width:var(--icon-size); height:var(--icon-size); background:var(--error); mask:url('./icons/error.svg') center/contain no-repeat; }
+.feedback[data-feedback=warning] { border-color:var(--warning); background:var(--warning-background); }
+.feedback[data-feedback=warning]::before { background:var(--warning); mask-image:url('./icons/warning.svg'); }
+.feedback[hidden],.feedback:empty { display:none; }
+@media(forced-colors:active) { .feedback { border-color:CanvasText; } .feedback::before,.feedback[data-feedback=warning]::before { background:CanvasText; } }

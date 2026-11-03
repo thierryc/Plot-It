@@ -1,0 +1,75 @@
+{
+  "name": "plot-it",
+  "private": true,
+  "version": "0.1.0-alpha.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:lib && tsc -b && vite build && npm run build:server",
+    "preview": "vite preview",
+    "start": "node scripts/start-local.mjs",
+    "test": "npm run build:companion && vitest run",
+    "test:ebb": "node scripts/test-ebb.mjs",
+    "prebuild": "node scripts/check-runtime.mjs && npm run build:font-previews && node scripts/source-archive.mjs",
+    "predev": "node scripts/check-runtime.mjs && npm run build:lib && npm run build:font-previews && node scripts/source-archive.mjs",
+    "build:lib": "npm run build --workspace=@thierryc/openplotfont && npm run build --workspace=@thierryc/plotter-core",
+    "dev:lib": "npm run dev --workspace=@thierryc/openplotfont",
+    "build:server": "node scripts/check-runtime.mjs && tsc -p tsconfig.server.json && node scripts/build-server.mjs",
+    "pretest": "node scripts/check-runtime.mjs",
+    "server:api": "node dist-server/main.js api",
+    "server:runner": "node dist-server/main.js runner",
+    "prebuild:browser": "node scripts/check-runtime.mjs && npm run build:font-previews && node scripts/source-archive.mjs",
+    "build:browser": "npm run build:lib && tsc -b && vite build --mode browser --outDir dist-browser && node scripts/package-browser.mjs",
+    "test:browser-build": "PLOT_BROWSER_BUILD_DIR=dist-browser vitest run server/browser-build.test.ts",
+    "pretest:browser-build": "node scripts/check-runtime.mjs",
+    "prebuild:site": "node scripts/check-runtime.mjs && npm run build:font-previews && node scripts/source-archive.mjs",
+    "build:site": "npm run build:lib && tsc -b && vite build --mode site --outDir ../dist-site --emptyOutDir && node scripts/package-site.mjs",
+    "preview:site": "node scripts/check-runtime.mjs && vite preview --mode site --outDir ../dist-site --host 127.0.0.1 --port 8789 --strictPort",
+    "test:site-build": "node scripts/check-runtime.mjs && PLOT_SITE_BUILD_DIR=dist-site vitest run server/site-build.test.ts",
+    "publish:site": "node scripts/publish-site.mjs",
+    "build:font-previews": "npm run build:lib && node scripts/build-font-previews.mjs",
+    "plot:virtual": "npm run build:lib && node scripts/plot-virtual.mjs",
+    "build:cli": "npm run build:lib && node scripts/build-cli.mjs",
+    "plot:cli": "npm run build:cli && node dist-cli/plot-cli.js",
+    "build:companion": "npm run build:lib && tsc -p tsconfig.companion.json && node scripts/build-companion.mjs",
+    "build:mac": "npm run build:companion && node scripts/package-mac.mjs",
+    "test:companion": "npm run build:companion && vitest run companion"
+  },
+  "devDependencies": {
+    "@types/clipper-lib": "^6.4.0",
+    "@types/jsdom": "30.0.0",
+    "@types/node": "^24.5.2",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@ap.cx/gl-marquee": "0.1.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@resvg/resvg-js": "2.6.2",
+    "@thierryc/openplotfont": "0.1.0",
+    "@thierryc/plotter-core": "0.1.0",
+    "clipper-lib": "^6.4.2",
+    "harfbuzzjs": "^1.6.2",
+    "jsdom": "^26.1.0",
+    "lucide": "^1.49.0",
+    "serialport": "^13.0.0",
+    "smol-toml": "1.9.1",
+    "ws": "^8.22.0"
+  },
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/openplotfont",
+    "packages/plotter-core"
+  ],
+  "engines": {
+    "node": "^24.21.0"
+  },
+  "allowScripts": {
+    "@serialport/bindings-cpp@13.0.0": true,
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true
+  }
+}

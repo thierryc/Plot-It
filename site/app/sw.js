@@ -1,0 +1,28 @@
+const PREFIX = 'plot-it-site-app-';
+const CACHE = `${PREFIX}v4`;
+const ROOT = new URL('../', self.location.href).pathname;
+const APP = ROOT + 'app/';
+const CORE = [APP, APP + 'manifest.webmanifest', ROOT + 'icon.svg'];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)));
+  self.skipWaiting();
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith(PREFIX) && key !== CACHE).map(key => caches.delete(key)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith(ROOT + 'api/')) return;
+  const navigation = event.request.mode === 'navigate';
+  if (navigation && !url.pathname.startsWith(APP)) return;
+  if (!navigation && ![APP, ROOT + 'assets/', ROOT + 'fonts/'].some(prefix => url.pathname.startsWith(prefix)) && url.pathname !== ROOT + 'icon.svg') return;
+  event.respondWith(fetch(event.request).then(response => {
+    if (response.ok) {
+      const copy = response.clone();
+      event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => undefined));
+    }
+    return response;
+  }).catch(async () => (await caches.match(event.request)) || (navigation ? await caches.match(APP) : undefined) || Response.error()));
+});

@@ -1,0 +1,38 @@
+node_modules
+dist
+dist-server
+dist-browser
+dist-site
+network-data
+.DS_Store
+*.log
+*.tsbuildinfo
+
+.playwright-cli/
+.playwright-mcp/
+diagnostics/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+public/plot-it-source.tar.gz
+output/openplotfont-release/
+output/plot-it-pi.tar.gz
+output/plot-it-browser.zip
+output/
+archive/
+
+dist-cli/
+dist-companion/
+macos/.build/
+macos/.swiftpm/
+
+# Private imported fonts and their companion licences/proofs are local only.
+/private-fonts/
+
+# Local beta outreach research and contact details; never publish.
+/outreach-private/
+
+# Local marketing assets and presentation materials.
+/marketing-presentations/
