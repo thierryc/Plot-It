@@ -18,6 +18,8 @@ final class CompanionModel {
     var agentChange: AgentChange?
     var waitingToQuit = false
     var loginEnabled = SMAppService.mainApp.status == .enabled
+    var setupHasChanges = false
+    var updateReservationGranted = false
     var setupTab = 0
     var loadingDevices = false
     static let firstPrompt = "Use PlotIt to check my setup, list the stroke fonts, and prepare a small hello-world drawing. Show me the preview and simulate it before starting. When I ask you to plot, show the live progress card."
@@ -34,6 +36,29 @@ final class CompanionModel {
         return status?.controlBlocker ?? (armed ? "Agents can start prepared drawings." : "Waiting for the plotter to be ready.")
     }
     var active: Bool { status?.active == true }
+    var updateBlocker: String? {
+        if !serviceAvailable { return "Reconnect the companion before installing an update." }
+        if active { return "Finish the current drawing before installing an update." }
+        if status?.preparing == true || busy { return "Wait until preparation and calibration finish." }
+        if setupHasChanges { return "Save or discard your setup changes before updating." }
+        if agentChange != nil { return "Finish reviewing the agent configuration first." }
+        return nil
+    }
+    func reserveForUpdate() async throws {
+        if let blocker = updateBlocker { throw CompanionError.message(blocker) }
+        if updateReservationGranted { return }
+        guard !isPreview else { throw CompanionError.message("Updates are unavailable in previews.") }
+        _ = try await client.request("prepare_update")
+        updateReservationGranted = true
+    }
+    func cancelUpdateReservation() async {
+        guard !isPreview else { return }
+        do {
+            _ = try await client.request("cancel_update")
+            updateReservationGranted = false
+        } catch { self.error = error.localizedDescription }
+    }
+
     var compatibleDeviceCount: Int { devices.filter(\.compatible).count }
     var deviceHint: String {
         if loadingDevices { return "Looking for USB devices…" }
@@ -80,7 +105,7 @@ final class CompanionModel {
     }
     @discardableResult
     func perform(_ action: String, _ params: [String: Any] = [:], success: String? = nil) async -> Bool {
-        guard !busy, !isPreview else { return false }; busy = true; defer { busy = false }
+        guard !busy, !isPreview, !updateReservationGranted else { return false }; busy = true; defer { busy = false }
         do { _ = try await client.request(action, params); error = nil; notice = success; await refresh(); return true } catch { self.error = error.localizedDescription; return false }
     }
     func refresh() async { guard !isPreview else { return }; if let data = try? await client.request("status"), let next = try? JSONDecoder().decode(CompanionStatus.self, from: data) { status = next; updateActivity() } }
@@ -144,6 +169,10 @@ final class CompanionModel {
     func copyConfiguration() { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(configurationJSON, forType: .string); notice = "MCP configuration copied." }
     func copyFirstPrompt() { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(Self.firstPrompt, forType: .string); notice = "First agent prompt copied." }
     func requestQuit() {
+        if AppUpdater.shared.installationRequested {
+            Task { await finishQuit() }
+            return
+        }
         if !active { Task { await finishQuit() }; return }
         let alert = NSAlert(); alert.messageText = "A drawing is still running"; alert.informativeText = "Keep PlotIt open until it finishes, or stop the drawing before quitting."
         alert.addButton(withTitle: "Wait and Quit"); alert.addButton(withTitle: "Stop and Quit"); alert.addButton(withTitle: "Keep PlotIt Open")
@@ -154,6 +183,6 @@ final class CompanionModel {
         }
     }
     private func finishQuit() async {
-        do { _ = try await client.request("quit"); polling?.cancel(); client.stop(); NSApplication.shared.reply(toApplicationShouldTerminate: true); exit(0) } catch { waitingToQuit = false; self.error = error.localizedDescription; NSApplication.shared.reply(toApplicationShouldTerminate: false) }
+        do { try await reserveForUpdate(); _ = try await client.request("quit"); polling?.cancel(); client.stop(); NSApplication.shared.reply(toApplicationShouldTerminate: true) } catch { await cancelUpdateReservation(); waitingToQuit = false; self.error = error.localizedDescription; NSApplication.shared.reply(toApplicationShouldTerminate: false) }
     }
 }

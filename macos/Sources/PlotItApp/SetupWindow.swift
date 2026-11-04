@@ -76,6 +76,8 @@ struct SetupWindow: View {
         .sheet(item: Binding(get: { model.agentChange }, set: { model.agentChange = $0 })) { change in ConfigurationReview(model: model, change: change) }
         .task { await model.loadAgents(); await model.loadDevices() }
         .onChange(of: model.status, initial: true) { _, status in if let status { editor.receive(status) } }
+        .onChange(of: editor.hasChanges, initial: true) { _, value in model.setupHasChanges = value }
+        .onDisappear { model.setupHasChanges = false }
         .onChange(of: step) { _, value in model.setupTab = value }
         .onChange(of: model.setupTab) { _, value in requestStep(value) }
         .confirmationDialog("Save your machine changes before continuing?", isPresented: $reviewUnsavedChanges) {

@@ -3,6 +3,27 @@ import XCTest
 
 final class ModelsTests: XCTestCase {
     @MainActor
+    func testUpdatesWaitForEveryUnsettledStateAndDrafts() {
+        let model = CompanionModel(); model.isPreview = true
+        let updater = AppUpdater(model: model); updater.start()
+        XCTAssertFalse(updater.enabled)
+        XCTAssertNotNil(model.updateBlocker)
+        model.serviceAvailable = true
+        model.status = CompanionStatus(version: "0.1.0", configured: true, config: Machine(), armed: false, agents: [], preparing: false)
+        XCTAssertNil(model.updateBlocker)
+        for state in ["starting", "running", "pausing", "paused", "tool-change", "returning", "stopping"] {
+            model.status?.runner = RunnerSnapshot(connected: true, status: state, origin: "explicit")
+            XCTAssertNotNil(model.updateBlocker, state)
+        }
+        model.status?.runner = nil
+        model.status?.preparing = true; XCTAssertNotNil(model.updateBlocker)
+        model.status?.preparing = false
+        model.busy = true; XCTAssertNotNil(model.updateBlocker); model.busy = false
+        model.setupHasChanges = true; XCTAssertNotNil(model.updateBlocker); model.setupHasChanges = false
+        XCTAssertNil(model.updateBlocker)
+    }
+
+    @MainActor
     func testMachineEditorPreservesDraftAndDetectsConcurrentChanges() {
         let editor = MachineEditor()
         var status = CompanionStatus(version: "0.1.0", configured: true, config: Machine(), armed: false, agents: [], preparing: false)

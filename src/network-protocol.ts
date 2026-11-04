@@ -31,7 +31,7 @@ export interface NetworkSnapshot {
 }
 export const CONTROL_ACTIONS = ['start', 'pause', 'resume', 'continue', 'stop', 'cancel', 'pen', 'set-origin', 'return-origin', 'engage', 'release', 'relax', 'invalidate-origin', 'diagnostics', 'check-power', 'connect-ebb', 'disconnect-ebb','home','clear-checkpoint','jog'] as const;
 export type ControlAction = typeof CONTROL_ACTIONS[number];
-export interface ControlRequest { version: 1; requestId: string; action: ControlAction | 'claim' | 'release-control'; jobId?: string; percent?: number; settings?: PlotSettings; profile?: PlotSettings['profile'];delta?:Point }
+export interface ControlRequest { version: 1; requestId: string; action: ControlAction | 'claim' | 'release-control' | 'prepare-update' | 'cancel-update'; jobId?: string; percent?: number; settings?: PlotSettings; profile?: PlotSettings['profile'];delta?:Point }
 export interface ControlResult { type: 'result'; requestId: string; ok: boolean; error?: string; value?: unknown }
 export const isId = (value: unknown): value is string => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
 export const terminalStatus = (status: string) => ['finished', 'stopped', 'failed', 'interrupted'].includes(status);
@@ -107,10 +107,10 @@ export function validateJob(value: unknown, limits: { maxEvents?: number } = {})
   if (p.pens !== undefined) requireValue(Array.isArray(p.pens) && p.pens.length <= p.passes.length + 1000 && p.pens.every(pen => pen && /^#[a-fA-F0-9]{6}$/.test(pen.color) && typeof pen.name === 'string' && pen.name.length <= 256 && Array.isArray(pen.sources) && pen.sources.length <= 1000 && pen.sources.every(source => typeof source === 'string' && source.length <= 256) && typeof pen.included === 'boolean'), 'Invalid pen metadata');
   return job;
 }
-export function validateControl(value: unknown): ControlRequest {
+export function validateControl(value: unknown, options: { allowUpdateReservation?: boolean } = {}): ControlRequest {
   requireValue(value && typeof value === 'object', 'Invalid control request'); const request = value as ControlRequest;
   requireValue(request.version === 1 && isId(request.requestId), 'Invalid control version or ID');
-  requireValue([...CONTROL_ACTIONS, 'claim', 'release-control'].includes(request.action), 'Unsupported control');
+  requireValue([...CONTROL_ACTIONS, 'claim', 'release-control', ...(options.allowUpdateReservation ? ['prepare-update', 'cancel-update'] : [])].includes(request.action), 'Unsupported control');
   if (request.action === 'start') requireValue(isId(request.jobId), 'Invalid job ID');
   if (request.action === 'pen') requireValue(number(request.percent, 0, 100), 'Invalid pen height');
   if (request.action === 'pen' && request.settings !== undefined) validateSettings(request.settings);

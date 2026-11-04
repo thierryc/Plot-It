@@ -1,9 +1,10 @@
 {
   "version": "0.1.0",
-  "build": "6",
+  "build": "7",
   "channel": "alpha",
   "minimumMacOS": "14.0",
   "bundleIdentifier": "cx.ap.plotit.mcp",
   "displayName": "PlotIt MCP",
-  "copyright": "Copyright © Another Planet Creative eXperience"
+  "copyright": "Copyright \u00a9 Another Planet Creative eXperience",
+  "releaseTag": "plotit-mcp-v0.1.0-alpha.2"
 }
