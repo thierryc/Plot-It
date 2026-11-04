@@ -7,3 +7,5 @@ The four public images live in `public/macos/media/`. HTML uses `%BASE_URL%macos
 - `plot-progress.png`: the bundled MCP Apps progress card captured inside `scripts/preview-plot-progress.mjs`, using simulated drawing data. This is a component preview, not an assertion that a particular agent client renders cards or that a physical plot has completed.
 
 Native captures can be regenerated with `PLOTIT_CAPTURE_DIR=/tmp/plotit-site-media swift test --package-path macos --filter UISnapshotTests`. Copy `setup-0.png` and `setup-1.png` to the names above. The website captions disclose example/simulated data. Retain readable controls, alt text, and the original aspect ratios.
+
+For card screenshots, capture the iframe using document coordinates (its viewport rectangle plus page scroll offsets), after the progress-bar transition settles. Exclude the preview host controls. Screenshot bytes may be JPEG; explicitly convert to PNG before saving a `.png` asset and inspect the resulting image.
