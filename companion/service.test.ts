@@ -50,6 +50,15 @@ describe("local companion integration", () => {
     await service.handleUI("heartbeat", { session: "recovered" });
     expect(runner.request).toHaveBeenCalledWith(expect.objectContaining({ action: "cancel-update" }));
     expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
+    let unblock!: () => void;
+    const delay = new Promise<void>(resolve => { unblock = resolve; });
+    runner.request = vi.fn(async () => { await delay; return { ok: true, value: {} }; });
+    const preparing = service.handleUI("prepare_update", { session: "recovered" });
+    const replacement = service.handleUI("heartbeat", { session: "new-window" });
+    const obsoleteCancel = service.handleUI("cancel_update", { session: "recovered" });
+    const obsoleteResult = expect(obsoleteCancel).rejects.toThrow("Reconnect");
+    unblock(); await preparing; await replacement; await obsoleteResult;
+    await service.handleUI("heartbeat", { session: "recovered" });
     runner.request = vi.fn(async () => { throw new Error("IPC timeout"); });
     await expect(service.handleUI("prepare_update", { session: "recovered" })).rejects.toThrow("IPC timeout");
     await expect(service.handleMcp("configure_plotter", { settings: {} })).rejects.toThrow("update");

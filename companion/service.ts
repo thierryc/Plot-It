@@ -575,9 +575,12 @@ export async function startCompanion(options: CompanionOptions) {
       lastHeartbeat = Date.now();
       return status();
     });
-    if (p.session !== uiSession || Date.now() - lastHeartbeat >= 5000)
-      throw new Error("Reconnect the native companion window.");
+    const requireSession = () => {
+      if (p.session !== uiSession || Date.now() - lastHeartbeat >= 5000) throw new Error("Reconnect the native companion window.");
+    };
+    requireSession();
     if (action === "prepare_update") return exclusive(async () => {
+      requireSession();
       if (updateConfirmed) return { ready: true };
       if (!updateReserved) idle();
       if (tasks.size || reservations || changingHardware) throw new Error("Wait until preparation and calibration have finished.");
@@ -595,6 +598,7 @@ export async function startCompanion(options: CompanionOptions) {
       }
     });
     if (action === "cancel_update") return exclusive(async () => {
+      requireSession();
       await cancelUpdate();
       return { ready: true };
     });
@@ -692,6 +696,7 @@ export async function startCompanion(options: CompanionOptions) {
     }
     if (action === "quit")
       return exclusive(async () => {
+        requireSession();
         if (!updateConfirmed) idle();
         controlSuspended = true;
         closing = true;

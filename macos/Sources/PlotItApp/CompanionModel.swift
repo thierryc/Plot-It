@@ -92,7 +92,10 @@ final class CompanionModel {
                     self.serviceAvailable = true
                     if next != self.status { self.status = next }
                     self.updateActivity()
-                    if self.waitingToQuit && !next.active { await self.finishQuit(); return }
+                    if self.waitingToQuit && !next.active {
+                        await self.finishQuit()
+                        if Task.isCancelled { return }
+                    }
                 } catch { self.serviceAvailable = false; self.status?.armed = false; self.serverTestPassed = false; self.error = error.localizedDescription }
                 try? await Task.sleep(for: .seconds(1))
             }
