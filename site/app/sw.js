@@ -1,8 +1,8 @@
 const PREFIX = 'plot-it-site-app-';
-const CACHE = `${PREFIX}v4`;
+const CACHE = `${PREFIX}v5`;
 const ROOT = new URL('../', self.location.href).pathname;
 const APP = ROOT + 'app/';
-const CORE = [APP, APP + 'manifest.webmanifest', ROOT + 'icon.svg'];
+const CORE = [APP, APP + 'manifest.webmanifest', ROOT + 'icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)));
   self.skipWaiting();
@@ -17,7 +17,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin || url.pathname.startsWith(ROOT + 'api/')) return;
   const navigation = event.request.mode === 'navigate';
   if (navigation && !url.pathname.startsWith(APP)) return;
-  if (!navigation && ![APP, ROOT + 'assets/', ROOT + 'fonts/'].some(prefix => url.pathname.startsWith(prefix)) && url.pathname !== ROOT + 'icon.svg') return;
+  if (!navigation && ![APP, ROOT + 'assets/', ROOT + 'fonts/'].some(prefix => url.pathname.startsWith(prefix)) && url.pathname !== ROOT + 'icon.png') return;
   event.respondWith(fetch(event.request).then(response => {
     if (response.ok) {
       const copy = response.clone();

@@ -16,3 +16,5 @@ Alternative icon inputs are:
 Packaging generates the complete macOS icon set from a PNG. Alternatively set `PLOTIT_APP_ICON` to an absolute `.icon`, `.icns` or PNG path. A supplied environment path takes precedence over this directory. Signed release packaging refuses to use the provisional icon.
 
 Do not add certificate files, private keys, signing passwords or notarization credentials here. Rebuild the app after changing its icon, because changing a signed bundle invalidates its signature.
+
+The full-color in-app identity is `Sources/PlotItApp/Resources/PlotItAppIcon.png`, supplied by the designer. Setup and menu-panel views use this bundled image. MCP setup/progress cards embed the same PNG as a data URL during `build:companion`, so branding never depends on an internet request. Website and favicon PNGs retain the same bytes. Menu-bar templates remain the separate monochrome idle/plotting symbols.

@@ -27,7 +27,7 @@ struct SetupWindow: View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Image(systemName: "pencil.tip.crop.circle.fill").font(.system(size: 38)).foregroundStyle(.teal)
+                    PlotItAppIcon().frame(width: 48, height: 48)
                     Text("PlotIt MCP").font(.title2.weight(.semibold))
                     Text("A little bridge.\nSomething worth drawing.").font(.subheadline).foregroundStyle(.secondary)
                 }.padding(.bottom, 10)

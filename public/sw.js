@@ -1,5 +1,5 @@
-const CACHE = "plot-it-v4";
-const CORE = ["/", "/manifest.webmanifest", "/icon.svg"];
+const CACHE = "plot-it-v5";
+const CORE = ["/", "/manifest.webmanifest", "/icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));

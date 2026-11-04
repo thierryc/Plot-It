@@ -6,7 +6,7 @@ struct MenuPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
-                Image(systemName: "pencil.tip.crop.circle.fill").font(.system(size: 30)).foregroundStyle(.teal)
+                PlotItAppIcon().frame(width: 32, height: 32)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PlotIt MCP").font(.headline)
                     Text(model.statusText).font(.caption).foregroundStyle(.secondary)

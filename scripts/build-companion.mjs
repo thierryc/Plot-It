@@ -2,6 +2,7 @@ import { build } from "esbuild";
 import { mkdir, cp, readFile, writeFile } from "node:fs/promises";
 const out = "dist-companion";
 const nativeRelease = JSON.parse(await readFile("macos/release.json", "utf8"));
+const appIcon = `data:image/png;base64,${(await readFile("macos/Sources/PlotItApp/Resources/PlotItAppIcon.png")).toString("base64")}`;
 await mkdir(out, { recursive: true });
 await build({
   entryPoints: [
@@ -28,6 +29,7 @@ for (const name of ["plot-progress", "plotter-setup"]) {
     bundle: true, platform: "browser", format: "esm", target: "es2022", minify: true, write: false,
   });
   const html = (await readFile(`companion/ui/${name}.html`, "utf8"))
+    .replaceAll("PLOTIT_APP_ICON_DATA_URL", appIcon)
     .replace("/* PLOTIT_APP_SCRIPT */", () => widget.outputFiles[0].text.replace(/<\/script/gi, "<\\/script"));
   await writeFile(`${out}/assets/${name}.html`, html);
 }

@@ -1,4 +1,25 @@
 import AppKit
+import SwiftUI
+
+/// The shared full-color Plot-It identity, supplied by the app's designer.
+struct PlotItAppIcon: View {
+    private static let image: NSImage = {
+        guard let url = Bundle.module.url(forResource: "PlotItAppIcon", withExtension: "png"),
+              let image = NSImage(contentsOf: url) else {
+            preconditionFailure("Missing bundled Plot-It app icon")
+        }
+        image.isTemplate = false
+        return image
+    }()
+
+    var body: some View {
+        Image(nsImage: Self.image)
+            .renderingMode(.original)
+            .resizable()
+            .scaledToFit()
+            .accessibilityHidden(true)
+    }
+}
 
 /// Regular-S outlines from LitSquare Icons. Template rendering follows the menu bar appearance.
 @MainActor
