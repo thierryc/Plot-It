@@ -41,9 +41,11 @@ a:focus-visible,select:focus-visible { outline:3px solid var(--accent); outline-
 .brand { display:flex; align-items:center; gap:12px; font-size:22px; letter-spacing:-1px; font-weight:650; text-decoration:none; }
 .brand-mark { display:block; width:32px; height:32px; flex:none; }
 nav { display:flex; gap:24px; flex-wrap:wrap; font-size:13px; }
-.site-header nav { margin-left:auto; }
+.site-header nav { margin-left:auto; align-items:center; }
 nav a { text-decoration:none; }
 nav a:hover { text-decoration:underline; }
+.site-header .nav-open-app { display:inline-flex; align-items:center; padding:10px 14px; border:1px solid var(--accent); border-radius:4px; background:var(--accent); color:var(--on-accent); font-weight:600; white-space:nowrap; }
+.site-header .nav-open-app:hover { background:var(--accent-hover); border-color:var(--accent-hover); text-decoration:none; }
 .theme-label { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--quiet); }
 select { color:var(--ink); background:var(--surface); border:1px solid var(--control-border); border-radius:3px; padding:5px; font:inherit; }
 .hero { display:grid; grid-template-columns:1.2fr 1fr; gap:56px; align-items:center; padding-block:78px 70px; }
