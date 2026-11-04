@@ -4,7 +4,7 @@ PlotIt MCP is a native macOS 14+ menu-bar companion. It bundles the plotting run
 
 ## Install and connect
 
-1. Open the DMG matching your Mac: **arm64** for Apple Silicon or **x64** for Intel. Move **PlotIt MCP.app** into Applications before configuring agents.
+1. Download the signed, notarized **Universal** alpha for Apple Silicon and Intel from the [Mac companion page](https://thierryc.github.io/Plot-It/macos/). Open the DMG. Move **PlotIt MCP.app** into Applications before configuring agents.
 2. Open the app. Use **Set Up…** from its menu-bar panel. Select the machine, USB device, paper format, pen heights and orientation, then save. Paper presets match the browser editor; **Custom…** accepts dimensions from 1–1,000 mm. Paper orientation and machine rotation are independent.
 3. Connect the plotter. Pen tests use the saved calibration. Position the carriage at the intended origin and choose **Set Current Position as Origin**.
 4. Under **Configure agent apps**, select Install for each app you want to use. Review the destination and command before saving. Existing files are backed up. A conflicting `plotit` entry requires explicit replacement.
@@ -14,6 +14,16 @@ PlotIt MCP is a native macOS 14+ menu-bar companion. It bundles the plotting run
 Codex uses user-level `config.toml`, respecting `CODEX_HOME`; choose a custom configuration folder under Advanced if needed. Detection includes Codex and ChatGPT desktop app bundles. Claude Code uses its CLI with user scope and respects an inherited `CLAUDE_CONFIG_DIR`. Use **Locate App…** or **Locate CLI…** if an executable cannot be found. Claude Desktop uses its local `claude_desktop_config.json`. Other clients can copy the standard stdio configuration under Advanced. Installation never changes the agent's approval policy.
 
 The agent can inspect setup, save machine settings, connect/disconnect USB, test the saved pen heights and establish the current origin through the shared local companion. These operations require the native app open and an idle plotter. Origin capture requires confirmation that the physical carriage is positioned correctly. Setup tools cannot change the remembered agent-control preference. Loading a new pen requires local Continue. Disabling control blocks new starts and agent resumes; use Stop to stop an accepted drawing. Stop acceptance is distinct from settled motion.
+
+## Codex and Claude connection guides
+
+The [website Mac guide](https://thierryc.github.io/Plot-It/docs/macos/#agents) includes screenshots, client-specific steps and manual configuration fallbacks:
+
+- [Codex](https://thierryc.github.io/Plot-It/docs/macos/#codex): install from the Codex row, review the change, then start a new local session. The default configuration is `~/.codex/config.toml`; custom `CODEX_HOME` is supported.
+- [Claude Desktop](https://thierryc.github.io/Plot-It/docs/macos/#claude-desktop): install from its row, then fully quit and reopen Claude Desktop. This is a local desktop-chat MCP connection; it is separate from claude.ai or Cowork remote connectors.
+- [Claude Code](https://thierryc.github.io/Plot-It/docs/macos/#claude-code): install from its row or run `claude mcp add --scope user --transport stdio plotit -- "/Applications/PlotIt MCP.app/Contents/MacOS/plotit-mcp"`. Start a new local session and check `/mcp`.
+
+Run **Run Server Test** in PlotIt's Test connection step; verify **Agent connected** after your client loads PlotIt. Server-test success alone does not confirm an agent is connected. Interactive cards depend on the client's MCP Apps support.
 
 ## First agent workflow
 
