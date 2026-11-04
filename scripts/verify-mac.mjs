@@ -14,6 +14,22 @@ for (const relative of ["Contents/MacOS/PlotItMCP", "Contents/MacOS/plotit-mcp",
   assert((await stat(path)).mode & 0o111, `${relative} is not executable`);
 }
 for (const file of ["AppIcon.icns", "LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md", "NODE-LICENSE", "COMPANION-NOTICES.txt", "THIRD-PARTY-COMPONENTS.json", "plot-it-source.tar.gz", "assets/plot-progress.html", "assets/plotter-setup.html"]) assert(await exists(join(resources, file)), `Missing ${file}`);
+const framework = join(app, "Contents/Frameworks/Sparkle.framework");
+assert(await exists(framework), "Missing Sparkle framework");
+assert(await exists(join(resources, "SPARKLE-LICENSE")), "Missing Sparkle license");
+for (const relative of ["Sparkle", "Autoupdate", "Updater.app/Contents/MacOS/Updater", "XPCServices/Downloader.xpc/Contents/MacOS/Downloader", "XPCServices/Installer.xpc/Contents/MacOS/Installer"]) {
+  const path = join(framework, "Versions/B", relative);
+  for (const arch of expected) assert(capture("lipo", ["-archs", path]).split(/\s+/).includes(arch), `Sparkle missing ${arch}: ${relative}`);
+  run("codesign", ["--verify", "--strict", path]);
+}
+assert(capture("otool", ["-L", join(app, "Contents/MacOS/PlotItMCP")]).includes("@rpath/Sparkle.framework/Versions/B/Sparkle"));
+if (info.signingMode === "developer-id") {
+  const { UPDATE_FEED, UPDATE_PUBLIC_KEY } = await import("./mac-update.mjs");
+  const value = key => capture("/usr/libexec/PlistBuddy", ["-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+  assert.equal(value("PlotItUpdatesEnabled"), "true");
+  assert.equal(value("SUFeedURL"), UPDATE_FEED);
+  assert.equal(value("SUPublicEDKey"), UPDATE_PUBLIC_KEY);
+}
 for (const name of ["PlotItIdle", "PlotItPlotting"]) {
   const path = join(resources, "PlotItMCP_PlotItApp.bundle/Contents/Resources", `${name}.pdf`);
   assert((await readFile(path)).subarray(0, 5).toString() === "%PDF-", `Missing vector menu-bar icon: ${name}`);

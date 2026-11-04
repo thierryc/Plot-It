@@ -22,7 +22,7 @@ final class NativeClient {
         env["PLOTIT_UI_SESSION"] = session
         p.environment = env
         p.standardInput = stdin; p.standardOutput = stdout
-        let logDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/PlotIt MCP")
+        let logDirectory = env["PLOTIT_DATA_DIR"].map { URL(fileURLWithPath: $0, isDirectory: true) } ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/PlotIt MCP")
         try FileManager.default.createDirectory(at: logDirectory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         let logURL = logDirectory.appendingPathComponent("native-client.log")
         if !FileManager.default.fileExists(atPath: logURL.path) { FileManager.default.createFile(atPath: logURL.path, contents: nil, attributes: [.posixPermissions: 0o600]) }

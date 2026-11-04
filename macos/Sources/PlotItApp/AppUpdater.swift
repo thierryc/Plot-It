@@ -1,0 +1,107 @@
+import AppKit
+import Combine
+import Observation
+import Sparkle
+import SwiftUI
+
+@Observable @MainActor
+final class AppUpdater: NSObject, SPUUpdaterDelegate, @preconcurrency SPUStandardUserDriverDelegate {
+    static let shared = AppUpdater(model: .shared)
+    private let model: CompanionModel
+    @ObservationIgnored private var controller: SPUStandardUpdaterController?
+    @ObservationIgnored private var observations: [NSKeyValueObservation] = []
+    @ObservationIgnored private var resumeInstallation: (() -> Void)?
+    @ObservationIgnored private var reserving = false
+    var canCheck = false
+    var readyVersion: String?
+    var message: String?
+    var automaticChecks = true
+    var automaticDownloads = true
+    var installationRequested = false
+    var enabled: Bool { controller != nil }
+    var blocker: String? { model.updateBlocker }
+
+    init(model: CompanionModel) { self.model = model; super.init() }
+    func start() {
+        guard controller == nil, !model.isPreview,
+              Bundle.main.object(forInfoDictionaryKey: "PlotItUpdatesEnabled") as? Bool == true else { return }
+        let controller = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: self, userDriverDelegate: self)
+        self.controller = controller
+        observations = [controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
+            Task { @MainActor in self?.canCheck = updater.canCheckForUpdates }
+        }]
+        controller.startUpdater()
+        automaticChecks = controller.updater.automaticallyChecksForUpdates
+        automaticDownloads = controller.updater.automaticallyDownloadsUpdates
+    }
+    func check() {
+        guard let controller else { return }
+        message = nil
+        if resumeInstallation != nil { retryInstallation(); return }
+        controller.checkForUpdates(nil)
+    }
+    func setAutomaticChecks(_ value: Bool) { controller?.updater.automaticallyChecksForUpdates = value; automaticChecks = value }
+    func setAutomaticDownloads(_ value: Bool) { controller?.updater.automaticallyDownloadsUpdates = value; automaticDownloads = value }
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> { ["alpha"] }
+    var supportsGentleScheduledUpdateReminders: Bool { true }
+    func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool { false }
+    func standardUserDriverWillHandleShowingUpdate(_ handleShowingUpdate: Bool, forUpdate update: SUAppcastItem, state: SPUUserUpdateState) {
+        readyVersion = "\(update.displayVersionString) (\(update.versionString))"
+        message = state.stage == .notDownloaded ? "An update is available." : "Update ready. Install and restart when convenient."
+    }
+    func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem, immediateInstallationBlock immediateInstallHandler: @escaping () -> Void) -> Bool {
+        readyVersion = "\(item.displayVersionString) (\(item.versionString))"
+        message = "Update ready. It can also install when you quit normally."
+        return false
+    }
+    func updater(_ updater: SPUUpdater, shouldPostponeRelaunchForUpdate item: SUAppcastItem, untilInvokingBlock installHandler: @escaping () -> Void) -> Bool {
+        installationRequested = true
+        resumeInstallation = installHandler
+        retryInstallation()
+        return true
+    }
+    private func retryInstallation() {
+        guard !reserving, let handler = resumeInstallation else { return }
+        reserving = true
+        Task {
+            defer { reserving = false }
+            do {
+                try await model.reserveForUpdate()
+                resumeInstallation = nil
+                message = "Installing update…"
+                handler()
+            } catch {
+                message = error.localizedDescription
+                await model.cancelUpdateReservation()
+            }
+        }
+    }
+    func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
+        message = error.localizedDescription
+        installationRequested = false
+        resumeInstallation = nil
+        Task { await model.cancelUpdateReservation() }
+    }
+    func standardUserDriverWillFinishUpdateSession() {
+        if !installationRequested { readyVersion = nil }
+    }
+    func updater(_ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: Error?) {
+        if let error, (error as NSError).code != SUError.noUpdateError.rawValue { message = error.localizedDescription }
+    }
+}
+
+struct UpdateControls: View {
+    @Bindable var updater: AppUpdater
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let version = updater.readyVersion { Text("Update available · \(version)").font(.subheadline.weight(.medium)) }
+            Button(updater.readyVersion == nil ? "Check for Updates…" : "Review Update & Restart…") { updater.check() }
+                .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
+            if let message = updater.message { Text(message).font(.caption).foregroundStyle(.secondary) }
+            if updater.readyVersion != nil, let blocker = updater.blocker { Text(blocker).font(.caption).foregroundStyle(.secondary) }
+            Toggle("Check for updates automatically", isOn: Binding(get: { updater.automaticChecks }, set: updater.setAutomaticChecks))
+            Toggle("Download updates automatically", isOn: Binding(get: { updater.automaticDownloads }, set: updater.setAutomaticDownloads))
+            Text("Published alpha and stable releases. Updates wait for plotting, calibration and unsaved settings; they never start a drawing.").font(.caption).foregroundStyle(.secondary)
+        }.disabled(!updater.enabled)
+    }
+}

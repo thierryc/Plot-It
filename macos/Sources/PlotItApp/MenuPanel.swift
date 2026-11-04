@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MenuPanel: View {
     let model: CompanionModel
+    var updater: AppUpdater? = nil
     @Environment(\.openWindow) private var openWindow
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -60,7 +61,16 @@ struct MenuPanel: View {
                 Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }.buttonStyle(.borderless).foregroundStyle(.secondary)
             }
+            HStack {
             Button("About & Help…") { openWindow(id: "about"); NSApplication.shared.activate(ignoringOtherApps: true) }.buttonStyle(.borderless).font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                if let updater {
+                    Button(updater.readyVersion == nil ? "Check for Updates…" : "Update Ready…") { updater.check() }
+                        .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
+                        .buttonStyle(.borderless).font(.caption)
+                }
+            }
+
         }
         .padding(18).frame(width: 350)
     }

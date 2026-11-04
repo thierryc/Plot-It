@@ -24,6 +24,7 @@ export async function startRunner(options: RunnerOptions) {
   await unlink(telemetryPath).catch(error => { if (error.code !== 'ENOENT') throw error; });
   let jobId: string | null = null, status: NetworkSnapshot['status'] = 'idle', error: string | undefined;
   let position: NetworkSnapshot['position'] = null, positionTimestamp: number | null = null, revision = 0;
+  let updateReserved = false;
   let starting = false, task: Promise<void> | null = null, closed = false, manualBusy = false;
   let preparation: Promise<void> | null = null;
   let manualCompletion: Promise<void> | null = null;
@@ -51,20 +52,27 @@ export async function startRunner(options: RunnerOptions) {
   core.onConnectionChange = publish;
   const connectDevice = async () => {
     if (connecting) return connecting;
-    if (closed || !connectionDesired || core.connected || core.active || starting || manualBusy) return;
+    if (updateReserved || closed || !connectionDesired || core.connected || core.active || starting || manualBusy) return;
     connecting = core.connect().then(() => { error = undefined; }, reason => { error = (reason as Error).message; throw reason; }).finally(() => { connecting = null; publish(); });
     return connecting;
   };
   const results = new Map<string, { fingerprint: string; promise: Promise<ControlResult> }>();
   async function execute(request: ControlRequest & { clientRequestId?: string }): Promise<unknown> {
     if (closed) throw new Error('Runner is shutting down');
+    if (request.action === 'cancel-update') { updateReserved = false; return { ready: true }; }
+    if (request.action === 'prepare-update') {
+      if (starting || task || core.active || manualBusy || connecting) throw new Error('Wait until all plotter work has settled before updating');
+      updateReserved = true;
+      return { ready: true };
+    }
+    if (updateReserved && request.action !== 'disconnect-ebb') throw new Error('Plotter is reserved for an application update');
     if (request.action === 'start') {
       if (request.jobId === jobId) return { jobId, status, duplicate: true };
-      if (starting || task || core.active || manualBusy || connecting) throw new Error('Plotter is busy');
+      if (updateReserved || starting || task || core.active || manualBusy || connecting) throw new Error('Plotter is busy');
       const record = await store.get(request.jobId!);
       // Started jobs are immutable execution identities, including terminal jobs.
       if (record.startRequestId) return { jobId: record.id, status: record.status, duplicate: true };
-      if (starting || task || core.active || manualBusy || connecting) throw new Error('Plotter is busy');
+      if (updateReserved || starting || task || core.active || manualBusy || connecting) throw new Error('Plotter is busy');
       if (!core.connected) throw new Error('EBB is not connected');
       if (recoveryRequired) throw new Error('Interrupted execution: explicitly establish origin before starting a new job');
       starting = true;
@@ -156,7 +164,7 @@ export async function startRunner(options: RunnerOptions) {
         let requestId = '';
         try {
           if (raw && typeof raw === 'object' && isId((raw as { requestId?: unknown }).requestId)) requestId = (raw as { requestId: string }).requestId;
-          const request = validateControl(raw) as ControlRequest & { clientRequestId?: string };
+          const request = validateControl(raw, { allowUpdateReservation: true }) as ControlRequest & { clientRequestId?: string };
           const id = request.clientRequestId ?? requestId;
           const fingerprint = JSON.stringify({ ...request, requestId: undefined, clientRequestId: undefined });
           let entry = results.get(id);

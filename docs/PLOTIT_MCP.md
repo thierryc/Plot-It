@@ -122,3 +122,11 @@ The setup card and native window use the same validated, serialized companion op
 Keep content readable and reserve Liquid Glass for navigation or controls on supported macOS versions, with macOS 14 fallbacks. Avoid applying glass to previews, status text and every form section.
 
 Read [the privacy statement](PLOTIT_MCP_PRIVACY.md) before sharing logs or previews with a selected agent.
+
+## Automatic updates
+
+Starting with alpha 2 (build 7), the signed Mac app checks daily for published alpha and stable GitHub releases. Updates download automatically. Open **About & Help → Check for Updates…** to check now or review a ready update; you can turn automatic checks and downloads off there. Choose **Install & Restart** when convenient, or **Later** to continue working. A downloaded update can install on normal quit without reopening the app.
+
+Installation waits until plotting, pauses, pen changes, returning/stopping, preparation and calibration have settled. Save or discard setup edits and finish any agent configuration review first. The app reserves the idle runner before closing so an agent cannot start a drawing during the update. Updates preserve local settings and the remembered Agent Control choice, and never start or replay a drawing.
+
+Build 6 and earlier need one manual upgrade: quit while idle, replace the app in Applications with alpha 2 or later, and reopen. Keep the previous release and a backup of the local data folder if you need to roll back. The website always offers a manual universal download.

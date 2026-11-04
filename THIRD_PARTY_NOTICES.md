@@ -157,3 +157,7 @@ recorded in the motion provenance document; no blanket clean-room assertion is m
 The optional native companion adds the MCP TypeScript SDK (MIT), smol-toml (MIT), and resvg-js (MPL-2.0). jsdom is also bundled as the companion's headless SVG parser. Their dependency LICENSE/NOTICE files remain in the packaged runtime. The bundled Node.js license is included as `NODE-LICENSE`. The native Swift UI and companion integration code use the parent project's Apache-2.0 license.
 
 resvg-js source (bundled version 2.6.2) is available at https://github.com/yisibl/resvg-js. MCP SDK source is available at https://github.com/modelcontextprotocol/typescript-sdk and smol-toml at https://github.com/squirrelchat/smol-toml. No license of an existing app component or bundled font is changed by adding this companion.
+
+## Sparkle (macOS companion)
+
+Sparkle 2.10.1 is distributed under the MIT license with bundled third-party notices. The complete upstream license, including bsdiff and other component notices, is included as `SPARKLE-LICENSE` in the Mac app and release materials. Source: https://github.com/sparkle-project/Sparkle/tree/2.10.1 .

@@ -16,6 +16,11 @@ for (const file of files) {
 }
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
+if (manifest.artifacts.some(artifact => artifact.update)) {
+  await cp("output/appcast-item.xml", join(destination, "appcast-item.xml"));
+  const artifact = manifest.artifacts.find(artifact => artifact.update);
+  await cp(join("output", artifact.app, "Contents/Resources/SPARKLE-LICENSE"), join(destination, "SPARKLE-LICENSE"));
+}
 for (const file of files) await cp(join("output", file.name), join(destination, file.name));
 const sourceName = `PlotIt-MCP-source-v${manifest.version}.tar.gz`;
 const outputRoot = resolve("output");

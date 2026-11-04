@@ -27,6 +27,52 @@ async function waitFor<T>(read: () => Promise<T>, done: (v: T) => boolean) {
   }
 }
 describe("local companion integration", () => {
+  it("reserves updates atomically, cancels on native recovery and preserves Off", async () => {
+    const directory = await mkdtemp("/tmp/pi-update-svc-");
+    cleanup.push(() => rm(directory, { recursive: true, force: true }));
+    await atomicJson(join(directory, "machine.json"), defaultMachine);
+    const runner = { snapshot: { connected: true, origin: "explicit", status: "idle" }, close() {}, request: vi.fn(async () => ({ ok: true, value: {} })) } as unknown as RunnerClient;
+    const service = await startCompanion({ directory, socketDirectory: join(directory, "sock"), resources: resolve("."), runner, home: directory });
+    cleanup.push(() => service.close());
+    await service.handleUI("heartbeat", { session: "native" });
+    await service.handleUI("arm", { session: "native", enabled: false });
+    runner.snapshot!.status = "paused";
+    await expect(service.handleUI("prepare_update", { session: "native" })).rejects.toThrow("settled");
+    runner.snapshot!.status = "idle";
+    await service.handleUI("prepare_update", { session: "native" });
+    expect(runner.request).toHaveBeenCalledWith(expect.objectContaining({ action: "prepare-update" }));
+    await expect(service.handleMcp("configure_plotter", { settings: {} })).rejects.toThrow("update");
+    const delayed = vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6000);
+    await service.handleUI("heartbeat", { session: "native" });
+    expect(runner.request).not.toHaveBeenCalledWith(expect.objectContaining({ action: "cancel-update" }));
+    await expect(service.handleMcp("prepare_job", {})).rejects.toThrow("update");
+    delayed.mockRestore();
+    await service.handleUI("heartbeat", { session: "recovered" });
+    expect(runner.request).toHaveBeenCalledWith(expect.objectContaining({ action: "cancel-update" }));
+    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
+    let unblock!: () => void;
+    const delay = new Promise<void>(resolve => { unblock = resolve; });
+    runner.request = vi.fn(async () => { await delay; return { ok: true, value: {} }; });
+    const preparing = service.handleUI("prepare_update", { session: "recovered" });
+    const replacement = service.handleUI("heartbeat", { session: "new-window" });
+    const obsoleteCancel = service.handleUI("cancel_update", { session: "recovered" });
+    const obsoleteResult = expect(obsoleteCancel).rejects.toThrow("Reconnect");
+    unblock(); await preparing; await replacement; await obsoleteResult;
+    await service.handleUI("heartbeat", { session: "recovered" });
+    runner.request = vi.fn(async () => { throw new Error("IPC timeout"); });
+    await expect(service.handleUI("prepare_update", { session: "recovered" })).rejects.toThrow("IPC timeout");
+    await expect(service.handleMcp("configure_plotter", { settings: {} })).rejects.toThrow("update");
+    runner.request = vi.fn(async () => ({ ok: true, value: {} }));
+    await service.handleUI("cancel_update", { session: "recovered" });
+    await service.handleMcp("configure_plotter", { settings: {} });
+    runner.snapshot = null;
+    await atomicJson(join(directory, "sock/runner-identity.json"), { pid: process.pid });
+    await expect(service.handleUI("prepare_update", { session: "recovered" })).rejects.toThrow("Reconnect");
+    await expect(service.handleUI("quit", { session: "recovered" })).rejects.toThrow("update");
+    await rm(join(directory, "sock/runner-identity.json"));
+    await service.handleUI("cancel_update", { session: "recovered" });
+  });
+
   it("grants control only while ready with a fresh native session and remembers Off", async () => {
     const directory = await mkdtemp("/tmp/pi-lease-");
     cleanup.push(() => rm(directory, { recursive: true, force: true }));

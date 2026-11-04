@@ -4,6 +4,10 @@ PlotIt MCP is a separate macOS 14+ menu-bar application for using a local USB pe
 
 The first public prerelease is `plotit-mcp-v0.1.0-alpha.1`, app version 0.1.0 build 5. Its universal package includes both Apple Silicon and Intel runtimes, is Developer ID signed and notarized, and includes its corresponding source and notices.
 
+## Alpha 2 · build 7
+
+`plotit-mcp-v0.1.0-alpha.2` adds signed automatic updates from published GitHub releases using Sparkle 2.10.1. The app checks daily, downloads automatically and offers Install & Restart. Later keeps working and allows installation on a normal quit without reopening. About & Help contains update controls and preferences. Updates wait for drawings, pen changes, returning/stopping, preparation, calibration and unsaved setup; they never resume a drawing. Build 6 and earlier need this one manual upgrade before automatic updates are available.
+
 ## Included
 
 - Native machine setup with paper presets, custom dimensions, pen calibration, machine orientation and accurate USB detection.
@@ -23,7 +27,7 @@ The software is experimental. AxiDraw, NextDraw and other profile compatibility 
 
 ## Known limits
 
-- macOS only; no Mac App Store or automatic updates in this release.
+- macOS only; no Mac App Store distribution. Automatic updates begin with alpha 2 (build 7).
 - Local stdio integration. A remote ChatGPT web bridge is not included.
 - Interactive card rendering depends on client capabilities. Terminal-only clients retain tools and text/PNG feedback.
 - Physically positioning the carriage, securing paper and loading a pen remain user tasks. Capturing origin does not home the machine.

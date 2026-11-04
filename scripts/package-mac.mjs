@@ -14,6 +14,8 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mergeUniversal, makeIcon, componentInventory, notarize, hashFile, exists, capture } from "./mac-bundle.mjs";
 
+import { UPDATE_FEED, UPDATE_PUBLIC_KEY, SPARKLE_VERSION, appcastItem, verifyUpdate } from "./mac-update.mjs";
+
 if (process.platform !== "darwin")
   throw new Error("Build the Mac app on macOS.");
 const args = process.argv.slice(2),
@@ -104,6 +106,10 @@ for (const arch of architectures) {
     ],
     { encoding: "utf8" },
   ).trim();
+  const sparkle = `/tmp/plotit-swift-${arch}/artifacts/sparkle/Sparkle`;
+  await mkdir(join(contents, "Frameworks"), { recursive: true });
+  run("ditto", [join(sparkle, "Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"), join(contents, "Frameworks/Sparkle.framework")]);
+  await cp(join(sparkle, "LICENSE"), join(resources, "SPARKLE-LICENSE"));
   await cp(join(bin, "PlotItMCP"), join(contents, "MacOS", "PlotItMCP"));
   await cp(join(bin, "plotit-mcp"), join(contents, "MacOS", "plotit-mcp"));
   for (const file of await readdir(bin))
@@ -187,6 +193,13 @@ for (const arch of architectures) {
     join(contents, "Info.plist"),
     `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>${config.bundleIdentifier}</string><key>CFBundleName</key><string>PlotIt MCP</string><key>CFBundleDisplayName</key><string>PlotIt MCP</string><key>CFBundleExecutable</key><string>PlotItMCP</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>${version}</string><key>CFBundleVersion</key><string>${buildNumber}</string><key>LSMinimumSystemVersion</key><string>${config.minimumMacOS}</string><key>NSHumanReadableCopyright</key><string>${config.copyright}</string><key>LSUIElement</key><true/><key>NSHighResolutionCapable</key><true/><key>CFBundleIconFile</key><string>AppIcon</string></dict></plist>`,
   );
+  const plist = join(contents, "Info.plist");
+  for (const [key, type, value] of [
+    ["PlotItUpdatesEnabled", "bool", release ? "true" : "false"],
+    ["SUFeedURL", "string", UPDATE_FEED], ["SUPublicEDKey", "string", UPDATE_PUBLIC_KEY],
+    ["SUEnableAutomaticChecks", "bool", "true"], ["SUAutomaticallyUpdate", "bool", "true"],
+    ["SUScheduledCheckInterval", "integer", "86400"], ["SUEnableSystemProfiling", "bool", "false"],
+  ]) run("/usr/libexec/PlistBuddy", ["-c", `Add :${key} ${type} ${value}`, plist]);
   await cp(join(iconResources, "AppIcon.icns"), join(resources, "AppIcon.icns"));
   if (await exists(join(iconResources, "Assets.car"))) {
     await cp(join(iconResources, "Assets.car"), join(resources, "Assets.car"));
@@ -194,7 +207,7 @@ for (const arch of architectures) {
   }
   const info = { name: config.displayName, version, build: buildNumber, channel: config.channel, architecture: arch, sourceCommit, sourceDirty, sourceArchiveSha256, builtAt, nodeVersion: pin, finalIcon: !!icon, liquidGlassIcon: await exists(join(resources, "Assets.car")), signingMode: release ? "developer-id" : "ad-hoc" };
   await writeFile(join(resources, "BUILD-INFO.json"), JSON.stringify(info, null, 2) + "\n");
-  await writeFile(join(resources, "THIRD-PARTY-COMPONENTS.json"), JSON.stringify(await componentInventory(runtime), null, 2) + "\n");
+  await writeFile(join(resources, "THIRD-PARTY-COMPONENTS.json"), JSON.stringify([...(await componentInventory(runtime)), { name: "Sparkle", version: SPARKLE_VERSION, license: "MIT and bundled third-party notices (SPARKLE-LICENSE)", cpu: ["arm64", "x86_64"], os: ["darwin"] }], null, 2) + "\n");
   for (const file of ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"])
     await cp(file, join(resources, file));
   await cp(
@@ -227,6 +240,10 @@ for (const arch of architectures) {
         ]);
     }
   }
+  const framework = join(contents, "Frameworks/Sparkle.framework");
+  const sign = path => run("codesign", ["--force", "--sign", release ? identity : "-", ...(release ? ["--timestamp", "--options", "runtime"] : []), path]);
+  // Follow Sparkle's documented inside-out signing order, preserving symlinks.
+  for (const relative of ["Versions/B/XPCServices/Downloader.xpc", "Versions/B/XPCServices/Installer.xpc", "Versions/B/Autoupdate", "Versions/B/Updater.app", "."]) sign(join(framework, relative));
   await signNative(runtime);
   run("codesign", [
     "--force",
@@ -305,7 +322,16 @@ for (const arch of architectures) {
   run("ditto", ["-c", "-k", "--keepParent", app, zipArtifact]);
   const files = [];
   for (const file of [dmg, zipArtifact]) files.push({ name: file.split("/").at(-1), sha256: await hashFile(file), bytes: (await stat(file)).size });
-  artifacts.push({ ...info, notarized: release, app: `plotit-mcp-${arch}/PlotIt MCP.app`, files });
+  let update;
+  if (release && arch === "universal") {
+    const signer = `/tmp/plotit-swift-arm64/artifacts/sparkle/Sparkle/bin/sign_update`;
+    const edSignature = capture(signer, ["--account", config.bundleIdentifier, "-p", zipArtifact]);
+    const file = files.find(file => file.name.endsWith(".zip"));
+    update = { ...file, edSignature, url: `https://github.com/thierryc/Plot-It/releases/download/${config.releaseTag}/${file.name}`, sparkleVersion: SPARKLE_VERSION };
+    verifyUpdate(await readFile(zipArtifact), update);
+    await writeFile(resolve("output/appcast-item.xml"), appcastItem({ ...info, update }, config.releaseTag) + "\n");
+  }
+  artifacts.push({ ...info, ...(update ? { update } : {}), notarized: release, app: `plotit-mcp-${arch}/PlotIt MCP.app`, files });
   console.info(
     `${release ? "Signed release" : "Ad-hoc development build"}: ${app}\n${dmg}`,
   );

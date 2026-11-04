@@ -106,10 +106,20 @@ export async function startCompanion(options: CompanionOptions) {
       codexHome: setup.codexHome,
     });
   const assetRoot = options.assetRoot ?? join(resources, "assets");
+  let updateReserved = false;
+  let updateConfirmed = false;
+  async function cancelUpdate() {
+    if (!updateReserved) return;
+    if (runner.snapshot) await command("cancel-update");
+    else if (await stat(join(socketDirectory, "runner-identity.json")).catch(() => null)) throw new Error("Reconnect the plotter service to cancel the update reservation.");
+    updateReserved = false;
+    updateConfirmed = false;
+  }
   let changingHardware = false;
   let readinessBarrier: typeof runner.snapshot = null;
   const controlBlocker = () => {
     if (!agentControlEnabled) return "Agent control is turned off.";
+    if (updateReserved) return "PlotIt is preparing to install an update.";
     if (closing || controlSuspended) return "Agent control is suspended while quitting.";
     if (!uiSession || Date.now() - lastHeartbeat >= 5000) return "Open PlotIt MCP to allow agent control.";
     if (!configured) return "Save your machine settings.";
@@ -127,6 +137,7 @@ export async function startCompanion(options: CompanionOptions) {
       ...["finished", "stopped", "failed", "interrupted"],
     ].includes(runner.snapshot.status);
   const idle = () => {
+    if (updateReserved) throw new Error("PlotIt is preparing to install an update.");
     if (active())
       throw new Error("Wait until the current drawing has settled.");
   };
@@ -303,6 +314,7 @@ export async function startCompanion(options: CompanionOptions) {
     extra: Record<string, unknown> = {},
     reserved = false,
   ): Promise<any> {
+    if (updateReserved) throw new Error("PlotIt is preparing to install an update.");
     if (!reserved && tasks.size + reservations >= 2)
       throw new Error(
         "Artwork preparation is busy. Wait for the existing task.",
@@ -393,6 +405,7 @@ export async function startCompanion(options: CompanionOptions) {
         },
       };
     }
+    if (["create_artwork", "prepare_job", "simulate_job"].includes(action) && updateReserved) throw new Error("PlotIt is preparing to install an update.");
     if (action === "create_artwork") return worker("create", p);
     if (action === "prepare_job") {
       if (!configured)
@@ -550,17 +563,45 @@ export async function startCompanion(options: CompanionOptions) {
     action: string,
     p: Record<string, unknown>,
   ): Promise<any> {
-    if (action === "heartbeat") {
+    if (action === "heartbeat") return exclusive(async () => {
       const session = identity(p.session);
-      if (uiSession !== session || Date.now() - lastHeartbeat >= 5000) {
-        controlSuspended = false;
+      if (uiSession !== session) {
+        await cancelUpdate();
         uiSession = session;
+        controlSuspended = false;
+      } else if (!updateReserved && Date.now() - lastHeartbeat >= 5000) {
+        controlSuspended = false;
       }
       lastHeartbeat = Date.now();
       return status();
-    }
-    if (p.session !== uiSession || Date.now() - lastHeartbeat >= 5000)
-      throw new Error("Reconnect the native companion window.");
+    });
+    const requireSession = () => {
+      if (p.session !== uiSession || Date.now() - lastHeartbeat >= 5000) throw new Error("Reconnect the native companion window.");
+    };
+    requireSession();
+    if (action === "prepare_update") return exclusive(async () => {
+      requireSession();
+      if (updateConfirmed) return { ready: true };
+      if (!updateReserved) idle();
+      if (tasks.size || reservations || changingHardware) throw new Error("Wait until preparation and calibration have finished.");
+      updateReserved = true;
+      try {
+        if (runner.snapshot) await command("prepare-update");
+        else if (await stat(join(socketDirectory, "runner-identity.json")).catch(() => null)) throw new Error("Reconnect the plotter service before updating.");
+        updateConfirmed = true;
+        return { ready: true };
+      } catch (error) {
+        // A timed-out acknowledgement may already have reserved the runner.
+        // Release only after a confirmed cancellation; otherwise stay closed.
+        await cancelUpdate().catch(() => undefined);
+        throw error;
+      }
+    });
+    if (action === "cancel_update") return exclusive(async () => {
+      requireSession();
+      await cancelUpdate();
+      return { ready: true };
+    });
     if (action === "status") return status();
     if (action === "devices") return { devices: await devices() };
     if (["save_machine", "connect", "disconnect", "origin", "pen"].includes(action)) return performSetup(action as SetupAction, p);
@@ -655,7 +696,8 @@ export async function startCompanion(options: CompanionOptions) {
     }
     if (action === "quit")
       return exclusive(async () => {
-        idle();
+        requireSession();
+        if (!updateConfirmed) idle();
         controlSuspended = true;
         closing = true;
         await close();
