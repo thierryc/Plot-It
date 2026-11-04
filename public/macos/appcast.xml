@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel><title>PlotIt MCP updates</title><link>https://thierryc.github.io/Plot-It/macos/</link><description>Signed universal macOS releases</description><language>en</language>
-
+<item><title>PlotIt MCP 0.1.0 · build 7</title><link>https://github.com/thierryc/Plot-It/releases/tag/plotit-mcp-v0.1.0-alpha.2</link><sparkle:version>7</sparkle:version><sparkle:shortVersionString>0.1.0</sparkle:shortVersionString><sparkle:channel>alpha</sparkle:channel><sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion><enclosure url="https://github.com/thierryc/Plot-It/releases/download/plotit-mcp-v0.1.0-alpha.2/PlotIt-MCP-universal.zip" length="125733593" type="application/octet-stream" sparkle:edSignature="/IWRjhcYIeiTIDaOO/WuU9PwzkKwlt0FwExh49m9FPLNddimzKLI0eDcooCfLJo88QsbHjmnSzcyc7SPptwHAg==" /></item>
 </channel></rss>

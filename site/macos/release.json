@@ -1,9 +1,10 @@
 {
   "available": true,
   "version": "0.1.0",
+  "build": "7",
   "channel": "alpha",
   "appleSiliconUrl": "",
-  "universalUrl": "https://github.com/thierryc/Plot-It/releases/download/plotit-mcp-v0.1.0-alpha.1/PlotIt-MCP-universal.dmg",
-  "checksumsUrl": "https://github.com/thierryc/Plot-It/releases/download/plotit-mcp-v0.1.0-alpha.1/SHA256SUMS.txt",
-  "releaseNotesUrl": "https://github.com/thierryc/Plot-It/releases/tag/plotit-mcp-v0.1.0-alpha.1"
+  "universalUrl": "https://github.com/thierryc/Plot-It/releases/download/plotit-mcp-v0.1.0-alpha.2/PlotIt-MCP-universal.dmg",
+  "checksumsUrl": "https://github.com/thierryc/Plot-It/releases/download/plotit-mcp-v0.1.0-alpha.2/SHA256SUMS.txt",
+  "releaseNotesUrl": "https://github.com/thierryc/Plot-It/releases/tag/plotit-mcp-v0.1.0-alpha.2"
 }
