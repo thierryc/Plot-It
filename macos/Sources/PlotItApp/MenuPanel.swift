@@ -51,9 +51,6 @@ struct MenuPanel: View {
                 }.controlSize(.regular)
             }.padding(18).frame(width: 336)
         }
-        .background(.regularMaterial, in: .rect(cornerRadius: 20))
-        .clipShape(.rect(cornerRadius: 20))
-        .modifier(MenuPanelWindowBackground())
     }
 
     private func showSetup() {
@@ -93,13 +90,6 @@ struct MenuPanelMoreButton: View {
         .frame(width: 32, height: 32)
         .accessibilityLabel("More")
         .help("About, updates and Quit")
-    }
-}
-
-private struct MenuPanelWindowBackground: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 15, *) { content.containerBackground(.clear, for: .window) }
-        else { content }
     }
 }
 
