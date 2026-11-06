@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "build": "8",
+  "build": "9",
   "channel": "alpha",
   "minimumMacOS": "14.0",
   "bundleIdentifier": "cx.ap.plotit.mcp",

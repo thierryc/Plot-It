@@ -47,30 +47,59 @@ struct MenuPanel: View {
                             .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
                             .modifier(ConnectionGlassButton())
                     }
-                    Menu {
-                        Button("About & Help…", systemImage: "info.circle") {
-                            openWindow(id: "about")
-                            NSApplication.shared.activate(ignoringOtherApps: true)
-                        }
-                        if let updater {
-                            Button("Check for Updates…", systemImage: "arrow.clockwise") { updater.check() }
-                                .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
-                        }
-                        Divider()
-                        Button("Quit PlotIt") { NSApplication.shared.terminate(nil) }
-                            .keyboardShortcut("q")
-                    } label: { Label("More", systemImage: "ellipsis") }
-                        .labelStyle(.iconOnly).menuIndicator(.hidden)
-                        .modifier(ConnectionGlassButton()).help("About, updates and Quit")
+                    MenuPanelMoreButton(updater: updater)
                 }.controlSize(.regular)
             }.padding(18).frame(width: 336)
         }
+        .background(.regularMaterial, in: .rect(cornerRadius: 20))
+        .clipShape(.rect(cornerRadius: 20))
+        .modifier(MenuPanelWindowBackground())
     }
 
     private func showSetup() {
         model.setupTab = 0
         openWindow(id: "setup")
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+}
+
+/// A button-style menu has a compact intrinsic size instead of a full-width popup field.
+struct MenuPanelMoreButton: View {
+    var updater: AppUpdater? = nil
+    @Environment(\.openWindow) private var openWindow
+    var body: some View {
+        Menu {
+            Button("About & Help…", systemImage: "info.circle") {
+                openWindow(id: "about")
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            }
+            if let updater {
+                Button("Check for Updates…", systemImage: "arrow.clockwise") { updater.check() }
+                    .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
+            }
+            Divider()
+            Button("Quit PlotIt") { NSApplication.shared.terminate(nil) }
+                .keyboardShortcut("q")
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .semibold))
+                .frame(width: 16, height: 16)
+        }
+        .menuStyle(.button)
+        .menuIndicator(.hidden)
+        .modifier(ConnectionGlassButton())
+        .buttonBorderShape(.circle)
+        .fixedSize()
+        .frame(width: 32, height: 32)
+        .accessibilityLabel("More")
+        .help("About, updates and Quit")
+    }
+}
+
+private struct MenuPanelWindowBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 15, *) { content.containerBackground(.clear, for: .window) }
+        else { content }
     }
 }
 
