@@ -125,7 +125,7 @@ Read [the privacy statement](PLOTIT_MCP_PRIVACY.md) before sharing logs or previ
 
 ## Automatic updates
 
-Starting with alpha 2 (build 7), the signed Mac app checks daily for published alpha and stable GitHub releases. Updates download automatically. Open **About & Help → Check for Updates…** to check now or review a ready update; you can turn automatic checks and downloads off there. Choose **Install & Restart** when convenient, or **Later** to continue working. A downloaded update can install on normal quit without reopening the app.
+Starting with alpha 2 (build 7), the signed Mac app checks daily for published alpha and stable GitHub releases. Updates download automatically. Open **Settings… → App settings** and turn **Automatic updates** off to disable both checks and downloads. The setting is on by default and your choice is saved. **Check for Updates…** remains available there and in **About & Help**, even when automatic updates are off. Choose **Install & Restart** when convenient, or **Later** to continue working. A downloaded update can install on normal quit without reopening the app.
 
 Installation waits until plotting, pauses, pen changes, returning/stopping, preparation and calibration have settled. Save or discard setup edits and finish any agent configuration review first. The app reserves the idle runner before closing so an agent cannot start a drawing during the update. Updates preserve local settings and never start or replay a drawing.
 

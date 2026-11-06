@@ -28,7 +28,7 @@ struct PlotItApplication: App {
         .menuBarExtraStyle(.window)
 
         Window("Set up PlotIt MCP", id: "setup") {
-            SetupWindow(model: model)
+            SetupWindow(model: model, updater: AppUpdater.shared)
         }
         .defaultSize(width: 800, height: 720)
         .windowResizability(.contentMinSize)

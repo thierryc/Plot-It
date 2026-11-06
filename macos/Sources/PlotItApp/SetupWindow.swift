@@ -2,13 +2,14 @@ import SwiftUI
 
 struct SetupWindow: View {
     let model: CompanionModel
+    var updater: AppUpdater? = nil
     @State private var step = 0
     @State private var editor = MachineEditor()
     @State private var pendingStep: Int?
     @State private var reviewUnsavedChanges = false
     @Environment(\.dismiss) private var dismiss
     private let steps = [SetupStep(id: 0, title: "Connect plotter", symbol: "cable.connector"), SetupStep(id: 1, title: "Configure agent apps", symbol: "square.stack.3d.up"), SetupStep(id: 2, title: "Test connection", symbol: "checkmark.seal")]
-    init(model: CompanionModel, initialStep: Int? = nil) { self.model = model; _step = State(initialValue: initialStep ?? model.setupTab) }
+    init(model: CompanionModel, updater: AppUpdater? = nil, initialStep: Int? = nil) { self.model = model; self.updater = updater; _step = State(initialValue: initialStep ?? model.setupTab) }
     private func requestStep(_ target: Int) {
         guard target != step else { return }
         if editor.hasChanges { pendingStep = target; reviewUnsavedChanges = true }
@@ -41,6 +42,15 @@ struct SetupWindow: View {
                     }.buttonStyle(.plain).accessibilityAddTraits(step == item.id ? .isSelected : [])
                 }
                 Spacer()
+                if updater != nil {
+                    Button { requestStep(3) } label: {
+                        Label("App settings", systemImage: "gearshape")
+                            .font(.callout.weight(step == 3 ? .semibold : .regular))
+                            .foregroundStyle(step == 3 ? Color.plotItMagenta : Color.secondary)
+                            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(step == 3 ? Color.plotItMagenta.opacity(0.1) : .clear, in: .rect(cornerRadius: 8))
+                    }.buttonStyle(.plain).accessibilityAddTraits(step == 3 ? .isSelected : [])
+                }
                 Text("Local connection\nNo PlotIt account required").font(.caption).foregroundStyle(.secondary)
             }.padding(22).frame(width: 225).background(.quaternary.opacity(0.3))
             Divider()
@@ -50,6 +60,9 @@ struct SetupWindow: View {
                         switch step {
                         case 0: MachineSetup(model: model, editor: editor)
                         case 1: AgentSetupView(model: model)
+                        case 3:
+                            Text("App settings").font(.title2.weight(.semibold))
+                            if let updater { UpdateControls(updater: updater) }
                         default: ConnectionTestView(model: model)
                         }
                     }.padding(28).frame(maxWidth: .infinity, alignment: .leading)
@@ -63,7 +76,7 @@ struct SetupWindow: View {
                 HStack {
                     if model.busy { ProgressView().controlSize(.small); Text("Working…").font(.caption).foregroundStyle(.secondary) }
                     Spacer()
-                    if step > 0 { Button("Back") { requestStep(step - 1) }.disabled(model.busy) }
+                    if (1...2).contains(step) { Button("Back") { requestStep(step - 1) }.disabled(model.busy) }
                     if step < 2 {
                         Button(editor.needsSave ? "Save & Continue" : "Continue") { Task { await saveAndAdvance(to: step + 1) } }
                             .buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction)
@@ -88,6 +101,27 @@ struct SetupWindow: View {
     }
 }
 private struct SetupStep: Identifiable { let id: Int; let title: String; let symbol: String }
+
+private struct FullRowDisclosureStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                withAnimation { configuration.isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .rotationEffect(.degrees(configuration.isExpanded ? 90 : 0))
+                        .foregroundStyle(.secondary).accessibilityHidden(true)
+                    configuration.label
+                    Spacer(minLength: 0)
+                }.frame(maxWidth: .infinity, alignment: .leading).contentShape(.rect)
+            }.buttonStyle(.plain)
+                .accessibilityValue(configuration.isExpanded ? "Expanded" : "Collapsed")
+            if configuration.isExpanded { configuration.content }
+        }
+    }
+}
 
 struct SectionHeading: View {
     let title: String
@@ -152,7 +186,7 @@ struct MachineSetup: View {
                         TextField("Offline firmware target", text: $editor.draft.firmware)
                         TextField("Drawing speed · mm/s", value: $editor.draft.speed, format: .number)
                         TextField("Travel speed · mm/s", value: $editor.draft.travelSpeed, format: .number)
-                    }
+                    }.disclosureGroupStyle(FullRowDisclosureStyle())
                 }
             }.formStyle(.grouped).scrollDisabled(true).disabled(model.active || model.busy || !model.serviceAvailable || editor.remoteChanged)
             HStack {

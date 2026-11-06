@@ -1,7 +1,50 @@
 import XCTest
+import Sparkle
 @testable import PlotItApp
 
 final class ModelsTests: XCTestCase {
+    @MainActor
+    func testSparkleDefaultsAndExplicitDisabledChoicePersistWithoutStartingUpdater() throws {
+        let identifier = "cx.ap.plotit.tests.\(UUID().uuidString)"
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("\(identifier).app")
+        let contents = directory.appendingPathComponent("Contents")
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer {
+            UserDefaults.standard.removePersistentDomain(forName: identifier)
+            try? FileManager.default.removeItem(at: directory)
+        }
+        let plist: [String: Any] = ["CFBundleIdentifier": identifier, "CFBundleName": "Update settings test", "CFBundleVersion": "1", "CFBundlePackageType": "APPL", "SUEnableAutomaticChecks": true, "SUAutomaticallyUpdate": true]
+        try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: contents.appendingPathComponent("Info.plist"))
+        let bundle = try XCTUnwrap(Bundle(url: directory))
+        func makeUpdater() -> SPUUpdater {
+            SPUUpdater(hostBundle: bundle, applicationBundle: bundle, userDriver: SPUStandardUserDriver(hostBundle: bundle, delegate: nil), delegate: nil)
+        }
+        let updater = makeUpdater()
+        XCTAssertTrue(updater.automaticallyChecksForUpdates)
+        XCTAssertTrue(updater.automaticallyDownloadsUpdates)
+        AppUpdater.setAutomaticUpdates(false, for: updater)
+        let relaunchedUpdater = makeUpdater()
+        XCTAssertFalse(relaunchedUpdater.automaticallyChecksForUpdates)
+        XCTAssertFalse(relaunchedUpdater.automaticallyDownloadsUpdates)
+        AppUpdater.setAutomaticUpdates(true, for: relaunchedUpdater)
+        let enabledUpdater = makeUpdater()
+        XCTAssertTrue(enabledUpdater.automaticallyChecksForUpdates)
+        XCTAssertTrue(enabledUpdater.automaticallyDownloadsUpdates)
+    }
+    @MainActor
+    func testAutomaticUpdatesDefaultOnAndToggleBothChecksAndDownloads() {
+        let model = CompanionModel(); model.isPreview = true
+        let updater = AppUpdater(model: model)
+        XCTAssertTrue(updater.automaticUpdates)
+        updater.setAutomaticUpdates(false)
+        XCTAssertFalse(updater.automaticChecks)
+        XCTAssertFalse(updater.automaticDownloads)
+        updater.setAutomaticUpdates(true)
+        XCTAssertTrue(updater.automaticUpdates)
+        XCTAssertTrue(updater.automaticChecks)
+        XCTAssertTrue(updater.automaticDownloads)
+        XCTAssertFalse(updater.enabled)
+    }
     @MainActor
     func testConnectionToggleRequiresIdleWorkButCanReleaseUSBWithUnsavedEdits() {
         let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true

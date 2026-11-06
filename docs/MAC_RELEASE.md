@@ -22,7 +22,7 @@ Output includes DMGs, app ZIPs, a SHA-256 checksum list, release manifest, compo
 
 ## Final icon and version
 
-The editable Liquid Glass icon is `macos/Assets/AppIcon.icon`, created in Apple Icon Composer with the Regular-S LitSquare symbol on vivid magenta. Packaging compiles it once with `actool`, includes `Assets.car` and `CFBundleIconName` for modern macOS, and includes the generated `.icns` fallback for macOS 14 and 15. The native menu bar uses separate monochrome PDF templates for idle and plotting states. Glyph masks must be resolved by Glyphs before exporting those vectors; raw path concatenation loses the cutouts.
+The editable Liquid Glass icon is `macos/Assets/AppIcon.icon`, created in Apple Icon Composer with the Regular-S LitSquare symbol on vivid magenta. Packaging compiles it once with `actool`, includes `Assets.car` and `CFBundleIconName` for modern macOS, and includes the generated `.icns` fallback for macOS 14 and 15. The native menu bar uses separate monochrome PDF templates for disconnected, connected and plotting states. Glyph masks must be resolved by Glyphs before exporting those vectors; raw path concatenation loses the cutouts.
 
 Alternatively provide `AppIcon.icns`, a square PNG of at least 1024 × 1024 as `AppIcon.png`, or set `PLOTIT_APP_ICON` to a `.icon`, `.icns` or PNG file. A supplied environment path takes precedence. Signed release packaging refuses the provisional icon.
 
@@ -54,7 +54,7 @@ Apple references: [Universal binaries](https://developer.apple.com/documentation
 - Test installing from a downloaded, quarantined DMG, moving to Applications, launching, reopening, login launch, updating, uninstalling and Gatekeeper offline with the stapled ticket.
 - Test actual Codex, Claude Desktop and Claude Code; record versions and whether each can render MCP Apps. Do not advertise card support from simulation alone.
 - On each advertised physical profile: connect, save settings, test pen heights, establish origin, prepare/preview, plot, pause/resume, pen change, controlled stop, disconnect, heartbeat loss, restart and recovery. Retain the experimental label for untested profiles.
-- Confirm Off persists, setup cannot bypass it, readiness cannot start/resume motion, and an uncertain Start never retries under a new job ID.
+- Confirm disconnected hardware cannot be used, readiness cannot start/resume motion, and an uncertain Start never retries under a new job ID. Verify Automatic updates defaults to on, turning it off persists across relaunch, and manual checks still work.
 - Review the component inventory and bundled font notices; preserve corresponding source and notices in every distribution.
 - Review the privacy statement: PlotIt stores data locally, while selected agent hosts receive requested tool results/previews under their own policies.
 
@@ -70,7 +70,7 @@ Apple references: [Universal binaries](https://developer.apple.com/documentation
 
 ## Updates and rollback
 
-Starting with alpha 2 (build 7), use About & Help → Check for Updates or the automatic daily checks. Downloaded updates install with Install & Restart or on normal quit. For the first upgrade from build 6 or earlier, or manual rollback, quit while idle, replace the app in Applications, and reopen. The stable launcher path and bundle ID remain unchanged. Settings, jobs and configuration backups live in `~/Library/Application Support/PlotIt MCP`; back up this folder before an upgrade. Keep the previous signed release available. If a drawing was interrupted, inspect it and re-establish physical origin; never replay it automatically. Current settings have no schema migration in this alpha.
+Starting with alpha 2 (build 7), use About & Help → Check for Updates or the automatic daily checks. In alpha 3, Settings… → App settings provides a single Automatic updates switch; it defaults to on and persists explicit choices. Downloaded updates install with Install & Restart or on normal quit. For the first upgrade from build 6 or earlier, or manual rollback, quit while idle, replace the app in Applications, and reopen. The stable launcher path and bundle ID remain unchanged. Settings, jobs and configuration backups live in `~/Library/Application Support/PlotIt MCP`; back up this folder before an upgrade. Keep the previous signed release available. If a drawing was interrupted, inspect it and re-establish physical origin; never replay it automatically. Current settings have no schema migration in this alpha.
 
 To uninstall, remove the PlotIt connection from each configured agent using the app, turn off Open at Login, quit while idle, then move the app to Trash. Local data is retained until the user deletes it. The native app does not uninstall or alter the web app.
 

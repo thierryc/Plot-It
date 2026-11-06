@@ -20,6 +20,8 @@ final class UISnapshotTests: XCTestCase {
         for step in 0...2 {
             try capture(SetupWindow(model: model, initialStep: step), name: "setup-\(step)", size: NSSize(width: 746, height: 680))
         }
+        let updater = AppUpdater(model: model)
+        try capture(SetupWindow(model: model, updater: updater, initialStep: 3), name: "app-settings", size: NSSize(width: 746, height: 680))
         try capture(MenuPanel(model: model), name: "menu", size: NSSize(width: 336, height: 0))
         model.status?.config.widthMm = 222
         model.status?.config.heightMm = 333
