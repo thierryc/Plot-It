@@ -41,7 +41,7 @@ final class UISnapshotTests: XCTestCase {
     }
     @MainActor
     private func capture<Content: View>(_ content: Content, name: String, size: NSSize, colorScheme: ColorScheme = .light) throws {
-        let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme).environment(\.controlActiveState, .active).background(colorScheme == .dark ? Color.black : Color.white))
+        let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme).background(colorScheme == .dark ? Color.black : Color.white))
         let size = NSSize(width: size.width, height: size.height == 0 ? ceil(view.fittingSize.height) : size.height)
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
