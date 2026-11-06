@@ -24,6 +24,19 @@ describe.skipIf(!directory)('hosted production artifact', () => {
     expect(existsSync(join(directory!, 'app/sw.js'))).toBe(true);
     expect(existsSync(join(directory!, 'sw.js'))).toBe(false);
     expect(existsSync(join(directory!, 'manifest.webmanifest'))).toBe(false);
+    const release = JSON.parse(readFileSync('site/macos/release.json', 'utf8'));
+    const macPage = new JSDOM(readFileSync(join(directory!, 'macos/index.html'), 'utf8'));
+    const macDocument = macPage.window.document;
+    if (release.available) {
+      expect(macDocument.querySelector('#mac-downloads a[href$="/PlotIt-MCP-universal.dmg"]')?.getAttribute('href')).toBe(release.universalUrl);
+      expect(macDocument.querySelector('#mac-checksums')?.getAttribute('href')).toBe(release.checksumsUrl);
+      expect(macDocument.querySelector('#mac-notes')?.getAttribute('href')).toBe(release.releaseNotesUrl);
+    } else {
+      expect(macDocument.querySelector('#mac-downloads a[href$="/PlotIt-MCP-universal.dmg"]')).toBeNull();
+      expect(macDocument.querySelector('#mac-checksums')).toBeNull();
+      expect(macDocument.querySelector('#mac-notes')).toBeNull();
+    }
+    macPage.window.close();
   });
   it('ships complete browser assets and corresponding website source', () => {
     expect(existsSync(join(directory!, 'CNAME'))).toBe(false);
