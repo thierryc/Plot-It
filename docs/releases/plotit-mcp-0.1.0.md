@@ -4,6 +4,10 @@ PlotIt MCP is a separate macOS 14+ menu-bar application for using a local USB pe
 
 The first public prerelease is `plotit-mcp-v0.1.0-alpha.1`, app version 0.1.0 build 5. Its universal package includes both Apple Silicon and Intel runtimes, is Developer ID signed and notarized, and includes its corresponding source and notices.
 
+## Unreleased · Connection menu
+
+The compact menu uses one Connect / Disconnect toggle. A whole pen without lightning indicates disconnection; the lightning bolt appears when USB is connected, with a separate plotting variant. The menu removes repeated status lines and the agent-permission switch. Settings, help, updates and Quit remain available, with native Liquid Glass controls on macOS 26 and native bordered controls on earlier versions. Existing saved Off preferences no longer gate agent use; settings, origin, fresh native presence and motion/update guards still apply.
+
 ## Alpha 2 · build 7
 
 `plotit-mcp-v0.1.0-alpha.2` adds signed automatic updates from published GitHub releases using Sparkle 2.10.1. The app checks daily, downloads automatically and offers Install & Restart. Later keeps working and allows installation on a normal quit without reopening. About & Help contains update controls and preferences. Updates wait for drawings, pen changes, returning/stopping, preparation, calibration and unsaved setup; they never resume a drawing. Build 6 and earlier need this one manual upgrade before automatic updates are available.

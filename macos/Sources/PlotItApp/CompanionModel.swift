@@ -18,6 +18,7 @@ final class CompanionModel {
     var agentChange: AgentChange?
     var waitingToQuit = false
     var loginEnabled = SMAppService.mainApp.status == .enabled
+    var connectionChanging = false
     var setupHasChanges = false
     var updateReservationGranted = false
     var setupTab = 0
@@ -30,7 +31,23 @@ final class CompanionModel {
 
     var connected: Bool { serviceAvailable && status?.runner?.connected == true }
     var armed: Bool { status?.armed == true }
-    var agentControlEnabled: Bool { status?.agentControlEnabled ?? false }
+    var canChangeConnection: Bool {
+        serviceAvailable && status?.configured == true && !busy && !connectionChanging && !active && (!setupHasChanges || connected) && !updateReservationGranted && status?.preparing != true && !waitingToQuit
+    }
+    func setConnection(_ connected: Bool) async {
+        guard canChangeConnection, connected != self.connected else { return }
+        connectionChanging = true; defer { connectionChanging = false }
+        await perform(connected ? "connect" : "disconnect")
+    }
+    var connectionHelp: String {
+        if active { return "Finish or stop the drawing before disconnecting." }
+        if setupHasChanges && !connected { return "Save or discard setup changes first." }
+        if busy || status?.preparing == true { return "Finishing the current operation." }
+        if status?.configured != true { return "Save plotter settings in Set Up before connecting." }
+        if !serviceAvailable { return "Waiting for the companion." }
+        if updateReservationGranted { return "Installing an update." }
+        return connected ? "Disconnect the plotter" : "Connect the plotter"
+    }
     var controlDetail: String {
         if !serviceAvailable { return "Waiting for the local service." }
         return status?.controlBlocker ?? (armed ? "Agents can start prepared drawings." : "Waiting for the plotter to be ready.")

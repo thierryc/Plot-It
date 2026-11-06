@@ -68,7 +68,6 @@ struct CompanionStatus: Decodable, Equatable {
     var lastJob: Job?
     var preparing: Bool
     var paperPresets: [PaperPreset]?
-    var agentControlEnabled: Bool?
     var controlBlocker: String?
     var configDigest: String?
     var active: Bool { guard let runner else { return false }; return !["idle", "pending", "finished", "stopped", "failed", "interrupted"].contains(runner.status) }

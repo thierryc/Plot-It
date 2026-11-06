@@ -36,8 +36,8 @@ struct SetupWindow: View {
                         HStack(spacing: 9) {
                             Image(systemName: item.symbol).frame(width: 20)
                             Text(item.title).font(.callout.weight(step == item.id ? .semibold : .regular))
-                        }.foregroundStyle(step == item.id ? Color.teal : Color.secondary).padding(10).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(step == item.id ? Color.teal.opacity(0.1) : .clear, in: RoundedRectangle(cornerRadius: 8))
+                        }.foregroundStyle(step == item.id ? Color.plotItMagenta : Color.secondary).padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(step == item.id ? Color.plotItMagenta.opacity(0.1) : .clear, in: RoundedRectangle(cornerRadius: 8))
                     }.buttonStyle(.plain).accessibilityAddTraits(step == item.id ? .isSelected : [])
                 }
                 Spacer()
@@ -66,9 +66,9 @@ struct SetupWindow: View {
                     if step > 0 { Button("Back") { requestStep(step - 1) }.disabled(model.busy) }
                     if step < 2 {
                         Button(editor.needsSave ? "Save & Continue" : "Continue") { Task { await saveAndAdvance(to: step + 1) } }
-                            .buttonStyle(.borderedProminent).tint(.teal).keyboardShortcut(.defaultAction)
+                            .buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction)
                             .disabled(model.busy || !model.serviceAvailable || editor.validationMessage != nil || editor.remoteChanged)
-                    } else { Button("Done") { dismiss() }.buttonStyle(.borderedProminent).tint(.teal).keyboardShortcut(.defaultAction).disabled(model.busy) }
+                    } else { Button("Done") { dismiss() }.buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction).disabled(model.busy) }
                 }.padding(18)
             }.frame(minWidth: 520, maxWidth: .infinity)
         }
@@ -159,21 +159,21 @@ struct MachineSetup: View {
                 Button("Save Settings") { editor.applyCustomPaper(); Task { await model.save(editor.draft, expectedDigest: editor.configDigest) } }
                     .disabled(model.active || model.busy || !model.serviceAvailable || editor.validationMessage != nil || editor.remoteChanged || !editor.needsSave)
                 Spacer()
-                Button(model.connected ? "Disconnect" : "Connect Plotter", systemImage: "cable.connector") { Task { await model.perform(model.connected ? "disconnect" : "connect") } }
-                    .disabled(model.status?.configured != true || model.active || model.busy || (!model.connected && (editor.needsSave || !editor.validPaper || editor.remoteChanged)))
+                PlotterConnectionToggle(model: model)
+                    .disabled(!model.connected && (editor.needsSave || !editor.validPaper || editor.remoteChanged))
             }
             if editor.hasChanges { Text("Save your changes before connecting. Saving new settings disconnects the plotter and requires a new origin.").font(.caption).foregroundStyle(.secondary) }
             if let validation = editor.validationMessage { Label(validation, systemImage: "exclamationmark.circle").font(.caption).foregroundStyle(.red) }
             if model.connected {
                 VStack(alignment: .leading, spacing: 10) {
-                    Label("Connected · firmware \(model.status?.runner?.firmware ?? "unknown")", systemImage: "checkmark.circle.fill").foregroundStyle(.teal)
+                    Label("Connected · firmware \(model.status?.runner?.firmware ?? "unknown")", systemImage: "checkmark.circle.fill").foregroundStyle(Color.plotItMagenta)
                     HStack {
                         Button("Test Pen Up") { Task { await model.perform("pen", ["down": false]) } }
                         Button("Test Pen Down") { Task { await model.perform("pen", ["down": true]) } }
                     }
                     Text("Pen tests use the saved heights. Position the carriage at your drawing origin, then capture it.").font(.caption).foregroundStyle(.secondary)
                     Button("Set Current Position as Origin", systemImage: "scope") { captureOrigin = true }
-                    if model.status?.ready == true { Label("Origin established", systemImage: "checkmark").font(.caption).foregroundStyle(.teal) }
+                    if model.status?.ready == true { Label("Origin established", systemImage: "checkmark").font(.caption).foregroundStyle(Color.plotItMagenta) }
                 }.disabled(model.active || model.busy)
             }
             Text("Hardware profiles are experimental until independently tested on the matching machine.").font(.caption).foregroundStyle(.secondary)
@@ -182,7 +182,7 @@ struct MachineSetup: View {
         .onChange(of: editor.customWidth) { editor.applyCustomPaper() }
         .onChange(of: editor.customHeight) { editor.applyCustomPaper() }
         .confirmationDialog("Use the carriage’s current physical position as the origin?", isPresented: $captureOrigin) {
-            Button("Set Origin") { Task { await model.perform("origin", success: "Origin established. Agent control follows your saved preference.") } }
+            Button("Set Origin") { Task { await model.perform("origin", success: "Origin established.") } }
         } message: { Text("Make sure the carriage is in the intended starting position and the paper is secured.") }
     }
 }
@@ -193,9 +193,9 @@ struct PaperOriginDiagram: View {
         HStack(alignment: .center, spacing: 14) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 4).stroke(.secondary.opacity(0.4)).frame(width: 48, height: 64)
-                Circle().fill(.teal).frame(width: 5, height: 5).offset(x: 7, y: 7)
-                Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.teal).offset(x: 16, y: 3)
-                Image(systemName: "arrow.down").font(.caption2).foregroundStyle(.teal).offset(x: 4, y: 17)
+                Circle().fill(Color.plotItMagenta).frame(width: 5, height: 5).offset(x: 7, y: 7)
+                Image(systemName: "arrow.right").font(.caption2).foregroundStyle(Color.plotItMagenta).offset(x: 16, y: 3)
+                Image(systemName: "arrow.down").font(.caption2).foregroundStyle(Color.plotItMagenta).offset(x: 4, y: 17)
             }.accessibilityHidden(true)
             Text("Paper origin is the drawing’s starting point. Machine orientation (\(rotation)°) maps drawing coordinates to your plotter; it does not change the paper size.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -212,14 +212,14 @@ struct AgentSetupView: View {
             ForEach(model.agents) { agent in
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 10) {
-                        Image(systemName: agent.symbol).font(.title3).foregroundStyle(.teal).frame(width: 26)
+                        Image(systemName: agent.symbol).font(.title3).foregroundStyle(Color.plotItMagenta).frame(width: 26)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(agent.name).font(.headline)
                             let live = model.serviceAvailable && model.status?.agents.contains { agent.matches(clientName: $0.name) } == true
-                            Text(live ? "Agent connected" : agent.configured ? "Configured · open a new agent session" : "Ready to configure").font(.caption).foregroundStyle(live ? .teal : .secondary)
+                            Text(live ? "Agent connected" : agent.configured ? "Configured · open a new agent session" : "Ready to configure").font(.caption).foregroundStyle(live ? Color.green : Color.secondary)
                         }
                         Spacer()
-                        if agent.configured { Image(systemName: "checkmark.circle.fill").foregroundStyle(.teal).accessibilityLabel("Configured") }
+                        if agent.configured { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.plotItMagenta).accessibilityLabel("Configured") }
                     }
                     HStack {
                         Button(agent.configured ? "Remove…" : "Install…") { Task { await model.previewChange(agent, operation: agent.configured ? "remove" : "install") } }
@@ -252,16 +252,12 @@ struct ConnectionTestView: View {
                 CheckRow(title: "Agent connected", detail: model.status?.agents.map(\.name).joined(separator: ", ").nilIfEmpty ?? "Waiting for an agent to load PlotIt", done: model.status?.agents.isEmpty == false)
                 CheckRow(title: "Plotter ready", detail: model.status?.ready == true ? "USB connected and drawing origin established" : model.controlDetail, done: model.status?.ready == true)
             }.padding(18).background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 10))
-            Button("Run Server Test", systemImage: "checkmark.seal") { Task { await model.testServer() } }.buttonStyle(.borderedProminent).tint(.teal).disabled(model.busy || !model.serviceAvailable)
+            Button("Run Server Test", systemImage: "checkmark.seal") { Task { await model.testServer() } }.buttonStyle(.borderedProminent).tint(.plotItMagenta).disabled(model.busy || !model.serviceAvailable)
             VStack(alignment: .leading, spacing: 10) {
                 Text("Try this in your agent").font(.headline)
                 Text(CompanionModel.firstPrompt).font(.callout).textSelection(.enabled)
                 Button("Copy First Prompt", systemImage: "doc.on.doc") { model.copyFirstPrompt() }
-                Text("Preparation and simulation work without hardware. Agent control becomes available when the connected plotter has an established origin.").font(.caption).foregroundStyle(.secondary)
             }
-            Toggle("Allow agent control when ready", isOn: Binding(get: { model.agentControlEnabled }, set: { enabled in Task { await model.perform("arm", ["enabled": enabled]) } }))
-                .disabled(!model.serviceAvailable || model.busy)
-            Text(model.controlDetail).font(.caption).foregroundStyle(.secondary)
             Toggle("Open PlotIt MCP at login", isOn: Binding(get: { model.loginEnabled }, set: model.setLogin))
         }
     }
@@ -271,7 +267,7 @@ struct CheckRow: View {
     let title: String; let detail: String; let done: Bool
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: done ? "checkmark.circle.fill" : "circle.dashed").foregroundStyle(done ? .teal : .secondary).font(.title3)
+            Image(systemName: done ? "checkmark.circle.fill" : "circle.dashed").foregroundStyle(done ? Color.green : Color.secondary).font(.title3)
             VStack(alignment: .leading, spacing: 3) { Text(title).font(.subheadline.weight(.medium)); Text(detail).font(.caption).foregroundStyle(.secondary) }
         }.accessibilityElement(children: .combine)
     }
@@ -295,7 +291,7 @@ struct ConfigurationReview: View {
                 if change.id.isEmpty {
                     Button("Replace Existing Entry…", role: .destructive) { if let agent = model.agents.first(where: { $0.id == change.agent }) { Task { await model.previewChange(agent, operation: change.operation, replace: true) } } }
                 } else {
-                    Button(change.operation == "remove" ? "Remove Connection" : "Install Connection") { Task { await model.applyChange(change) } }.buttonStyle(.borderedProminent).tint(.teal).keyboardShortcut(.defaultAction).disabled(model.busy)
+                    Button(change.operation == "remove" ? "Remove Connection" : "Install Connection") { Task { await model.applyChange(change) } }.buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction).disabled(model.busy)
                 }
             }
         }.padding(28).frame(width: 570)

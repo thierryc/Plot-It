@@ -22,8 +22,8 @@ struct PlotItApplication: App {
         MenuBarExtra {
             MenuPanel(model: model, updater: AppUpdater.shared)
         } label: {
-            Image(nsImage: PlotItIcons.menuBar(plotting: model.active))
-                .accessibilityLabel("PlotIt MCP: \(model.statusText)")
+            Image(nsImage: PlotItIcons.menuBar(connected: model.connected, plotting: model.active))
+                .accessibilityLabel("PlotIt: \(model.connected ? model.active ? "Drawing" : "Connected" : "Disconnected")")
         }
         .menuBarExtraStyle(.window)
 

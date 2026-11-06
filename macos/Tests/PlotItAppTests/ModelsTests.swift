@@ -3,6 +3,31 @@ import XCTest
 
 final class ModelsTests: XCTestCase {
     @MainActor
+    func testConnectionToggleRequiresIdleWorkButCanReleaseUSBWithUnsavedEdits() {
+        let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true
+        model.status = CompanionStatus(version: "0.1.0", configured: true, config: Machine(), armed: false, agents: [], preparing: false)
+        XCTAssertTrue(model.canChangeConnection)
+        model.setupHasChanges = true; XCTAssertFalse(model.canChangeConnection)
+        model.status?.runner = RunnerSnapshot(connected: true, status: "idle", origin: "explicit")
+        XCTAssertTrue(model.canChangeConnection)
+        model.status?.runner?.status = "paused"; XCTAssertFalse(model.canChangeConnection)
+        model.status?.runner?.status = "idle"
+        model.updateReservationGranted = true; XCTAssertFalse(model.canChangeConnection)
+        model.updateReservationGranted = false
+        model.serviceAvailable = false; XCTAssertFalse(model.canChangeConnection)
+    }
+    @MainActor
+    func testToolbarUsesDisconnectedSymbolEvenIfPlotTelemetryIsStale() {
+        XCTAssertEqual(PlotItConnectionSymbol(connected: false, plotting: true), .disconnected)
+        XCTAssertEqual(PlotItConnectionSymbol(connected: true, plotting: false), .connected)
+        XCTAssertEqual(PlotItConnectionSymbol(connected: true, plotting: true), .plotting)
+        for connected in [false, true] {
+            let icon = PlotItIcons.menuBar(connected: connected, plotting: false)
+            XCTAssertTrue(icon.isTemplate)
+            XCTAssertEqual(icon.size, NSSize(width: 24, height: 18))
+        }
+    }
+    @MainActor
     func testUpdatesWaitForEveryUnsettledStateAndDrafts() {
         let model = CompanionModel(); model.isPreview = true
         let updater = AppUpdater(model: model); updater.start()

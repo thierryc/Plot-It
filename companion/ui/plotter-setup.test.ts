@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 import { defaultMachine, fingerprint } from "../common";
 const bridge = vi.hoisted(() => ({ connect: vi.fn(async () => {}), callServerTool: vi.fn(), getHostContext: vi.fn(() => ({ theme: "light" })), ontoolresult: undefined as ((result: any) => void) | undefined, onteardown: undefined as (() => Promise<object>) | undefined, onhostcontextchanged: undefined }));
 vi.mock("@modelcontextprotocol/ext-apps", () => ({ App: vi.fn(function () { return bridge; }), applyDocumentTheme: vi.fn(), applyHostStyleVariables: vi.fn() }));
-const status = () => ({ config: { ...defaultMachine }, configDigest: fingerprint(defaultMachine), configured: true, armed: false, nativeSessionActive: true, agentControlEnabled: true, controlBlocker: "Connect your plotter.", machineProfiles: [{ id: "axidraw", name: "AxiDraw A4" }], paperPresets: [{ name: "A4 portrait", width: 210, height: 297 }], devices: [], runner: null as null | { connected: boolean; status: string; origin: string } });
+const status = () => ({ config: { ...defaultMachine }, configDigest: fingerprint(defaultMachine), configured: true, armed: false, nativeSessionActive: true, controlBlocker: "Connect your plotter.", machineProfiles: [{ id: "axidraw", name: "AxiDraw A4" }], paperPresets: [{ name: "A4 portrait", width: 210, height: 297 }], devices: [], runner: null as null | { connected: boolean; status: string; origin: string } });
 const result = (value = status()) => ({ content: [], structuredContent: value });
 let dom: JSDOM;
 beforeEach(async () => {
