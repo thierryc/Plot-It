@@ -15,8 +15,9 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate, @preconcurrency SPUStandar
     var canCheck = false
     var readyVersion: String?
     var message: String?
-    var automaticChecks = true
-    var automaticDownloads = true
+    private(set) var automaticChecks = true
+    private(set) var automaticDownloads = true
+    var automaticUpdates: Bool { automaticChecks }
     var installationRequested = false
     var enabled: Bool { controller != nil }
     var blocker: String? { model.updateBlocker }
@@ -29,6 +30,10 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate, @preconcurrency SPUStandar
         self.controller = controller
         observations = [controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
             Task { @MainActor in self?.canCheck = updater.canCheckForUpdates }
+        }, controller.updater.observe(\.automaticallyChecksForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
+            Task { @MainActor in self?.automaticChecks = updater.automaticallyChecksForUpdates }
+        }, controller.updater.observe(\.automaticallyDownloadsUpdates, options: [.initial, .new]) { [weak self] updater, _ in
+            Task { @MainActor in self?.automaticDownloads = updater.automaticallyDownloadsUpdates }
         }]
         controller.startUpdater()
         automaticChecks = controller.updater.automaticallyChecksForUpdates
@@ -40,8 +45,18 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate, @preconcurrency SPUStandar
         if resumeInstallation != nil { retryInstallation(); return }
         controller.checkForUpdates(nil)
     }
-    func setAutomaticChecks(_ value: Bool) { controller?.updater.automaticallyChecksForUpdates = value; automaticChecks = value }
-    func setAutomaticDownloads(_ value: Bool) { controller?.updater.automaticallyDownloadsUpdates = value; automaticDownloads = value }
+    func setAutomaticUpdates(_ value: Bool) {
+        // Sparkle persists explicit choices; Info.plist supplies the first-launch defaults.
+        if let controller { Self.setAutomaticUpdates(value, for: controller.updater) }
+        automaticChecks = value
+        automaticDownloads = value
+    }
+    static func setAutomaticUpdates(_ value: Bool, for updater: SPUUpdater) {
+        // Sparkle only accepts download preferences while automatic checks are allowed.
+        if value { updater.automaticallyChecksForUpdates = true }
+        updater.automaticallyDownloadsUpdates = value
+        if !value { updater.automaticallyChecksForUpdates = false }
+    }
     func allowedChannels(for updater: SPUUpdater) -> Set<String> { ["alpha"] }
     var supportsGentleScheduledUpdateReminders: Bool { true }
     func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool { false }
@@ -99,9 +114,10 @@ struct UpdateControls: View {
                 .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
             if let message = updater.message { Text(message).font(.caption).foregroundStyle(.secondary) }
             if updater.readyVersion != nil, let blocker = updater.blocker { Text(blocker).font(.caption).foregroundStyle(.secondary) }
-            Toggle("Check for updates automatically", isOn: Binding(get: { updater.automaticChecks }, set: updater.setAutomaticChecks))
-            Toggle("Download updates automatically", isOn: Binding(get: { updater.automaticDownloads }, set: updater.setAutomaticDownloads))
-            Text("Published alpha and stable releases. Updates wait for plotting, calibration and unsaved settings; they never start a drawing.").font(.caption).foregroundStyle(.secondary)
+            Toggle("Automatic updates", isOn: Binding(get: { updater.automaticUpdates }, set: updater.setAutomaticUpdates))
+                .toggleStyle(.switch)
+            Text(updater.automaticUpdates ? "Checks daily for signed GitHub releases. Updates wait for drawing, calibration and unsaved settings." : "Automatic checks and downloads are off. You can still check for updates above.")
+                .font(.caption).foregroundStyle(.secondary)
         }.disabled(!updater.enabled)
     }
 }

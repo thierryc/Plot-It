@@ -63,13 +63,6 @@ export async function startCompanion(options: CompanionOptions) {
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
   }
-  let agentControlEnabled = true;
-  try {
-    const saved = JSON.parse(await readFile(join(directory, "control-preferences.json"), "utf8"));
-    if (typeof saved.agentControlEnabled === "boolean") agentControlEnabled = saved.agentControlEnabled;
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
-  }
   const releaseLock = await claimService(socketDirectory);
   let uiSession = "",
     lastHeartbeat = 0,
@@ -118,7 +111,6 @@ export async function startCompanion(options: CompanionOptions) {
   let changingHardware = false;
   let readinessBarrier: typeof runner.snapshot = null;
   const controlBlocker = () => {
-    if (!agentControlEnabled) return "Agent control is turned off.";
     if (updateReserved) return "PlotIt is preparing to install an update.";
     if (closing || controlSuspended) return "Agent control is suspended while quitting.";
     if (!uiSession || Date.now() - lastHeartbeat >= 5000) return "Open PlotIt MCP to allow agent control.";
@@ -252,7 +244,7 @@ export async function startCompanion(options: CompanionOptions) {
       config,
       configDigest: fingerprint(config),
       paperPresets: PAPERS,
-      agentControlEnabled,
+      agentControlEnabled: true, // Wire compatibility for older clients; connection now controls availability.
       controlBlocker: controlBlocker(),
       armed: isArmed(),
       runner: runner.snapshot ?? null,
@@ -521,7 +513,7 @@ export async function startCompanion(options: CompanionOptions) {
           return { id: info.id, status: info.status, duplicate: true };
         if (!isArmed())
           throw new Error(
-            "Enable agent control in the PlotIt MCP menu before starting.",
+            controlBlocker() ?? "Connect the plotter before starting.",
           );
         if (!runner.snapshot?.connected)
           throw new Error("Connect the plotter in PlotIt MCP.");
@@ -548,7 +540,7 @@ export async function startCompanion(options: CompanionOptions) {
           throw new Error("Choose pause, resume, or stop.");
         if (p.action === "resume") {
           if (!isArmed())
-            throw new Error("Enable agent control before resuming.");
+            throw new Error(controlBlocker() ?? "Connect the plotter before resuming.");
           if (runner.snapshot.status === "tool-change")
             throw new Error(
               "Load the next pen and click Continue in PlotIt MCP.",
@@ -637,13 +629,6 @@ export async function startCompanion(options: CompanionOptions) {
       await saveAgentPreferences();
       return { path };
     }
-    if (action === "arm")
-      return exclusive(async () => {
-        if (typeof p.enabled !== "boolean") throw new Error("Choose whether agent control is allowed.");
-        await atomicJson(join(directory, "control-preferences.json"), { agentControlEnabled: p.enabled });
-        agentControlEnabled = p.enabled;
-        return status();
-      });
     if (action === "suspend_control") {
       controlSuspended = true;
       return status();

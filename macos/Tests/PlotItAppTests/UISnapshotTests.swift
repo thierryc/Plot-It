@@ -10,7 +10,6 @@ final class UISnapshotTests: XCTestCase {
         let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true
         model.status = CompanionStatus(version: "0.1.0", configured: false, config: Machine(), armed: false, agents: [], preparing: false)
         model.status?.paperPresets = [PaperPreset(name: "A4 portrait", width: 210, height: 297), PaperPreset(name: "US Letter portrait", width: 215.9, height: 279.4)]
-        model.status?.agentControlEnabled = true
         model.status?.controlBlocker = "Save your machine settings."
         model.agents = [
             AgentInstallation(id: "codex", path: "~/.codex/config.toml", configured: true),
@@ -21,7 +20,9 @@ final class UISnapshotTests: XCTestCase {
         for step in 0...2 {
             try capture(SetupWindow(model: model, initialStep: step), name: "setup-\(step)", size: NSSize(width: 746, height: 680))
         }
-        try capture(MenuPanel(model: model), name: "menu", size: NSSize(width: 350, height: 360))
+        let updater = AppUpdater(model: model)
+        try capture(SetupWindow(model: model, updater: updater, initialStep: 3), name: "app-settings", size: NSSize(width: 746, height: 680))
+        try capture(MenuPanel(model: model), name: "menu", size: NSSize(width: 336, height: 0))
         model.status?.config.widthMm = 222
         model.status?.config.heightMm = 333
         try capture(SetupWindow(model: model), name: "setup-custom", size: NSSize(width: 746, height: 680))
@@ -29,14 +30,21 @@ final class UISnapshotTests: XCTestCase {
         model.status?.configured = true
         model.status?.armed = true
         model.status?.controlBlocker = nil
-        model.status?.lastJob = Job(id: "snapshot", status: "running", durationMs: 120000)
+        let preview = ProcessInfo.processInfo.environment["PLOTIT_PREVIEW_PATH"]
+        model.status?.lastJob = Job(id: "snapshot", status: "finished", previewPath: preview, durationMs: 518962)
+        try capture(MenuPanel(model: model), name: "menu-disconnected", size: NSSize(width: 336, height: 0))
+        model.status?.runner = RunnerSnapshot(connected: true, status: "idle", origin: "explicit")
+        try capture(MenuPanel(model: model), name: "menu-connected", size: NSSize(width: 336, height: 0))
+        try capture(MenuPanel(model: model), name: "menu-connected-dark", size: NSSize(width: 336, height: 0), colorScheme: .dark)
+        model.status?.lastJob = Job(id: "snapshot", status: "running", previewPath: preview, durationMs: 120000)
         model.status?.runner = RunnerSnapshot(connected: true, jobId: "snapshot", status: "running", origin: "explicit", elapsedMs: 30000, progress: ProgressSnapshot(completed: 45, total: 100))
-        try capture(MenuPanel(model: model), name: "menu-running", size: NSSize(width: 350, height: 460))
-        try capture(MenuPanel(model: model), name: "menu-running-dark", size: NSSize(width: 350, height: 460), colorScheme: .dark)
+        try capture(MenuPanel(model: model), name: "menu-running", size: NSSize(width: 336, height: 0))
+        try capture(MenuPanel(model: model), name: "menu-running-dark", size: NSSize(width: 336, height: 0), colorScheme: .dark)
     }
     @MainActor
     private func capture<Content: View>(_ content: Content, name: String, size: NSSize, colorScheme: ColorScheme = .light) throws {
         let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme).background(colorScheme == .dark ? Color.black : Color.white))
+        let size = NSSize(width: size.width, height: size.height == 0 ? ceil(view.fittingSize.height) : size.height)
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: colorScheme == .dark ? .darkAqua : .aqua)

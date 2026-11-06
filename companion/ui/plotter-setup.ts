@@ -3,7 +3,7 @@ import type { MachineConfig } from "../common";
 
 interface SetupStatus {
   config: MachineConfig; configDigest: string; configured: boolean; armed: boolean;
-  nativeSessionActive: boolean; agentControlEnabled: boolean; controlBlocker: string | null;
+  nativeSessionActive: boolean; controlBlocker: string | null;
   machineProfiles: { id: string; name: string }[];
   paperPresets: { name: string; width: number; height: number }[];
   devices: { path: string; manufacturer?: string; vendorId?: string; productId?: string }[];
@@ -69,7 +69,7 @@ function render() {
   get("connection").textContent = !state.nativeSessionActive ? "Open the Mac companion" : !idle() ? "Drawing in progress" : usb ? "Plotter connected" : "Companion connected";
   const count = state.devices.filter(d => d.vendorId?.toLowerCase() === "04d8" && d.productId?.toLowerCase() === "fd92").length;
   get("device-help").textContent = count === 1 ? "One compatible EBB plotter detected." : count > 1 ? "Multiple EBB plotters detected. Choose the USB device to use." : "No EBB plotter detected. Connect USB, then refresh devices.";
-  get("control").textContent = state.armed ? "Ready · agents can start drawings when requested." : !state.agentControlEnabled ? "Agent control is Off. You can change this in the PlotIt MCP menu bar." : state.controlBlocker ?? "Waiting for the plotter to be ready.";
+  get("control").textContent = state.armed ? "Ready · agents can start drawings when requested." : state.controlBlocker ?? "Waiting for the plotter to be ready.";
   get("freshness").textContent = busy ? "Working…" : dirty ? "Unsaved changes · live status updates" : "Status updates automatically";
 }
 function consume(result: SetupResult, reset = false) {
@@ -117,7 +117,7 @@ get("connect").addEventListener("click", () => void request(state?.runner?.conne
 get("pen-up").addEventListener("click", () => void request("test_pen", { down: false }, "Pen up test completed."));
 get("pen-down").addEventListener("click", () => void request("test_pen", { down: true }, "Pen down test completed."));
 input("confirm-origin").addEventListener("change", render);
-get("set-origin").addEventListener("click", () => { if (input("confirm-origin").checked) void request("set_plotter_origin", { currentPositionConfirmed: true }, "Origin captured. Readiness follows your saved agent-control preference."); });
+get("set-origin").addEventListener("click", () => { if (input("confirm-origin").checked) void request("set_plotter_origin", { currentPositionConfirmed: true }, "Origin captured. The connected plotter is ready."); });
 get("refresh").addEventListener("click", () => void refresh());
 document.addEventListener("visibilitychange", () => { if (!document.hidden) void refresh(); });
 app.ontoolresult = result => { if (disposed) return; try { consume(result); schedule(); } catch (e) { message("error", e instanceof Error ? e.message : "Unable to load setup."); } };

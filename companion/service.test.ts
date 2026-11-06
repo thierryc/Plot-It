@@ -27,7 +27,7 @@ async function waitFor<T>(read: () => Promise<T>, done: (v: T) => boolean) {
   }
 }
 describe("local companion integration", () => {
-  it("reserves updates atomically, cancels on native recovery and preserves Off", async () => {
+  it("reserves updates atomically and restores connection-based control on native recovery", async () => {
     const directory = await mkdtemp("/tmp/pi-update-svc-");
     cleanup.push(() => rm(directory, { recursive: true, force: true }));
     await atomicJson(join(directory, "machine.json"), defaultMachine);
@@ -35,7 +35,6 @@ describe("local companion integration", () => {
     const service = await startCompanion({ directory, socketDirectory: join(directory, "sock"), resources: resolve("."), runner, home: directory });
     cleanup.push(() => service.close());
     await service.handleUI("heartbeat", { session: "native" });
-    await service.handleUI("arm", { session: "native", enabled: false });
     runner.snapshot!.status = "paused";
     await expect(service.handleUI("prepare_update", { session: "native" })).rejects.toThrow("settled");
     runner.snapshot!.status = "idle";
@@ -49,7 +48,7 @@ describe("local companion integration", () => {
     delayed.mockRestore();
     await service.handleUI("heartbeat", { session: "recovered" });
     expect(runner.request).toHaveBeenCalledWith(expect.objectContaining({ action: "cancel-update" }));
-    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
+    expect(await service.status()).toMatchObject({ armed: true, agentControlEnabled: true });
     let unblock!: () => void;
     const delay = new Promise<void>(resolve => { unblock = resolve; });
     runner.request = vi.fn(async () => { await delay; return { ok: true, value: {} }; });
@@ -73,10 +72,11 @@ describe("local companion integration", () => {
     await service.handleUI("cancel_update", { session: "recovered" });
   });
 
-  it("grants control only while ready with a fresh native session and remembers Off", async () => {
+  it("grants control from connection readiness and ignores obsolete Off preferences", async () => {
     const directory = await mkdtemp("/tmp/pi-lease-");
     cleanup.push(() => rm(directory, { recursive: true, force: true }));
     await atomicJson(join(directory, "machine.json"), defaultMachine);
+    await atomicJson(join(directory, "control-preferences.json"), { agentControlEnabled: false });
     const snapshot = {
       epoch: "test-epoch",
       connected: true,
@@ -125,14 +125,16 @@ describe("local companion integration", () => {
     expect((await service.status()).armed).toBe(false);
     await service.handleUI("heartbeat", { session: "replacement" });
     expect((await service.status()).armed).toBe(true);
-    await service.handleUI("arm", { session: "replacement", enabled: false });
-    await service.handleUI("heartbeat", { session: "third" });
+    runner.snapshot!.connected = false;
     expect((await service.status()).armed).toBe(false);
+    runner.snapshot!.connected = true;
+    await service.handleUI("heartbeat", { session: "third" });
+    expect((await service.status()).armed).toBe(true);
     expect(runner.request).toHaveBeenCalledTimes(1);
     await service.close();
     service = await startCompanion(options);
     await service.handleUI("heartbeat", { session: "restarted" });
-    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
+    expect(await service.status()).toMatchObject({ armed: true, agentControlEnabled: true });
   });
   it("recovers unfinished preparation and simulation without replay", async () => {
     const directory = await mkdtemp("/tmp/pi-recover-");
@@ -161,7 +163,7 @@ describe("local companion integration", () => {
     expect(recovered.simulation.status).toBe("interrupted");
     expect(recovered.error).toContain("restarted");
   });
-  it("blocks agent setup during a drawing and never changes a remembered Off choice", async () => {
+  it("blocks agent setup during a drawing and requires fresh state after settings change", async () => {
     const directory = await mkdtemp("/tmp/pi-setup-");
     cleanup.push(() => rm(directory, { recursive: true, force: true }));
     await atomicJson(join(directory, "machine.json"), defaultMachine);
@@ -172,9 +174,8 @@ describe("local companion integration", () => {
     for (const [name, args] of [["configure_plotter", { settings: { widthMm: 220 } }], ["connect_plotter", {}], ["disconnect_plotter", {}], ["test_pen", { down: true }], ["set_plotter_origin", { currentPositionConfirmed: true }]] as const) await expect(service.handleMcp(name, args)).rejects.toThrow("settled");
     expect(runner.request).not.toHaveBeenCalled();
     runner.snapshot!.status = "idle";
-    await service.handleUI("arm", { session: "native", enabled: false });
-    await service.handleMcp("configure_plotter", { settings: {} });
-    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: false });
+    await service.handleMcp("configure_plotter", { settings: { widthMm: 220 } });
+    expect(await service.status()).toMatchObject({ armed: false, agentControlEnabled: true });
   });
   it("serves real MCP clients, enforces local arming and origin, shares a runner and deduplicates starts", async () => {
     const directory = await mkdtemp("/tmp/pi-service-");
@@ -217,7 +218,6 @@ describe("local companion integration", () => {
     await expect(service.handleMcp("arm", { enabled: true })).rejects.toThrow(
       "Unsupported",
     );
-    await ui("arm", { enabled: true });
     expect((await service.status()).armed).toBe(false);
     await service.handleMcp("connect_plotter", {});
     await waitFor(
@@ -284,12 +284,11 @@ describe("local companion integration", () => {
       () => call(clients[0]!, "get_job", { id: prepared.id }),
       (j) => j.status !== "preparing",
     );
-    await ui("arm", { enabled: false });
-    await expect(
-      call(clients[0]!, "start_job", { id: prepared.id }),
-    ).rejects.toThrow("Enable agent control");
+    const expired = vi.spyOn(Date, "now").mockReturnValue(Date.now() + 6000);
+    try {
+      await expect(call(clients[0]!, "start_job", { id: prepared.id })).rejects.toThrow("Open PlotIt MCP");
+    } finally { expired.mockRestore(); }
     await ui("heartbeat");
-    await ui("arm", { enabled: true });
     await call(clients[0]!, "start_job", { id: prepared.id });
     const duplicate = await call(clients[1]!, "start_job", { id: prepared.id });
     expect(duplicate.duplicate).toBe(true);

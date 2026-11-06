@@ -30,7 +30,7 @@ if (info.signingMode === "developer-id") {
   assert.equal(value("SUFeedURL"), UPDATE_FEED);
   assert.equal(value("SUPublicEDKey"), UPDATE_PUBLIC_KEY);
 }
-for (const name of ["PlotItIdle", "PlotItPlotting"]) {
+for (const name of ["PlotItDisconnected", "PlotItConnected", "PlotItPlotting"]) {
   const path = join(resources, "PlotItMCP_PlotItApp.bundle/Contents/Resources", `${name}.pdf`);
   assert((await readFile(path)).subarray(0, 5).toString() === "%PDF-", `Missing vector menu-bar icon: ${name}`);
 }

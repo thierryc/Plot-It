@@ -29,7 +29,7 @@ for (index, glyph) in glyphs.enumerated() {
     }
 
     var box = CGRect(x: 0, y: 0, width: 24, height: 18)
-    let pdf = resources.appendingPathComponent(index == 0 ? "PlotItIdle.pdf" : "PlotItPlotting.pdf")
+    let pdf = resources.appendingPathComponent(index == 0 ? "PlotItConnected.pdf" : "PlotItPlotting.pdf")
     let context = CGContext(pdf as CFURL, mediaBox: &box, nil)!
     context.beginPDFPage(nil)
     let scale = 16.0 / 728.180738709688

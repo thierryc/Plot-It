@@ -22,13 +22,13 @@ struct PlotItApplication: App {
         MenuBarExtra {
             MenuPanel(model: model, updater: AppUpdater.shared)
         } label: {
-            Image(nsImage: PlotItIcons.menuBar(plotting: model.active))
-                .accessibilityLabel("PlotIt MCP: \(model.statusText)")
+            Image(nsImage: PlotItIcons.menuBar(connected: model.connected, plotting: model.active))
+                .accessibilityLabel("PlotIt: \(model.connected ? model.active ? "Drawing" : "Connected" : "Disconnected")")
         }
         .menuBarExtraStyle(.window)
 
         Window("Set up PlotIt MCP", id: "setup") {
-            SetupWindow(model: model)
+            SetupWindow(model: model, updater: AppUpdater.shared)
         }
         .defaultSize(width: 800, height: 720)
         .windowResizability(.contentMinSize)
