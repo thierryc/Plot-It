@@ -107,7 +107,12 @@ final class StatusPanelTests: XCTestCase {
         backdrop.orderFrontRegardless()
         defer { controller.stop(); backdrop.close() }
         try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
-        for (name, appearance) in [("modern-panel-light", NSAppearance.Name.aqua), ("modern-panel-dark", .darkAqua)] {
+        let states: [(String, NSAppearance.Name, Bool)] = [
+            ("modern-panel-light", .aqua, false), ("modern-panel-dark", .darkAqua, false),
+            ("modern-panel-connected-light", .aqua, true), ("modern-panel-connected-dark", .darkAqua, true)
+        ]
+        for (name, appearance, connected) in states {
+            model.status?.runner = connected ? RunnerSnapshot(connected: true, status: "idle", origin: "explicit") : nil
             controller.panel.appearance = NSAppearance(named: appearance)
             backdrop.appearance = NSAppearance(named: appearance)
             backdrop.backgroundColor = appearance == .aqua ? .white : .black

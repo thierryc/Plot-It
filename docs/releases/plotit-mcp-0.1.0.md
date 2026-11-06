@@ -4,7 +4,7 @@ PlotIt MCP is a separate macOS 14+ menu-bar application for using a local USB pe
 
 The first public prerelease is `plotit-mcp-v0.1.0-alpha.1`, app version 0.1.0 build 5. Its universal package includes both Apple Silicon and Intel runtimes, is Developer ID signed and notarized, and includes its corresponding source and notices.
 
-## Unreleased · Modern menu window · build 12
+## Alpha 5 · Modern menu window · build 12
 
 The toolbar popup now uses an app-owned transparent native panel, with matching 16-point glass and outer window masks, a native shadow, and popover material on macOS 14–25. It retains drawing previews and controls, follows the status item on its display, scrolls tall content, and dismisses on Escape or outside clicks. macOS 27 uses the native expanded-interface session for menu-bar tracking and keyboard navigation. Native setup/help windows retain update controls, text-editing shortcuts, unsaved-draft handling and dynamic sizing. A DEBUG-only isolated preview and whole-window light/dark captures exercise the actual outer surface without connecting hardware.
 
