@@ -3,38 +3,84 @@ import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let model: CompanionModel
+    private let updater: AppUpdater
+    private var windows: CompanionWindows?
+    private var statusItem: StatusItemController?
+    override init() { model = .shared; updater = .shared; super.init() }
+    init(model: CompanionModel, updater: AppUpdater) { self.model = model; self.updater = updater; super.init() }
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
-        CompanionModel.shared.start()
-        AppUpdater.shared.start()
+        model.start()
+        updater.start()
+        let windows = CompanionWindows(model: model, updater: updater)
+        self.windows = windows
+        let statusItem = StatusItemController(model: model, updater: updater,
+            openSetup: { [weak windows] in windows?.showSetup() },
+            openAbout: { [weak windows] in windows?.showAbout() })
+        self.statusItem = statusItem
+        statusItem.start()
+        let mainMenu = NSMenu()
+        let application = NSMenuItem()
+        let menu = NSMenu(title: "PlotIt")
+        for (title, action, key) in [("About PlotIt MCP", #selector(showAbout), ""),
+                                     ("Settings…", #selector(showSetup), ","),
+                                     ("Quit PlotIt", #selector(quit), "q")] {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+            item.target = self
+            menu.addItem(item)
+        }
+        application.submenu = menu
+        mainMenu.addItem(application)
+        let editing = NSMenuItem(title: "Edit", action: nil, keyEquivalent: "")
+        let editMenu = NSMenu(title: "Edit")
+        for (title, action, key) in [("Undo", Selector(("undo:")), "z"),
+                                     ("Redo", Selector(("redo:")), "Z"),
+                                     ("Cut", #selector(NSText.cut(_:)), "x"),
+                                     ("Copy", #selector(NSText.copy(_:)), "c"),
+                                     ("Paste", #selector(NSText.paste(_:)), "v"),
+                                     ("Select All", #selector(NSText.selectAll(_:)), "a")] {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: key.lowercased())
+            if title == "Redo" { item.keyEquivalentModifierMask = [.command, .shift] }
+            editMenu.addItem(item)
+        }
+        editing.submenu = editMenu
+        mainMenu.addItem(editing)
+        NSApp.mainMenu = mainMenu
+        if model.isPreview { statusItem.show() }
+    }
+    @objc private func showSetup() { windows?.showSetup() }
+    @objc private func showAbout() { windows?.showAbout() }
+    @objc private func quit() { NSApp.terminate(nil) }
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { windows?.showSetup() }
+        return true
     }
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        Task { @MainActor in CompanionModel.shared.requestQuit() }
+        if model.isPreview { return .terminateNow }
+        Task { @MainActor in self.model.requestQuit() }
         return .terminateLater
     }
+    func applicationWillTerminate(_ notification: Notification) { statusItem?.stop() }
 }
 
 @main @MainActor
-struct PlotItApplication: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-    @State private var model = CompanionModel.shared
-    var body: some Scene {
-        MenuBarExtra {
-            MenuPanel(model: model, updater: AppUpdater.shared)
-        } label: {
-            Image(nsImage: PlotItIcons.menuBar(connected: model.connected, plotting: model.active))
-                .accessibilityLabel("PlotIt: \(model.connected ? model.active ? "Drawing" : "Connected" : "Disconnected")")
-        }
-        .menuBarExtraStyle(.window)
-
-        Window("Set up PlotIt MCP", id: "setup") {
-            SetupWindow(model: model, updater: AppUpdater.shared)
-        }
-        .defaultSize(width: 800, height: 720)
-        .windowResizability(.contentMinSize)
-
-        Window("About PlotIt MCP", id: "about") { AboutView(updater: AppUpdater.shared) }
-            .windowResizability(.contentSize)
+enum PlotItApplication {
+    static func main() {
+        let app = NSApplication.shared
+        let delegate: AppDelegate
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["PLOTIT_WINDOW_PREVIEW"] == "1" {
+            let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true
+            model.status = CompanionStatus(version: "0.1.0", configured: true, config: Machine(), armed: false, agents: [], preparing: false)
+            model.status?.lastJob = Job(id: "window-preview", status: "finished", previewPath: ProcessInfo.processInfo.environment["PLOTIT_PREVIEW_PATH"], durationMs: 518962)
+            delegate = AppDelegate(model: model, updater: AppUpdater(model: model))
+        } else { delegate = AppDelegate() }
+        #else
+        delegate = AppDelegate()
+        #endif
+        app.delegate = delegate
+        withExtendedLifetime(delegate) { app.run() }
     }
 }
 

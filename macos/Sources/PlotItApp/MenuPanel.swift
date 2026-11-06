@@ -3,7 +3,8 @@ import SwiftUI
 struct MenuPanel: View {
     let model: CompanionModel
     var updater: AppUpdater? = nil
-    @Environment(\.openWindow) private var openWindow
+    var openSetup: () -> Void = {}
+    var openAbout: () -> Void = {}
 
     var body: some View {
         ConnectionGlassGroup {
@@ -47,7 +48,7 @@ struct MenuPanel: View {
                             .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
                             .modifier(ConnectionGlassButton())
                     }
-                    MenuPanelMoreButton(updater: updater)
+                    MenuPanelMoreButton(updater: updater, openAbout: openAbout)
                 }.controlSize(.regular)
             }.padding(18).frame(width: 336)
         }
@@ -55,7 +56,7 @@ struct MenuPanel: View {
 
     private func showSetup() {
         model.setupTab = 0
-        openWindow(id: "setup")
+        openSetup()
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 }
@@ -63,11 +64,11 @@ struct MenuPanel: View {
 /// A button-style menu has a compact intrinsic size instead of a full-width popup field.
 struct MenuPanelMoreButton: View {
     var updater: AppUpdater? = nil
-    @Environment(\.openWindow) private var openWindow
+    var openAbout: () -> Void = {}
     var body: some View {
         Menu {
             Button("About & Help…", systemImage: "info.circle") {
-                openWindow(id: "about")
+                openAbout()
                 NSApplication.shared.activate(ignoringOtherApps: true)
             }
             if let updater {
