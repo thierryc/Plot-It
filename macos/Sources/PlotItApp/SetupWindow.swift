@@ -3,13 +3,14 @@ import SwiftUI
 struct SetupWindow: View {
     let model: CompanionModel
     var updater: AppUpdater? = nil
+    var onDone: (() -> Void)? = nil
     @State private var step = 0
     @State private var editor = MachineEditor()
     @State private var pendingStep: Int?
     @State private var reviewUnsavedChanges = false
     @Environment(\.dismiss) private var dismiss
     private let steps = [SetupStep(id: 0, title: "Connect plotter", symbol: "cable.connector"), SetupStep(id: 1, title: "Configure agent apps", symbol: "square.stack.3d.up"), SetupStep(id: 2, title: "Test connection", symbol: "checkmark.seal")]
-    init(model: CompanionModel, updater: AppUpdater? = nil, initialStep: Int? = nil) { self.model = model; self.updater = updater; _step = State(initialValue: initialStep ?? model.setupTab) }
+    init(model: CompanionModel, updater: AppUpdater? = nil, initialStep: Int? = nil, onDone: (() -> Void)? = nil) { self.model = model; self.updater = updater; self.onDone = onDone; _step = State(initialValue: initialStep ?? model.setupTab) }
     private func requestStep(_ target: Int) {
         guard target != step else { return }
         if editor.hasChanges { pendingStep = target; reviewUnsavedChanges = true }
@@ -81,7 +82,7 @@ struct SetupWindow: View {
                         Button(editor.needsSave ? "Save & Continue" : "Continue") { Task { await saveAndAdvance(to: step + 1) } }
                             .buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction)
                             .disabled(model.busy || !model.serviceAvailable || editor.validationMessage != nil || editor.remoteChanged)
-                    } else { Button("Done") { dismiss() }.buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction).disabled(model.busy) }
+                    } else { Button("Done") { if let onDone { onDone() } else { dismiss() } }.buttonStyle(.borderedProminent).tint(.plotItMagenta).keyboardShortcut(.defaultAction).disabled(model.busy) }
                 }.padding(18)
             }.frame(minWidth: 520, maxWidth: .infinity)
         }
