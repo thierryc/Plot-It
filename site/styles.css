@@ -87,10 +87,14 @@ figcaption { font:11px ui-monospace,monospace; color:var(--quiet); text-align:ce
 .mac-app-identity { display:flex; align-items:center; gap:22px; margin-bottom:28px; }
 .mac-app-identity img { display:block; width:88px; height:88px; flex:none; }
 .mac-app-identity .eyebrow { margin:0; max-width:270px; line-height:1.8; }
-.mac-showcase { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:28px; align-items:start; margin:34px 0; }
+.mac-showcase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:36px 28px; align-items:start; margin:34px 0; }
 .mac-shot { margin:0; min-width:0; }
 .mac-shot-frame { padding:16px; border:1px solid var(--line); border-radius:16px; background:var(--code-background); }
 .mac-shot img { display:block; width:100%; height:auto; border-radius:8px; border:1px solid #e4e6e5; background:#fff; }
+.mac-shot-menu .mac-shot-frame > a { display:block; max-width:336px; margin-inline:auto; }
+.mac-menu-alternative { margin-top:12px; }
+.mac-menu-alternative summary { cursor:pointer; color:var(--ink); font-size:14px; }
+.mac-menu-alternative img { max-width:336px; margin-top:12px; }
 .mac-shot figcaption { font-family:inherit; font-size:12px; line-height:1.7; text-align:left; margin:14px 2px 0; }
 .mac-shot figcaption strong { display:block; color:var(--ink); font-size:14px; font-weight:550; margin-bottom:4px; }
 .agent-guides { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; margin:30px 0; }

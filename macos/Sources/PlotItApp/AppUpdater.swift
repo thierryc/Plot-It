@@ -20,6 +20,7 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate, @preconcurrency SPUStandar
     var automaticUpdates: Bool { automaticChecks }
     var installationRequested = false
     var enabled: Bool { controller != nil }
+    var isPreview: Bool { model.isPreview }
     var blocker: String? { model.updateBlocker }
 
     init(model: CompanionModel) { self.model = model; super.init() }
@@ -111,13 +112,13 @@ struct UpdateControls: View {
         VStack(alignment: .leading, spacing: 10) {
             if let version = updater.readyVersion { Text("Update available · \(version)").font(.subheadline.weight(.medium)) }
             Button(updater.readyVersion == nil ? "Check for Updates…" : "Review Update & Restart…") { updater.check() }
-                .disabled(!updater.enabled || (!updater.canCheck && !updater.installationRequested))
+                .disabled(!updater.isPreview && (!updater.enabled || (!updater.canCheck && !updater.installationRequested)))
             if let message = updater.message { Text(message).font(.caption).foregroundStyle(.secondary) }
             if updater.readyVersion != nil, let blocker = updater.blocker { Text(blocker).font(.caption).foregroundStyle(.secondary) }
             Toggle("Automatic updates", isOn: Binding(get: { updater.automaticUpdates }, set: updater.setAutomaticUpdates))
                 .toggleStyle(.switch)
             Text(updater.automaticUpdates ? "Checks daily for signed GitHub releases. Updates wait for drawing, calibration and unsaved settings." : "Automatic checks and downloads are off. You can still check for updates above.")
                 .font(.caption).foregroundStyle(.secondary)
-        }.disabled(!updater.enabled)
+        }.disabled(!updater.enabled && !updater.isPreview)
     }
 }

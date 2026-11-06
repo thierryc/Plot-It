@@ -7,6 +7,7 @@ final class UISnapshotTests: XCTestCase {
     @MainActor
     func testNativeViewsRenderAtTheirSupportedSizes() throws {
         _ = NSApplication.shared
+        if ProcessInfo.processInfo.environment["PLOTIT_ACTIVE_CAPTURES"] == "1" { NSApp.setActivationPolicy(.regular) }
         let model = CompanionModel(); model.isPreview = true; model.serviceAvailable = true
         model.status = CompanionStatus(version: "0.1.0", configured: false, config: Machine(), armed: false, agents: [], preparing: false)
         model.status?.paperPresets = [PaperPreset(name: "A4 portrait", width: 210, height: 297), PaperPreset(name: "US Letter portrait", width: 215.9, height: 279.4)]
@@ -17,10 +18,10 @@ final class UISnapshotTests: XCTestCase {
             AgentInstallation(id: "claude-desktop", path: "~/Library/Application Support/Claude/claude_desktop_config.json", configured: false)
         ]
         model.entry = ServerEntry(command: "/Applications/PlotIt MCP.app/Contents/MacOS/plotit-mcp", args: [])
-        for step in 0...2 {
-            try capture(SetupWindow(model: model, initialStep: step), name: "setup-\(step)", size: NSSize(width: 746, height: 680))
-        }
         let updater = AppUpdater(model: model)
+        for step in 0...2 {
+            try capture(SetupWindow(model: model, updater: updater, initialStep: step), name: "setup-\(step)", size: NSSize(width: 746, height: 680))
+        }
         try capture(SetupWindow(model: model, updater: updater, initialStep: 3), name: "app-settings", size: NSSize(width: 746, height: 680))
         try capture(MenuPanel(model: model), name: "menu", size: NSSize(width: 336, height: 0))
         model.status?.config.widthMm = 222
@@ -43,13 +44,34 @@ final class UISnapshotTests: XCTestCase {
     }
     @MainActor
     private func capture<Content: View>(_ content: Content, name: String, size: NSSize, colorScheme: ColorScheme = .light) throws {
-        let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme).background(colorScheme == .dark ? Color.black : Color.white))
+        let screenCapture = ProcessInfo.processInfo.environment["PLOTIT_SCREENSHOT_HELPER"] != nil
+        let view = NSHostingView(rootView: content.environment(\.colorScheme, colorScheme)
+            .transformEnvironment(\.controlActiveState) { if screenCapture { $0 = .active } }
+            .background(colorScheme == .dark ? Color.black : Color.white))
         let size = NSSize(width: size.width, height: size.height == 0 ? ceil(view.fittingSize.height) : size.height)
-        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = CaptureWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: colorScheme == .dark ? .darkAqua : .aqua)
         window.contentView = view; view.frame = NSRect(origin: .zero, size: size)
+        if ProcessInfo.processInfo.environment["PLOTIT_ACTIVE_CAPTURES"] == "1" {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        }
         view.layoutSubtreeIfNeeded(); view.displayIfNeeded()
+        if let helper = ProcessInfo.processInfo.environment["PLOTIT_SCREENSHOT_HELPER"],
+           let path = ProcessInfo.processInfo.environment["PLOTIT_CAPTURE_DIR"] {
+            try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+            let destination = URL(fileURLWithPath: path).appendingPathComponent("\(name).png")
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+            process.arguments = [helper, "--window-id", String(window.windowNumber), "--path", destination.path]
+            try process.run(); process.waitUntilExit()
+            XCTAssertEqual(process.terminationStatus, 0)
+            XCTAssertGreaterThan(try Data(contentsOf: destination).count, 1000)
+            window.close()
+            return
+        }
         guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return XCTFail("Cannot render \(name)") }
         view.cacheDisplay(in: view.bounds, to: bitmap)
         let flattened = NSImage(size: size)
@@ -67,4 +89,9 @@ final class UISnapshotTests: XCTestCase {
         }
         window.close()
     }
+}
+
+private final class CaptureWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }
